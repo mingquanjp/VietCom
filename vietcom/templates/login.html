@@ -1,5 +1,5 @@
-{% extends 'base.html' %} {% block title %}Đăng nhập VietCom - Chào mừng trở
-lại! 💖{% endblock %} {% block extra_css %}
+{% extends 'base.html' %} Đăng nhập VietCom - Chào mừng trở lại! 💖
+{% block extra_css %}
 <style>
   body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -352,10 +352,11 @@ lại! 💖{% endblock %} {% block extra_css %}
               <div class="error-message">
                 <i class="fas fa-exclamation-triangle"></i>
                 <div>
-                  {% for field, errors in form.errors.items %} {% for error in
-                  errors %}
-                  <div>{{ error }}</div>
-                  {% endfor %} {% endfor %}
+                  {% for field, errors in form.errors.items %} 
+                    {% for error in errors %}
+                      <div>{{ error }}</div>
+                    {% endfor %} 
+                  {% endfor %}
                 </div>
               </div>
               {% endif %}

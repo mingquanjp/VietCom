@@ -179,10 +179,17 @@ def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            messages.success(request, 'Đăng ký thành công!')
-            return redirect('wall')
+            try:
+                user = form.save()
+                login(request, user)
+                messages.success(request, 'Đăng ký thành công!')
+                return redirect('wall')
+            except Exception as e:
+                messages.error(request, f'Đăng ký thất bại: {str(e)}')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
     else:
         form = CustomUserCreationForm()
     return render(request, 'register.html', {'form': form})

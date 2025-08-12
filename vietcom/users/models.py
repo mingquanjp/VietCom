@@ -83,7 +83,20 @@ class User(AbstractUser):
         default='offline',
         help_text="Current status"
     )
-    interests = models.JSONField(default=list, blank=True)
+    interests = models.TextField(default='[]', blank=True)
+
+    def get_interests(self):
+        """Get interests as a Python list"""
+        import json
+        try:
+            return json.loads(self.interests)
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    def set_interests(self, interests_list):
+        """Set interests from a Python list"""
+        import json
+        self.interests = json.dumps(interests_list)
     avatar = models.ImageField(upload_to='avatars/', blank=True)
     latitude = models.FloatField(null=True, blank=True, help_text="Latitude")
     longitude = models.FloatField(null=True, blank=True, help_text="Longitude")
