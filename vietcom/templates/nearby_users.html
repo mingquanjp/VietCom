@@ -173,6 +173,36 @@
         color: white;
       }
 
+      .btn-warning {
+        background: linear-gradient(45deg, #ffc107, #e0a800);
+        color: white;
+      }
+
+      .btn-success {
+        background: linear-gradient(45deg, #28a745, #1e7e34);
+        color: white;
+      }
+
+      .btn-info {
+        background: linear-gradient(45deg, #17a2b8, #138496);
+        color: white;
+      }
+
+      .notification-popup {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border-radius: 8px;
+      }
+
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+
+      @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+      }
+
       .range-slider {
         background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
         height: 8px;
@@ -357,17 +387,47 @@
             </div>
 
             <div class="col-md-2 text-center">
-              <button
-                class="action-btn btn-friend"
-                onclick="addFriend('{{ user_data.user.id }}')"
-              >
-                <i class="fas fa-user-plus"></i> Add
-              </button>
+              {% if user_data.friend_status == 'friends' %}
+                <button class="action-btn btn-success" disabled>
+                  <i class="fas fa-check"></i> Friends
+                </button>
+              {% elif user_data.friend_status == 'sent' %}
+                <button 
+                  class="action-btn btn-warning" 
+                  onclick="cancelFriendRequest('{{ user_data.request_id }}')"
+                  id="friend-btn-{{ user_data.user.id }}"
+                >
+                  <i class="fas fa-clock"></i> Sent
+                </button>
+              {% elif user_data.friend_status == 'received' %}
+                <button 
+                  class="action-btn btn-info" 
+                  onclick="showRequestActions('{{ user_data.request_id }}')"
+                >
+                  <i class="fas fa-user-clock"></i> Respond
+                </button>
+              {% else %}
+                <button
+                  class="action-btn btn-friend"
+                  onclick="addFriend('{{ user_data.user.id }}')"
+                  id="friend-btn-{{ user_data.user.id }}"
+                >
+                  <i class="fas fa-user-plus"></i> Add
+                </button>
+              {% endif %}
               <br />
-              <button
-                class="action-btn btn-message"
-                onclick="sendMessage('{{ user_data.user.id }}')"
-              >
+              {% if user_data.friend_status == 'friends' %}
+                <button
+                  class="action-btn btn-message"
+                  onclick="sendMessage('{{ user_data.user.id }}')"
+                >
+                  <i class="fas fa-comment"></i> Chat
+                </button>
+              {% else %}
+                <button class="action-btn btn-message" disabled>
+                  <i class="fas fa-comment"></i> Chat
+                </button>
+              {% endif %}
                 <i class="fas fa-comment"></i> Chat
               </button>
             </div>
@@ -465,7 +525,7 @@
       // Level-based radius - no manual update needed
       function updateRadius(value) {
         // Radius is now based on user level, not manual input
-        console.log("Radius is determined by user level:", {{ search_radius }});
+        console.log("Radius is determined by user level:", "{{ search_radius }}");
       }
 
       function updateMapRadius(radiusKm) {
@@ -699,6 +759,122 @@
         // Wait a bit for page to fully load
         setTimeout(autoDetectLocation, 1000);
       });
+
+      // Friend Request Functions
+      function addFriend(userId) {
+        const btn = document.getElementById(`friend-btn-${userId}`);
+        const originalContent = btn.innerHTML;
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+        
+        fetch('/social/send-friend-request/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify({ user_id: userId })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            btn.className = 'action-btn btn-warning';
+            btn.innerHTML = '<i class="fas fa-clock"></i> Sent';
+            btn.onclick = () => cancelFriendRequest(data.request_id);
+            showNotification(data.message, 'success');
+          } else {
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+            showNotification(data.message, 'error');
+          }
+        })
+        .catch(error => {
+          btn.disabled = false;
+          btn.innerHTML = originalContent;
+          showNotification('Error sending friend request', 'error');
+        });
+      }
+      
+      function cancelFriendRequest(requestId) {
+        if (!confirm('Cancel friend request?')) return;
+        
+        fetch('/social/cancel-friend-request/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify({ request_id: requestId })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            location.reload(); // Refresh to update UI
+          } else {
+            showNotification(data.message, 'error');
+          }
+        });
+      }
+      
+      function showRequestActions(requestId) {
+        if (confirm('Accept this friend request?')) {
+          respondToRequest(requestId, 'accept');
+        } else if (confirm('Reject this friend request?')) {
+          respondToRequest(requestId, 'reject');
+        }
+      }
+      
+      function respondToRequest(requestId, action) {
+        fetch('/social/respond-friend-request/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify({ 
+            request_id: requestId, 
+            action: action 
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            showNotification(data.message, 'success');
+            location.reload(); // Refresh to update UI
+          } else {
+            showNotification(data.message, 'error');
+          }
+        });
+      }
+      
+      function showNotification(message, type) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} notification-popup`;
+        notification.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          z-index: 9999;
+          min-width: 300px;
+          animation: slideIn 0.3s ease-out;
+        `;
+        notification.innerHTML = `
+          <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+          ${message}
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+          notification.style.animation = 'slideOut 0.3s ease-in';
+          setTimeout(() => {
+            document.body.removeChild(notification);
+          }, 300);
+        }, 3000);
+      }
 
       // Reduced auto-refresh to every 5 minutes to avoid interference
       setInterval(refreshNearbyUsers, 300000);

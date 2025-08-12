@@ -379,6 +379,46 @@
     color: #667eea;
   }
 
+  /* Friend Requests */
+  .friend-request-item {
+    padding: 15px 0;
+    border-bottom: 1px solid #f1f5f9;
+    transition: all 0.3s ease;
+  }
+
+  .friend-request-item:last-child {
+    border-bottom: none;
+  }
+
+  .request-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .request-actions .btn {
+    font-size: 0.85rem;
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .request-actions .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  @keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+  }
+
   /* Online Friends */
   .friend-item {
     display: flex;
@@ -783,6 +823,56 @@
 
     <!-- Sidebar -->
     <div class="col-lg-4 sidebar">
+      <!-- Friend Requests -->
+      <div class="sidebar-widget">
+        <h6 class="widget-title">
+          <i class="fas fa-user-friends"></i>
+          Lời mời kết bạn
+          {% if received_requests %}
+            <span class="badge bg-danger ms-2">{{ received_requests|length }}</span>
+          {% endif %}
+        </h6>
+        <div class="friend-requests-list">
+          {% if received_requests %}
+            {% for request in received_requests %}
+            <div class="friend-request-item" id="request-{{ request.id }}">
+              <div class="d-flex align-items-center">
+                <div class="friend-avatar-container me-2">
+                  {% if request.sender.avatar %}
+                  <img src="{{ request.sender.avatar.url }}" alt="Avatar" class="friend-avatar" />
+                  {% else %}
+                  <div class="friend-avatar default-avatar">
+                    <i class="fas fa-user"></i>
+                  </div>
+                  {% endif %}
+                </div>
+                <div class="flex-grow-1">
+                  <div class="friend-name">{{ request.sender.get_display_name }}</div>
+                  <small class="text-muted">{{ request.created_at|timesince }} ago</small>
+                </div>
+              </div>
+              <div class="request-actions mt-2">
+                <button 
+                  class="btn btn-sm btn-success me-1" 
+                  onclick="respondToFriendRequest('{{ request.id }}', 'accept')"
+                >
+                  <i class="fas fa-check"></i> Đồng ý
+                </button>
+                <button 
+                  class="btn btn-sm btn-danger" 
+                  onclick="respondToFriendRequest('{{ request.id }}', 'reject')"
+                >
+                  <i class="fas fa-times"></i> Từ chối
+                </button>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <p class="text-muted small">Không có lời mời kết bạn nào</p>
+          {% endif %}
+        </div>
+      </div>
+
       <!-- Online Friends -->
       <div class="sidebar-widget">
         <h6 class="widget-title">
@@ -1096,6 +1186,83 @@
       }
     }
     return cookieValue;
+  }
+
+  // Friend Request Functions
+  function respondToFriendRequest(requestId, action) {
+    const requestElement = document.getElementById(`request-${requestId}`);
+    const actionText = action === 'accept' ? 'Đồng ý' : 'Từ chối';
+    
+    if (!confirm(`${actionText} lời mời kết bạn này?`)) return;
+    
+    fetch('/social/respond-friend-request/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({ 
+        request_id: requestId, 
+        action: action 
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Remove the request from UI
+        requestElement.style.opacity = '0.5';
+        requestElement.innerHTML = `
+          <div class="text-center text-success">
+            <i class="fas fa-check"></i> ${data.message}
+          </div>
+        `;
+        
+        // Hide after 2 seconds
+        setTimeout(() => {
+          requestElement.style.display = 'none';
+        }, 2000);
+        
+        // Show notification
+        showNotification(data.message, 'success');
+      } else {
+        showNotification(data.message, 'error');
+      }
+    })
+    .catch(error => {
+      showNotification('Error processing friend request', 'error');
+    });
+  }
+  
+  function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} notification-popup`;
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      min-width: 300px;
+      animation: slideIn 0.3s ease-out;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border-radius: 8px;
+    `;
+    notification.innerHTML = `
+      <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+      ${message}
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+      notification.style.animation = 'slideOut 0.3s ease-in';
+      setTimeout(() => {
+        if (notification.parentNode) {
+          document.body.removeChild(notification);
+        }
+      }, 300);
+    }, 3000);
   }
 
   // Auto-refresh (optional)

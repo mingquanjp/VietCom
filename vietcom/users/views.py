@@ -5,10 +5,12 @@ from django.views.decorators.http import require_http_methods
 from django.db import models
 from django.contrib.auth import login
 from django.contrib import messages
+from django.db.models import Q
 import json
 import math
 from .models import User
 from .forms import CustomUserCreationForm
+from social.models import Friendship, FriendRequest
 # Remove this import if gamification app doesn't exist yet
 # from gamification.models import UserPoints
 
@@ -103,9 +105,33 @@ def get_nearby_users_data(current_user):
         )
         
         if distance <= search_radius:
+            # Check friendship status
+            is_friend = Friendship.objects.filter(
+                Q(user1=current_user, user2=user) | Q(user1=user, user2=current_user)
+            ).exists()
+            
+            # Check friend request status
+            friend_request = FriendRequest.objects.filter(
+                Q(sender=current_user, receiver=user) | Q(sender=user, receiver=current_user)
+            ).first()
+            
+            friend_status = 'none'  # none, sent, received, friends
+            request_id = None
+            
+            if is_friend:
+                friend_status = 'friends'
+            elif friend_request:
+                request_id = friend_request.id
+                if friend_request.sender == current_user:
+                    friend_status = 'sent'
+                else:
+                    friend_status = 'received'
+            
             nearby_users.append({
                 'user': user,
-                'distance': distance
+                'distance': distance,
+                'friend_status': friend_status,
+                'request_id': request_id
             })
     
     # Sort by distance and limit to 20
