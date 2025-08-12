@@ -1,4 +1,5 @@
-{% extends 'base.html' %} Đăng nhập VietCom - Chào mừng trở lại! 💖 
+
+{% extends 'base.html' %} Đăng nhập VietCom - Chào mừng trở lại! 💖
 {% block extra_css %}
 <style>
   body {
@@ -352,10 +353,10 @@
               <div class="error-message">
                 <i class="fas fa-exclamation-triangle"></i>
                 <div>
-                  {% for field, errors in form.errors.items %}
+                  {% for field, errors in form.errors.items %} 
                     {% for error in errors %}
                       <div>{{ error }}</div>
-                    {% endfor %}
+                    {% endfor %} 
                   {% endfor %}
                 </div>
               </div>
