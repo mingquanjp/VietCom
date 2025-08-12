@@ -1,0 +1,711 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Find Nearby Friends 🌍{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<style>
+      body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+      .main-container {
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .header-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 30px;
+        text-align: center;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .radar-container {
+        position: relative;
+        width: 200px;
+        height: 200px;
+        margin: 20px auto;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7);
+        }
+        70% {
+          transform: scale(1.1);
+          box-shadow: 0 0 0 20px rgba(255, 107, 107, 0);
+        }
+        100% {
+          transform: scale(1);
+          box-shadow: 0 0 0 0 rgba(255, 107, 107, 0);
+        }
+      }
+
+      .radar-inner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 150px;
+        height: 150px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+      }
+
+      .controls-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .user-card {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .user-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+      }
+
+      .user-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1);
+      }
+
+      .user-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: 3px solid #fff;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      .distance-badge {
+        background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+        color: white;
+        padding: 5px 15px;
+        border-radius: 25px;
+        font-size: 0.85rem;
+        font-weight: bold;
+      }
+
+      .status-online {
+        width: 15px;
+        height: 15px;
+        background: #4ecdc4;
+        border-radius: 50%;
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        border: 2px solid white;
+        animation: blink 2s infinite;
+      }
+
+      @keyframes blink {
+        0%,
+        50% {
+          opacity: 1;
+        }
+        51%,
+        100% {
+          opacity: 0.3;
+        }
+      }
+
+      .action-btn {
+        border: none;
+        border-radius: 25px;
+        padding: 8px 20px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        margin: 5px;
+      }
+
+      .btn-friend {
+        background: linear-gradient(45deg, #4ecdc4, #44b3aa);
+        color: white;
+      }
+
+      .btn-message {
+        background: linear-gradient(45deg, #45b7d1, #3a9bc1);
+        color: white;
+      }
+
+      .btn-friend:hover,
+      .btn-message:hover {
+        transform: scale(1.05);
+        color: white;
+      }
+
+      .range-slider {
+        background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+        height: 8px;
+        border-radius: 4px;
+        outline: none;
+      }
+
+      .loading-spinner {
+        display: none;
+        text-align: center;
+        padding: 20px;
+      }
+
+      .no-users {
+        text-align: center;
+        padding: 40px;
+        color: #666;
+      }
+
+      .cute-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        opacity: 0.7;
+      }
+
+      .level-info {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 15px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+      }
+
+      .radius-display {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 10px;
+        margin-top: 8px;
+      }
+
+      .radius-bar {
+        background: linear-gradient(90deg, #4ecdc4 0%, #44a08d 100%);
+        height: 25px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .radius-text {
+        color: white;
+        font-weight: bold;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        font-size: 0.9rem;
+      }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+      <!-- Header -->
+      <div class="header-card">
+        <h1 class="mb-3">🌍 Find Nearby Friends</h1>
+        <p class="text-muted">Discover amazing people around you!</p>
+
+        <div class="radar-container">
+          <div class="radar-inner">🎯</div>
+        </div>
+
+        <p class="mb-0">
+          <span class="badge bg-primary"
+            >{{ nearby_users|length }} people found</span
+          >
+          <span class="badge bg-info"
+            >{{ current_user.search_radius }}km radius</span
+          >
+        </p>
+      </div>
+
+      <!-- Controls -->
+      <div class="controls-card">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <div class="level-info mb-3">
+              <h5 class="text-primary mb-2">
+                <i class="fas fa-trophy text-warning"></i> Level {{ user_level }}
+              </h5>
+              <p class="text-muted mb-1">
+                <i class="fas fa-crosshairs text-primary"></i>
+                Search Radius: <strong>{{ search_radius }}km</strong>
+              </p>
+              <p class="text-muted mb-0" style="font-size: 0.85rem;">
+                <i class="fas fa-arrow-up text-success"></i>
+                Next Level {{ next_level }}: {{ next_level_radius }}km radius
+              </p>
+              <small class="text-warning">
+                <i class="fas fa-star"></i> Level up to expand your search area!
+              </small>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <label for="radiusRange" class="form-label">
+              <i class="fas fa-search text-primary"></i>
+              Current Range: <span id="radiusValue">{{ search_radius }}</span>km
+              <small class="text-muted">(Based on Level {{ user_level }})</small>
+            </label>
+            <div class="radius-display">
+              <div class="radius-bar">
+                <span class="radius-text">{{ search_radius }}km</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6 text-end">
+            <button
+              class="btn btn-primary btn-lg"
+              onclick="refreshLocation()"
+              id="refreshBtn"
+            >
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="map"></div>
+
+      <!-- Loading Spinner -->
+      <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Scanning for nearby friends...</p>
+      </div>
+
+      <!-- Users List -->
+      <div id="usersList">
+        {% if nearby_users %}
+{% for user_data in nearby_users %}
+        <div class="user-card">
+          <div class="row align-items-center">
+            <div class="col-md-2 text-center">
+              <div class="position-relative d-inline-block">
+                <img
+                  src="#"
+                  alt="{{ user_data.user.full_name }}"
+                  class="user-avatar"
+                />
+                {% if user_data.user.status == 'online' %}
+                <div class="status-online"></div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <h5 class="mb-1">
+                {{ user_data.user.full_name|default:user_data.user.username }}
+                {% if user_data.user.gender == 'male' %}👨{% elif
+                user_data.user.gender == 'female' %}👩{% else %}👤{% endif %}
+              </h5>
+              <p class="text-muted mb-2">
+                📍 {{ user_data.user.hometown|default:"Unknown location" }}
+              </p>
+              {% if user_data.user.bio %}
+              <p class="small text-secondary mb-0">
+                💭 {{ user_data.user.bio|truncatechars:100 }}
+              </p>
+              {% endif %}
+            </div>
+
+            <div class="col-md-2 text-center">
+              <span class="distance-badge">
+                📏 {{ user_data.distance|floatformat:1 }}km
+              </span>
+              <div class="mt-2">
+                <small class="text-muted"
+                  >Level {{ user_data.user.level }}</small
+                >
+              </div>
+            </div>
+
+            <div class="col-md-2 text-center">
+              <button
+                class="action-btn btn-friend"
+                onclick="addFriend('{{ user_data.user.id }}')"
+              >
+                <i class="fas fa-user-plus"></i> Add
+              </button>
+              <br />
+              <button
+                class="action-btn btn-message"
+                onclick="sendMessage('{{ user_data.user.id }}')"
+              >
+                <i class="fas fa-comment"></i> Chat
+              </button>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+{% else %}
+        <div class="no-users">
+          <div class="cute-icon">🔍</div>
+          <h4>No friends found nearby</h4>
+          <p class="text-muted">
+            Try increasing your search radius or check your location settings!
+          </p>
+          <button class="btn btn-primary" onclick="updateLocationAndRefresh()">
+            <i class="fas fa-location-arrow"></i> Update My Location
+          </button>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      let isUpdating = false;
+
+
+    const nearbyUsers = JSON.parse('{{ map_users_json|escapejs }}');
+    const currentUser = JSON.parse('{{ current_user_json|escapejs }}');
+    let map = null; // Biến để lưu đối tượng bản đồ
+    let searchRadiusCircle = null; // Biến để lưu vòng tròn bán kính tìm kiếm
+
+    function initializeMap() {
+        // Kiểm tra nếu người dùng hiện tại có tọa độ
+        if (!currentUser.latitude || !currentUser.longitude) {
+            document.getElementById('map').innerHTML = '<div class="p-4 text-center text-muted">Vui lòng cập nhật vị trí của bạn để xem bản đồ.</div>';
+            return;
+        }
+
+        // Khởi tạo map và đặt view vào vị trí của người dùng hiện tại
+        map = L.map('map').setView([currentUser.latitude, currentUser.longitude], 13);
+
+        // Thêm lớp tile layer từ OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Tạo icon tùy chỉnh cho người dùng hiện tại
+        const currentUserIcon = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/3037/3037402.png', // Một icon vị trí đặc biệt
+            iconSize: [38, 38],
+            iconAnchor: [19, 38],
+            popupAnchor: [0, -40]
+        });
+
+        // Đánh dấu vị trí người dùng hiện tại
+        L.marker([currentUser.latitude, currentUser.longitude], {icon: currentUserIcon}).addTo(map)
+            .bindPopup('<b>Vị trí của bạn</b>')
+            .openPopup();
+
+        // Vẽ vòng tròn bán kính tìm kiếm
+        searchRadiusCircle = L.circle([currentUser.latitude, currentUser.longitude], {
+            color: '#45b7d1',
+            fillColor: '#45b7d1',
+            fillOpacity: 0.1,
+            radius: currentUser.search_radius * 1000 // Chuyển từ km sang mét
+        }).addTo(map);
+
+        // Thêm các marker cho người dùng gần đó
+        nearbyUsers.forEach(user => {
+            const userIcon = L.icon({
+                iconUrl: user.avatar_url,
+                iconSize: [35, 35],
+                className: 'user-map-avatar' // Thêm class để style nếu muốn
+            });
+
+            const marker = L.marker([user.latitude, user.longitude]).addTo(map);
+            
+            // Tạo popup hiển thị thông tin khi click
+            const popupContent = `
+                <div class="text-center">
+                    <img src="${user.avatar_url}" alt="${user.full_name}" width="50" class="rounded-circle mb-2">
+                    <h5>${user.full_name}</h5>
+                    <p class="mb-2">Cách bạn ~${user.distance} km</p>
+                    <button class="btn btn-sm btn-friend" onclick="addFriend('${user.id}')"><i class="fas fa-user-plus"></i> Add</button>
+                    <button class="btn btn-sm btn-message" onclick="sendMessage('${user.id}')"><i class="fas fa-comment"></i> Chat</button>
+                </div>
+            `;
+            marker.bindPopup(popupContent);
+        });
+    }
+
+    // Gọi hàm khởi tạo map khi trang tải xong
+    document.addEventListener('DOMContentLoaded', initializeMap);
+
+      // Level-based radius - no manual update needed
+      function updateRadius(value) {
+        // Radius is now based on user level, not manual input
+        console.log("Radius is determined by user level:", {{ search_radius }});
+      }
+
+      function updateMapRadius(radiusKm) {
+        // Cập nhật vòng tròn bán kính trên map
+        if (searchRadiusCircle && map) {
+          searchRadiusCircle.setRadius(radiusKm * 1000); // Chuyển từ km sang mét
+        }
+      }
+
+      function updateSearchRadius(radius) {
+        if (isUpdating) return;
+        isUpdating = true;
+
+        fetch("/users/update-search-radius/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken"),
+          },
+          body: JSON.stringify({ radius: radius }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              // Cập nhật currentUser.search_radius với giá trị mới
+              currentUser.search_radius = radius;
+              refreshNearbyUsers();
+            }
+          })
+          .finally(() => {
+            isUpdating = false;
+          });
+      }
+
+      function refreshLocation() {
+        const btn = document.getElementById("refreshBtn");
+        const spinner = document.getElementById("loadingSpinner");
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+        spinner.style.display = "block";
+
+        if ("geolocation" in navigator) {
+          // Options for high accuracy location
+          const geoOptions = {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0 // Don't use cached location
+          };
+          
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              console.log("📍 Location obtained:", position.coords.latitude, position.coords.longitude);
+              console.log("🎯 Accuracy:", position.coords.accuracy, "meters");
+              
+              updateUserLocation(
+                position.coords.latitude,
+                position.coords.longitude
+              );
+            },
+            (error) => {
+              console.error("❌ Location error:", error);
+              let errorMessage = "Không thể lấy vị trí hiện tại. ";
+              switch(error.code) {
+                case error.PERMISSION_DENIED:
+                  errorMessage += "Vui lòng cho phép truy cập vị trí trong trình duyệt.";
+                  break;
+                case error.POSITION_UNAVAILABLE:
+                  errorMessage += "Thông tin vị trí không khả dụng.";
+                  break;
+                case error.TIMEOUT:
+                  errorMessage += "Yêu cầu lấy vị trí đã hết thời gian.";
+                  break;
+                default:
+                  errorMessage += "Lỗi không xác định.";
+                  break;
+              }
+              console.warn(errorMessage);
+              refreshNearbyUsers();
+            },
+            geoOptions
+          );
+        } else {
+          refreshNearbyUsers();
+        }
+      }
+
+      function updateUserLocation(lat, lng) {
+        console.log("📤 Sending location update to server:", lat, lng);
+        
+        fetch("/users/update-location/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken"),
+          },
+          body: JSON.stringify({ latitude: lat, longitude: lng }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              console.log("✅ Location updated successfully on server");
+              refreshNearbyUsers();
+            } else {
+              console.error("❌ Failed to update location:", data.message);
+            }
+          })
+          .catch((error) => {
+            console.error("❌ Network error updating location:", error);
+          });
+      }
+
+      function updateMapWithNewData() {
+        console.log("🗺️ Updating map with new data without page reload");
+        // Map will be updated by the refreshNearbyUsers function
+        // This prevents the page reload while keeping data fresh
+      }
+
+      function refreshNearbyUsers() {
+        fetch("/users/nearby/")
+          .then((response) => response.text())
+          .then((html) => {
+            // Update the users list
+            const parser = new DOMParser();
+            const newDoc = parser.parseFromString(html, "text/html");
+            const newUsersList = newDoc.getElementById("usersList");
+            
+            if (newUsersList) {
+              document.getElementById("usersList").innerHTML = newUsersList.innerHTML;
+              console.log("✅ Updated nearby users list without page reload");
+            }
+            
+            // Update map data without reload by re-initializing
+            updateMapWithNewData();
+          })
+          .finally(() => {
+            document.getElementById("refreshBtn").disabled = false;
+            document.getElementById("refreshBtn").innerHTML =
+              '<i class="fas fa-sync-alt"></i> Refresh';
+            document.getElementById("loadingSpinner").style.display = "none";
+          });
+      }
+
+      function addFriend(userId) {
+        fetch("/social/send-friend-request/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken"),
+          },
+          body: JSON.stringify({ user_id: userId }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              alert("🎉 Friend request sent!");
+            } else {
+              alert("❌ " + data.message);
+            }
+          });
+      }
+
+      function sendMessage(userId) {
+        window.location.href = `/social/chat/${userId}/`;
+      }
+
+      function updateLocationAndRefresh() {
+        refreshLocation();
+      }
+
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== "") {
+          const cookies = document.cookie.split(";");
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+              cookieValue = decodeURIComponent(
+                cookie.substring(name.length + 1)
+              );
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+
+      // Auto-detect location when page loads for better accuracy
+      function autoDetectLocation() {
+        console.log("🔍 Auto-detecting location for better accuracy...");
+        
+        if ("geolocation" in navigator) {
+          const geoOptions = {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0 // Always get fresh location
+          };
+          
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const accuracy = Math.round(position.coords.accuracy);
+              console.log("📍 Auto-detected location:", position.coords.latitude, position.coords.longitude);
+              console.log("🎯 Accuracy:", accuracy, "meters");
+              
+              // Always update location, but warn if accuracy is poor
+              if (accuracy > 500) {
+                console.warn("⚠️ Location accuracy is poor:", accuracy, "meters");
+                console.log("💡 Try moving to an open area or enabling high accuracy GPS");
+              } else {
+                console.log("✅ Good location accuracy:", accuracy, "meters");
+              }
+              
+              updateUserLocation(
+                position.coords.latitude,
+                position.coords.longitude
+              );
+            },
+            (error) => {
+              console.warn("⚠️ Auto location detection failed:", error.message);
+              console.log("💡 You can manually refresh location using the Refresh button");
+            },
+            geoOptions
+          );
+        } else {
+          console.error("❌ Geolocation not supported by this browser");
+        }
+      }
+
+      // Run auto-detection when page loads
+      document.addEventListener('DOMContentLoaded', function() {
+        // Wait a bit for page to fully load
+        setTimeout(autoDetectLocation, 1000);
+      });
+
+      // Reduced auto-refresh to every 5 minutes to avoid interference
+      setInterval(refreshNearbyUsers, 300000);
+    </script>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+{% endblock %}

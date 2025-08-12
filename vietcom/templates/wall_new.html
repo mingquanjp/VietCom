@@ -1,0 +1,1016 @@
+{% extends 'base.html' %}
+
+Trang chủ - VietCom
+
+{% block extra_css %}
+<style>
+  :root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --hover-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+    --border-radius: 20px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  body {
+    background: var(--primary-gradient);
+    min-height: 100vh;
+  }
+
+  /* Wall Container */
+  .wall-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  /* Create Post Card */
+  .create-post-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: var(--border-radius);
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .create-post-card:hover {
+    box-shadow: var(--hover-shadow);
+    transform: translateY(-2px);
+  }
+
+  .post-input-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
+  .user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    object-fit: cover;
+  }
+
+  .post-textarea {
+    flex: 1;
+    border: none;
+    background: #f8f9fc;
+    border-radius: 15px;
+    padding: 15px 20px;
+    resize: none;
+    font-size: 16px;
+    transition: var(--transition);
+    border: 2px solid transparent;
+  }
+
+  .post-textarea:focus {
+    outline: none;
+    background: #fff;
+    border-color: #667eea;
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
+  }
+
+  .post-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eef2f7;
+  }
+
+  .post-options {
+    display: flex;
+    gap: 15px;
+  }
+
+  .option-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    border: none;
+    background: #f8f9fc;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: var(--transition);
+    color: #64748b;
+  }
+
+  .option-btn:hover {
+    background: #e2e8f0;
+    transform: translateY(-1px);
+  }
+
+  .option-btn i {
+    font-size: 18px;
+  }
+
+  .option-btn.photo {
+    color: #10b981;
+  }
+  .option-btn.location {
+    color: #f59e0b;
+  }
+  .option-btn.feeling {
+    color: #ef4444;
+  }
+
+  .post-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: var(--transition);
+  }
+
+  .post-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  }
+
+  /* Post Cards */
+  .post-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: var(--border-radius);
+    margin-bottom: 25px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .post-card:hover {
+    box-shadow: var(--hover-shadow);
+    transform: translateY(-2px);
+  }
+
+  .post-header {
+    padding: 20px 25px 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .post-author-info {
+    flex: 1;
+  }
+
+  .post-author-name {
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+    font-size: 16px;
+  }
+
+  .post-meta {
+    color: #64748b;
+    font-size: 14px;
+    margin-top: 2px;
+  }
+
+  .post-menu {
+    background: none;
+    border: none;
+    color: #64748b;
+    padding: 8px;
+    border-radius: 8px;
+    transition: var(--transition);
+  }
+
+  .post-menu:hover {
+    background: #f1f5f9;
+    color: #334155;
+  }
+
+  .post-content {
+    padding: 0 25px 20px;
+  }
+
+  .post-text {
+    color: #334155;
+    line-height: 1.6;
+    margin-bottom: 15px;
+  }
+
+  .post-image {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-top: 10px;
+  }
+
+  .post-location {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #64748b;
+    font-size: 14px;
+    margin-top: 10px;
+  }
+
+  /* Post Interactions */
+  .post-stats {
+    padding: 15px 25px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #64748b;
+    font-size: 14px;
+  }
+
+  .post-interactions {
+    padding: 15px 25px;
+    border-top: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .interaction-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: var(--transition);
+    color: #64748b;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .interaction-btn:hover {
+    background: #f8fafc;
+    color: #334155;
+  }
+
+  .interaction-btn.liked {
+    color: #ef4444;
+  }
+
+  .interaction-btn.liked:hover {
+    background: #fef2f2;
+  }
+
+  /* Comments Section */
+  .comments-section {
+    border-top: 1px solid #f1f5f9;
+    padding: 20px 25px;
+    background: #fafbfc;
+  }
+
+  .comment {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 15px;
+  }
+
+  .comment:last-child {
+    margin-bottom: 0;
+  }
+
+  .comment-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .comment-content {
+    flex: 1;
+    background: #fff;
+    padding: 12px 16px;
+    border-radius: 18px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .comment-author {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .comment-text {
+    color: #334155;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .comment-time {
+    color: #64748b;
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  .add-comment {
+    display: flex;
+    gap: 12px;
+    margin-top: 15px;
+  }
+
+  .comment-input {
+    flex: 1;
+    border: none;
+    background: #fff;
+    border-radius: 20px;
+    padding: 10px 16px;
+    font-size: 14px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .comment-input:focus {
+    outline: none;
+    border-color: #667eea;
+  }
+
+  .comment-submit {
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+  }
+
+  .comment-submit:hover {
+    background: #5a67d8;
+    transform: scale(1.05);
+  }
+
+  /* Sidebar */
+  .sidebar {
+    padding-left: 20px;
+  }
+
+  .sidebar-widget {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: var(--border-radius);
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .widget-title {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .widget-title i {
+    color: #667eea;
+  }
+
+  /* Online Friends */
+  .friend-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .friend-item:last-child {
+    border-bottom: none;
+  }
+
+  .friend-avatar-container {
+    position: relative;
+  }
+
+  .friend-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .online-indicator {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    background: #10b981;
+    border: 2px solid white;
+    border-radius: 50%;
+  }
+
+  .friend-info {
+    flex: 1;
+  }
+
+  .friend-name {
+    font-weight: 500;
+    color: #1e293b;
+    margin: 0;
+    font-size: 14px;
+  }
+
+  .friend-status {
+    color: #64748b;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+
+  .chat-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    transition: var(--transition);
+  }
+
+  .chat-btn:hover {
+    background: #5a67d8;
+    transform: translateY(-1px);
+  }
+
+  /* No posts placeholder */
+  .no-posts {
+    text-align: center;
+    padding: 60px 20px;
+    color: #64748b;
+  }
+
+  .no-posts i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .wall-container {
+      padding: 15px;
+    }
+
+    .sidebar {
+      padding-left: 0;
+      margin-top: 20px;
+    }
+
+    .post-options {
+      gap: 10px;
+    }
+
+    .option-btn {
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+
+    .option-btn span {
+      display: none;
+    }
+  }
+
+  /* Animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .post-card {
+    animation: fadeInUp 0.6s ease-out;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wall-container">
+  <div class="row">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+      <!-- Create Post -->
+      <div class="create-post-card">
+        <form method="POST" action="{% url 'create_post' %}" enctype="multipart/form-data" id="createPostForm">
+          {% csrf_token %}
+          
+          <div class="post-input-container">
+            {% if user.avatar %}
+              <img src="{{ user.avatar.url }}" alt="Avatar" class="user-avatar" />
+            {% else %}
+              <div class="user-avatar bg-gradient-to-r from-blue-500 to-purple-600 d-flex align-items-center justify-content-center text-white">
+                <i class="fas fa-user"></i>
+              </div>
+            {% endif %}
+            
+            <textarea name="content" class="post-textarea" placeholder="Bạn đang nghĩ gì, {{ user.get_display_name }}?" rows="3" required></textarea>
+          </div>
+
+          <div class="post-actions">
+            <div class="post-options">
+              <button type="button" class="option-btn photo" data-action="photo">
+                <i class="fas fa-image"></i>
+                <span>Ảnh</span>
+              </button>
+              <button type="button" class="option-btn location" data-action="location">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>Vị trí</span>
+              </button>
+              <button type="button" class="option-btn feeling" data-action="feeling">
+                <i class="fas fa-smile"></i>
+                <span>Cảm xúc</span>
+              </button>
+            </div>
+            
+            <button type="submit" class="post-btn">
+              <i class="fas fa-paper-plane me-2"></i>Đăng bài
+            </button>
+          </div>
+
+          <input type="file" id="imageInput" name="image" accept="image/*" style="display: none" />
+          <input type="hidden" id="locationInput" name="location" value="" />
+        </form>
+      </div>
+
+      <!-- Posts Feed -->
+      <div id="postsContainer">
+        {% if posts %}
+          {% for post in posts %}
+            <div class="post-card" data-post-id="{{ post.id }}">
+              <!-- Post Header -->
+              <div class="post-header">
+                {% if post.author.avatar %}
+                  <img src="{{ post.author.avatar.url }}" alt="Avatar" class="user-avatar" />
+                {% else %}
+                  <div class="user-avatar bg-gradient-to-r from-blue-500 to-purple-600 d-flex align-items-center justify-content-center text-white">
+                    <i class="fas fa-user"></i>
+                  </div>
+                {% endif %}
+
+                <div class="post-author-info">
+                  <h6 class="post-author-name">{{ post.author.get_display_name }}</h6>
+                  <div class="post-meta">
+                    <i class="fas fa-clock"></i>
+                    {{ post.created_at|timesince }} trước
+                    {% if post.location %}
+                      •
+                      <i class="fas fa-map-marker-alt"></i>
+                      {{ post.location }}
+                    {% endif %}
+                  </div>
+                </div>
+
+                {% if post.author == user %}
+                  <div class="dropdown">
+                    <button class="post-menu" data-bs-toggle="dropdown">
+                      <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li>
+                        <a class="dropdown-item" href="#">
+                          <i class="fas fa-edit me-2"></i>Chỉnh sửa
+                        </a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item text-danger" href="#">
+                          <i class="fas fa-trash me-2"></i>Xóa
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Post Content -->
+              <div class="post-content">
+                <p class="post-text">{{ post.content|linebreaks }}</p>
+                
+                {% if post.image %}
+                  <img src="{{ post.image.url }}" alt="Post image" class="post-image" />
+                {% endif %}
+                
+                {% if post.location %}
+                  <div class="post-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    {{ post.location }}
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Post Stats -->
+              {% if post.likes_count > 0 or post.comments_count > 0 %}
+                <div class="post-stats">
+                  <div>
+                    {% if post.likes_count > 0 %}
+                      <span>
+                        <i class="fas fa-heart text-danger"></i>
+                        {{ post.likes_count }} người thích
+                      </span>
+                    {% endif %}
+                  </div>
+                  <div>
+                    {% if post.comments_count > 0 %}
+                      <span>{{ post.comments_count }} bình luận</span>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endif %}
+
+              <!-- Post Interactions -->
+              <div class="post-interactions">
+                <button class="interaction-btn {% if post.is_liked_by_user %}liked{% endif %}" data-action="like" data-post-id="{{ post.id }}">
+                  <i class="fas fa-heart"></i>
+                  <span>Thích</span>
+                </button>
+                <button class="interaction-btn" data-action="comment" data-post-id="{{ post.id }}">
+                  <i class="fas fa-comment"></i>
+                  <span>Bình luận</span>
+                </button>
+                <button class="interaction-btn" data-action="share" data-post-id="{{ post.id }}">
+                  <i class="fas fa-share"></i>
+                  <span>Chia sẻ</span>
+                </button>
+              </div>
+
+              <!-- Comments Section -->
+              <div id="comments-{{ post.id }}" class="comments-section" style="display: none">
+                {% for comment in post.recent_comments %}
+                  <div class="comment">
+                    {% if comment.author.avatar %}
+                      <img src="{{ comment.author.avatar.url }}" alt="Avatar" class="comment-avatar" />
+                    {% else %}
+                      <div class="comment-avatar bg-secondary d-flex align-items-center justify-content-center text-white">
+                        <i class="fas fa-user"></i>
+                      </div>
+                    {% endif %}
+                    
+                    <div class="comment-content">
+                      <div class="comment-author">{{ comment.author.get_display_name }}</div>
+                      <div class="comment-text">{{ comment.content }}</div>
+                      <div class="comment-time">{{ comment.created_at|timesince }} trước</div>
+                    </div>
+                  </div>
+                {% endfor %}
+
+                <!-- Add Comment -->
+                <form method="POST" action="{% url 'add_comment' post.id %}" class="add-comment">
+                  {% csrf_token %}
+                  
+                  {% if user.avatar %}
+                    <img src="{{ user.avatar.url }}" alt="Avatar" class="comment-avatar" />
+                  {% else %}
+                    <div class="comment-avatar bg-primary d-flex align-items-center justify-content-center text-white">
+                      <i class="fas fa-user"></i>
+                    </div>
+                  {% endif %}
+                  
+                  <input type="text" name="content" class="comment-input" placeholder="Viết bình luận..." required />
+                  <button type="submit" class="comment-submit">
+                    <i class="fas fa-paper-plane"></i>
+                  </button>
+                </form>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="no-posts">
+            <i class="fas fa-newspaper"></i>
+            <h5>Chưa có bài đăng nào</h5>
+            <p>Hãy tạo bài đăng đầu tiên để chia sẻ với bạn bè!</p>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Load More -->
+      <div class="text-center mt-4">
+        <button class="btn btn-outline-primary" data-action="load-more">
+          <i class="fas fa-plus me-2"></i>Xem thêm bài đăng
+        </button>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4 sidebar">
+      <!-- Online Friends -->
+      <div class="sidebar-widget">
+        <h6 class="widget-title">
+          <i class="fas fa-users"></i>
+          Bạn bè đang online
+        </h6>
+        <div class="friends-list">
+          {% if online_friends %}
+            {% for friend in online_friends %}
+              <div class="friend-item">
+                <div class="friend-avatar-container">
+                  {% if friend.avatar %}
+                    <img src="{{ friend.avatar.url }}" alt="Avatar" class="friend-avatar" />
+                  {% else %}
+                    <div class="friend-avatar bg-secondary d-flex align-items-center justify-content-center text-white">
+                      <i class="fas fa-user"></i>
+                    </div>
+                  {% endif %}
+                  <div class="online-indicator"></div>
+                </div>
+                
+                <div class="friend-info">
+                  <div class="friend-name">{{ friend.get_display_name }}</div>
+                  <div class="friend-status">{{ friend.status }}</div>
+                </div>
+                
+                <button class="chat-btn" data-action="chat" data-friend-id="{{ friend.id }}">
+                  <i class="fas fa-comment"></i>
+                </button>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p class="text-muted text-center">Không có bạn bè nào đang online</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="sidebar-widget">
+        <h6 class="widget-title">
+          <i class="fas fa-chart-line"></i>
+          Thống kê của bạn
+        </h6>
+        <div class="stats-grid">
+          <div class="stat-item d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <i class="fas fa-user-friends text-primary me-2"></i>
+              <span>Bạn bè</span>
+            </div>
+            <strong class="text-primary">{{ friends_count }}</strong>
+          </div>
+          <div class="stat-item d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <i class="fas fa-edit text-success me-2"></i>
+              <span>Bài đăng</span>
+            </div>
+            <strong class="text-success">{{ posts_count }}</strong>
+          </div>
+          <div class="stat-item d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <i class="fas fa-star text-warning me-2"></i>
+              <span>Cấp độ</span>
+            </div>
+            <strong class="text-warning">{{ user.level }}</strong>
+          </div>
+          <div class="stat-item d-flex justify-content-between align-items-center">
+            <div>
+              <i class="fas fa-trophy text-info me-2"></i>
+              <span>Điểm</span>
+            </div>
+            <strong class="text-info">{{ user.points|default:0 }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upcoming Events -->
+      {% if upcoming_events %}
+        <div class="sidebar-widget">
+          <h6 class="widget-title">
+            <i class="fas fa-calendar-alt"></i>
+            Sự kiện sắp tới
+          </h6>
+          {% for event in upcoming_events %}
+            <div class="event-item p-3 mb-3 bg-light rounded">
+              <h6 class="mb-1">{{ event.name }}</h6>
+              <small class="text-muted d-block">
+                <i class="fas fa-clock me-1"></i>{{ event.time|date:"d/m/Y H:i" }}
+              </small>
+              <small class="text-muted d-block">
+                <i class="fas fa-map-marker-alt me-1"></i>{{ event.location_desc }}
+              </small>
+              <a href="#" class="btn btn-sm btn-outline-primary mt-2">Xem chi tiết</a>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Event Listeners
+  document.addEventListener("DOMContentLoaded", function () {
+    // Handle post interactions
+    document.addEventListener("click", function (e) {
+      const target = e.target.closest("[data-action]");
+      if (!target) return;
+
+      const action = target.dataset.action;
+      const postId = target.dataset.postId;
+      const friendId = target.dataset.friendId;
+
+      switch (action) {
+        case "like":
+          toggleLike(postId);
+          break;
+        case "comment":
+          toggleComments(postId);
+          break;
+        case "share":
+          sharePost(postId);
+          break;
+        case "chat":
+          startChat(friendId);
+          break;
+        case "photo":
+          document.getElementById("imageInput").click();
+          break;
+        case "location":
+          addLocation();
+          break;
+        case "feeling":
+          alert("Tính năng cảm xúc đang được phát triển...");
+          break;
+        case "load-more":
+          loadMorePosts();
+          break;
+      }
+    });
+
+    // Auto-resize textarea
+    const textarea = document.querySelector(".post-textarea");
+    if (textarea) {
+      textarea.addEventListener("input", function () {
+        this.style.height = "auto";
+        this.style.height = this.scrollHeight + "px";
+      });
+    }
+
+    // Image preview when selected
+    const imageInput = document.getElementById("imageInput");
+    if (imageInput) {
+      imageInput.addEventListener("change", function (e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            console.log("Image selected:", file.name);
+            // Show image preview logic here
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+  });
+
+  // Toggle Like
+  function toggleLike(postId) {
+    fetch(`/social/toggle-like/${postId}/`, {
+      method: "POST",
+      headers: {
+        "X-CSRFToken": getCookie("csrftoken"),
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          const likeBtn = document.querySelector(
+            `[data-post-id="${postId}"][data-action="like"]`
+          );
+          const heartIcon = likeBtn.querySelector("i");
+
+          if (data.liked) {
+            likeBtn.classList.add("liked");
+            heartIcon.classList.add("fas");
+            heartIcon.classList.remove("far");
+          } else {
+            likeBtn.classList.remove("liked");
+            heartIcon.classList.add("far");
+            heartIcon.classList.remove("fas");
+          }
+
+          // Update stats
+          updatePostStats(postId, data.likes_count);
+        }
+      })
+      .catch((error) => console.error("Error:", error));
+  }
+
+  // Toggle Comments
+  function toggleComments(postId) {
+    const commentsSection = document.getElementById(`comments-${postId}`);
+    if (commentsSection) {
+      if (commentsSection.style.display === "none" || !commentsSection.style.display) {
+        commentsSection.style.display = "block";
+      } else {
+        commentsSection.style.display = "none";
+      }
+    }
+  }
+
+  // Share Post
+  function sharePost(postId) {
+    if (navigator.share) {
+      navigator.share({
+        title: "VietCom Post",
+        text: "Xem bài đăng này trên VietCom",
+        url: window.location.href + `#post-${postId}`,
+      });
+    } else {
+      // Fallback
+      const url = window.location.href + `#post-${postId}`;
+      navigator.clipboard.writeText(url).then(() => {
+        alert("Đã sao chép link bài đăng!");
+      });
+    }
+  }
+
+  // Start Chat
+  function startChat(friendId) {
+    window.location.href = `/social/chat/${friendId}/`;
+  }
+
+  // Add Location
+  function addLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function (position) {
+          const latitude = position.coords.latitude;
+          const longitude = position.coords.longitude;
+
+          // Use reverse geocoding or just show coordinates
+          document.getElementById("locationInput").value = `${latitude}, ${longitude}`;
+          alert("Vị trí đã được thêm!");
+        },
+        function (error) {
+          alert("Không thể lấy vị trí hiện tại.");
+        }
+      );
+    } else {
+      alert("Trình duyệt không hỗ trợ định vị!");
+    }
+  }
+
+  // Load More Posts
+  function loadMorePosts() {
+    // Implement pagination
+    alert("Đang phát triển tính năng này...");
+  }
+
+  // Update Post Stats
+  function updatePostStats(postId, likesCount) {
+    const postCard = document.querySelector(`[data-post-id="${postId}"]`);
+    const statsSection = postCard.querySelector(".post-stats");
+
+    if (statsSection) {
+      const likesSpan = statsSection.querySelector("span");
+      if (likesSpan && likesCount > 0) {
+        likesSpan.innerHTML = `<i class="fas fa-heart text-danger"></i> ${likesCount} người thích`;
+      } else if (likesCount === 0) {
+        statsSection.style.display = "none";
+      }
+    }
+  }
+
+  // Get CSRF Token
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== "") {
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === name + "=") {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  // Auto-refresh (optional)
+  setInterval(function () {
+    // Could implement auto-refresh here
+    // refreshPosts();
+  }, 60000); // Every minute
+</script>
+{% endblock %}

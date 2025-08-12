@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat với {{ friend.get_display_name
+}} - VietCom{% endblock %}
+
+{% block extra_css %}
+<style>
+  .chat-container {
+    height: 70vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .chat-header {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 15px 15px 0 0;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #f8f9fa;
+  }
+
+  .message {
+    margin-bottom: 15px;
+    display: flex;
+  }
+
+  .message.sent {
+    justify-content: flex-end;
+  }
+
+  .message.received {
+    justify-content: flex-start;
+  }
+
+  .message-bubble {
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 20px;
+    position: relative;
+  }
+
+  .message.sent .message-bubble {
+    background: var(--primary-color);
+    color: white;
+    border-bottom-right-radius: 5px;
+  }
+
+  .message.received .message-bubble {
+    background: white;
+    color: #333;
+    border-bottom-left-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .message-time {
+    font-size: 11px;
+    opacity: 0.7;
+    margin-top: 5px;
+  }
+
+  .chat-input {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 0 0 15px 15px;
+    border-top: 1px solid #eee;
+  }
+
+  .chat-input .form-control {
+    border-radius: 25px;
+    border: 1px solid #ddd;
+    padding: 10px 20px;
+  }
+
+  .chat-input .btn {
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    margin-left: 10px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="content-wrapper p-0">
+      <div class="chat-container">
+        <!-- Chat Header -->
+        <div class="chat-header">
+          {% if friend.avatar %}
+          <img
+            src="{{ friend.avatar.url }}"
+            alt="Avatar"
+            class="rounded-circle me-3"
+            style="width: 45px; height: 45px"
+          />
+          {% else %}
+          <div
+            class="bg-primary rounded-circle me-3 d-flex align-items-center justify-content-center text-white"
+            style="width: 45px; height: 45px"
+          >
+            <i class="fas fa-user"></i>
+          </div>
+          {% endif %}
+          <div>
+            <h6 class="mb-0">{{ friend.get_display_name }}</h6>
+            <small class="text-muted">{{ friend.status }}</small>
+          </div>
+          <div class="ms-auto">
+            <button class="btn btn-outline-primary btn-sm me-2">
+              <i class="fas fa-phone"></i>
+            </button>
+            <button class="btn btn-outline-primary btn-sm">
+              <i class="fas fa-video"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-messages" id="chatMessages">
+          {% for message in messages %}
+          <div
+            class="message {% if message.sender == user %}sent{% else %}received{% endif %}"
+          >
+            <div class="message-bubble">
+              <div>{{ message.content }}</div>
+              <div class="message-time">
+                {{ message.created_at|date:"H:i" }}
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <div class="text-center text-muted py-5">
+            <i class="fas fa-comments fa-3x mb-3"></i>
+            <h6>Chưa có tin nhắn nào</h6>
+            <p>Hãy bắt đầu cuộc trò chuyện!</p>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Chat Input -->
+        <div class="chat-input">
+          <form method="POST" class="d-flex align-items-center">
+            {% csrf_token %}
+            <input
+              type="text"
+              name="content"
+              class="form-control"
+              placeholder="Nhập tin nhắn..."
+              required
+            />
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Auto scroll to bottom of messages
+  function scrollToBottom() {
+    const chatMessages = document.getElementById("chatMessages");
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  // Scroll to bottom on page load
+  document.addEventListener("DOMContentLoaded", scrollToBottom);
+
+  // Auto-refresh messages every 3 seconds
+  setInterval(function () {
+    // Could implement real-time messaging here
+  }, 3000);
+</script>
+{% endblock %}

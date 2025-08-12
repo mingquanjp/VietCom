@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}VietCom - Kết nối người Việt{% endblock %}</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <!-- Custom CSS -->
+    <style>
+      :root {
+        --primary-color: #e74c3c;
+        --secondary-color: #3498db;
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --dark-color: #2c3e50;
+        --light-color: #ecf0f1;
+        --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+
+      body {
+        background: var(--gradient-bg);
+        min-height: 100vh;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      /* Navbar Styles */
+      .navbar-custom {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        padding: 0.5rem 0;
+      }
+
+      .navbar-brand {
+        font-weight: bold;
+        font-size: 1.5rem;
+        color: var(--primary-color) !important;
+      }
+
+      .nav-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        margin: 0 5px;
+        position: relative;
+      }
+
+      .nav-icon:hover {
+        background: var(--light-color);
+        transform: scale(1.1);
+      }
+
+      .nav-icon.active {
+        background: var(--primary-color);
+        color: white !important;
+      }
+
+      .avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        border: 2px solid var(--primary-color);
+      }
+
+      .notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: var(--danger-color);
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Main Content */
+      .main-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .content-wrapper {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 20px;
+        margin-top: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Dropdown Menu */
+      .dropdown-menu {
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        border-radius: 10px;
+      }
+
+      .dropdown-item:hover {
+        background: var(--light-color);
+      }
+
+      /* Search Bar */
+      .search-bar {
+        max-width: 400px;
+        position: relative;
+      }
+
+      .search-input {
+        border-radius: 25px;
+        border: 1px solid #ddd;
+        padding: 8px 40px 8px 15px;
+      }
+
+      .search-btn {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: none;
+        background: var(--primary-color);
+        color: white;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+      }
+
+      /* Mobile Responsive */
+      @media (max-width: 768px) {
+        .navbar-nav {
+          text-align: center;
+        }
+
+        .nav-icon {
+          margin: 5px;
+        }
+      }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
+      <div class="container-fluid">
+        <!-- Logo -->
+        <a class="navbar-brand" href="{% url 'nearby_users' %}"> 🇻🇳 VietCom </a>
+
+        <!-- Mobile toggle -->
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Search Bar (Desktop) -->
+        <div class="search-bar d-none d-lg-block">
+          <form method="GET" action="{% url 'search' %}">
+            <input
+              type="text"
+              name="q"
+              class="form-control search-input"
+              placeholder="Tìm kiếm bạn bè, sự kiện..."
+            />
+            <button type="submit" class="search-btn">
+              <i class="fas fa-search"></i>
+            </button>
+          </form>
+        </div>
+
+        <!-- Navigation Links -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto align-items-center">
+            <!-- Home/Find Friends -->
+            <li class="nav-item">
+              <a
+                class="nav-link nav-icon {% if request.resolver_match.url_name == 'nearby_users' %}active{% endif %}"
+                href="{% url 'nearby_users' %}"
+                title="Trang chủ - Tìm bạn bè"
+              >
+                <i class="fas fa-home"></i>
+              </a>
+            </li>
+
+            <!-- Wall/Timeline -->
+            <li class="nav-item">
+              <a
+                class="nav-link nav-icon {% if request.resolver_match.url_name == 'wall' %}active{% endif %}"
+                href="{% url 'wall' %}"
+                title="Bảng tin"
+              >
+                <i class="fas fa-newspaper"></i>
+              </a>
+            </li>
+
+            <!-- Chat -->
+            <li class="nav-item">
+              <a
+                class="nav-link nav-icon {% if 'chat' in request.resolver_match.url_name %}active{% endif %}"
+                href="{% url 'chat_list' %}"
+                title="Tin nhắn"
+              >
+                <i class="fas fa-comments"></i>
+                {% if unread_messages_count > 0 %}
+                <span class="notification-badge"
+                  >{{ unread_messages_count }}</span
+                >
+                {% endif %}
+              </a>
+            </li>
+
+            <!-- Events -->
+            <li class="nav-item">
+              <a class="nav-link nav-icon" href="#" title="Sự kiện">
+                <i class="fas fa-calendar-alt"></i>
+              </a>
+            </li>
+
+            <!-- Create Event -->
+            <li class="nav-item">
+              <a class="nav-link nav-icon" href="#" title="Tạo sự kiện">
+                <i class="fas fa-plus-circle"></i>
+              </a>
+            </li>
+
+            <!-- Notifications -->
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link nav-icon"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown"
+                title="Thông báo"
+              >
+                <i class="fas fa-bell"></i>
+                {% if notifications_count > 0 %}
+                <span class="notification-badge"
+                  >{{ notifications_count }}</span
+                >
+                {% endif %}
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><h6 class="dropdown-header">Thông báo</h6></li>
+                {% if notifications %} {% for notification in notifications %}
+                <li>
+                  <a class="dropdown-item" href="#"
+                    >{{ notification.message }}</a
+                  >
+                </li>
+                {% endfor %} {% else %}
+                <li>
+                  <span class="dropdown-item-text">Không có thông báo mới</span>
+                </li>
+                {% endif %}
+                <li><hr class="dropdown-divider" /></li>
+                <li><a class="dropdown-item" href="#">Xem tất cả</a></li>
+              </ul>
+            </li>
+
+            <!-- User Profile -->
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link"
+                href="#"
+                role="button"
+                data-bs-toggle="dropdown"
+              >
+                {% if user.avatar %}
+                <img src="{{ user.avatar.url }}" alt="Avatar" class="avatar" />
+                {% else %}
+                <div class="nav-icon">
+                  <i class="fas fa-user"></i>
+                </div>
+                {% endif %}
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                  <h6 class="dropdown-header">{{ user.get_display_name }}</h6>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="#">
+                    <i class="fas fa-user me-2"></i>Hồ sơ cá nhân
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="#">
+                    <i class="fas fa-cog me-2"></i>Cài đặt
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="#">
+                    <i class="fas fa-user-friends me-2"></i>Lời mời kết bạn
+                  </a>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                  <a class="dropdown-item" href="/users/logout/">
+                    <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-container" style="margin-top: 80px">
+      {% if messages %} {% for message in messages %}
+      <div
+        class="alert alert-{{ message.tags }} alert-dismissible fade show"
+        role="alert"
+      >
+        {{ message }}
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        ></button>
+      </div>
+      {% endfor %} {% endif %} {% block content %}{% endblock %}
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

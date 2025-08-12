@@ -1,0 +1,58 @@
+{% if nearby_users %}
+{% for user_data in nearby_users %}
+    <div class="user-card">
+        <div class="row align-items-center">
+            <div class="col-md-2 text-center">
+                <div class="position-relative d-inline-block">
+                    <img src="{{ user_data.user.avatar.url|default:'/static/default-avatar.png' }}" 
+                         alt="{{ user_data.user.full_name }}" class="user-avatar">
+                    {% if user_data.user.status == 'online' %}
+                        <div class="status-online"></div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <h5 class="mb-1">
+                    {{ user_data.user.full_name|default:user_data.user.username }}
+                    {% if user_data.user.gender == 'M' %}👨{% elif user_data.user.gender == 'F' %}👩{% else %}👤{% endif %}
+                </h5>
+                <p class="text-muted mb-2">
+                    📍 {{ user_data.user.hometown|default:"Unknown location" }}
+                </p>
+                {% if user_data.user.bio %}
+                    <p class="small text-secondary mb-0">💭 {{ user_data.user.bio|truncatechars:100 }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-2 text-center">
+                <span class="distance-badge">
+                    📏 {{ user_data.distance|floatformat:1 }}km
+                </span>
+                <div class="mt-2">
+                    <small class="text-muted">Level {{ user_data.user.level }}</small>
+                </div>
+            </div>
+            
+            <div class="col-md-2 text-center">
+                <button class="action-btn btn-friend" onclick="addFriend('{{ user_data.user.id }}')">
+                    <i class="fas fa-user-plus"></i> Add
+                </button>
+                <br>
+                <button class="action-btn btn-message" onclick="sendMessage('{{ user_data.user.id }}')">
+                    <i class="fas fa-comment"></i> Chat
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="no-users">
+        <div class="cute-icon">🔍</div>
+        <h4>No friends found nearby</h4>
+        <p class="text-muted">Try increasing your search radius or check your location settings!</p>
+        <button class="btn btn-primary" onclick="updateLocationAndRefresh()">
+            <i class="fas fa-location-arrow"></i> Update My Location
+        </button>
+    </div>
+{% endif %}

@@ -1,0 +1,327 @@
+{% extends 'base.html' %} {% block title %}Tham gia VietCom - Kết nối bạn bè
+🌟{% endblock %} {% block extra_css %}
+<style>
+  body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+  }
+
+  .register-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 20px 0;
+  }
+
+  .register-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+    transform: translateY(0);
+    transition: all 0.3s ease;
+  }
+
+  .register-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  }
+
+  .register-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    text-align: center;
+    position: relative;
+  }
+
+  .register-header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="80" r="1" fill="rgba(255,255,255,0.1)"/></svg>');
+  }
+
+  .register-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .register-header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
+    margin-bottom: 0;
+    position: relative;
+    z-index: 1;
+  }
+
+  .register-body {
+    padding: 40px;
+  }
+
+  .form-group {
+    margin-bottom: 25px;
+    position: relative;
+  }
+
+  .form-label {
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .form-control {
+    border: 2px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+  }
+
+  .form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    background: white;
+    transform: translateY(-2px);
+  }
+
+  .btn-register {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+    width: 100%;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .btn-register:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  }
+
+  .login-link {
+    text-align: center;
+    margin-top: 25px;
+    padding: 20px;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 12px;
+  }
+
+  .login-link a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .login-link a:hover {
+    color: #764ba2;
+    text-decoration: underline;
+  }
+
+  .error-message {
+    color: #e74c3c;
+    font-size: 0.9rem;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .field-icon {
+    color: #667eea;
+    font-size: 1.1rem;
+  }
+
+  .cute-animation {
+    animation: bounce 2s infinite;
+  }
+
+  @keyframes bounce {
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-10px);
+    }
+    60% {
+      transform: translateY(-5px);
+    }
+  }
+
+  .form-row {
+    display: flex;
+    gap: 20px;
+  }
+
+  .form-row .form-group {
+    flex: 1;
+  }
+
+  @media (max-width: 768px) {
+    .form-row {
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .register-header h1 {
+      font-size: 2rem;
+    }
+
+    .register-body {
+      padding: 30px 20px;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="register-container">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 col-md-10">
+        <div class="register-card">
+          <div class="register-header">
+            <h1 class="cute-animation">🌟 Chào mừng đến VietCom!</h1>
+            <p>Tạo tài khoản để kết nối với bạn bè gần bạn</p>
+          </div>
+
+          <div class="register-body">
+            <form method="post" novalidate>
+              {% csrf_token %}
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label
+                    for="{{ form.username.id_for_label }}"
+                    class="form-label"
+                  >
+                    <i class="fas fa-user field-icon"></i>
+                    Tên đăng nhập
+                  </label>
+                  {{ form.username }} {% if form.username.errors %}
+                  <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ form.username.errors|first }}
+                  </div>
+                  {% endif %}
+                </div>
+
+                <div class="form-group">
+                  <label for="{{ form.email.id_for_label }}" class="form-label">
+                    <i class="fas fa-envelope field-icon"></i>
+                    Email
+                  </label>
+                  {{ form.email }} {% if form.email.errors %}
+                  <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ form.email.errors|first }}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label
+                  for="{{ form.full_name.id_for_label }}"
+                  class="form-label"
+                >
+                  <i class="fas fa-id-card field-icon"></i>
+                  Họ và tên
+                </label>
+                {{ form.full_name }} {% if form.full_name.errors %}
+                <div class="error-message">
+                  <i class="fas fa-exclamation-circle"></i>
+                  {{ form.full_name.errors|first }}
+                </div>
+                {% endif %}
+              </div>
+
+              <div class="form-group">
+                <label for="{{ form.phone.id_for_label }}" class="form-label">
+                  <i class="fas fa-phone field-icon"></i>
+                  Số điện thoại
+                </label>
+                {{ form.phone }} {% if form.phone.errors %}
+                <div class="error-message">
+                  <i class="fas fa-exclamation-circle"></i>
+                  {{ form.phone.errors|first }}
+                </div>
+                {% endif %}
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label
+                    for="{{ form.password1.id_for_label }}"
+                    class="form-label"
+                  >
+                    <i class="fas fa-lock field-icon"></i>
+                    Mật khẩu
+                  </label>
+                  {{ form.password1 }} {% if form.password1.errors %}
+                  <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ form.password1.errors|first }}
+                  </div>
+                  {% endif %}
+                </div>
+
+                <div class="form-group">
+                  <label
+                    for="{{ form.password2.id_for_label }}"
+                    class="form-label"
+                  >
+                    <i class="fas fa-lock field-icon"></i>
+                    Xác nhận mật khẩu
+                  </label>
+                  {{ form.password2 }} {% if form.password2.errors %}
+                  <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ form.password2.errors|first }}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-register">
+                <i class="fas fa-user-plus"></i> Tạo tài khoản
+              </button>
+            </form>
+
+            <div class="login-link">
+              <p class="mb-0">
+                <i class="fas fa-heart text-danger"></i>
+                Đã có tài khoản?
+                <a href="{% url 'login' %}">
+                  <i class="fas fa-sign-in-alt"></i> Đăng nhập ngay
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
