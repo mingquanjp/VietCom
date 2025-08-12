@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0 text-danger">Xác nhận xóa bài đăng</h5>
+        </div>
+        <div class="card-body">
+            <p class="mb-4">Bạn có chắc chắn muốn xóa bài đăng này không? Hành động này không thể hoàn tác.</p>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">{{ post.author.get_display_name }}</h6>
+                    <p class="card-text">{{ post.content }}</p>
+                    {% if post.image %}
+                    <img src="{{ post.image.url }}" alt="Post image" class="img-fluid mb-2" style="max-height: 200px">
+                    {% endif %}
+                    <p class="card-text"><small class="text-muted">Đăng lúc {{ post.created_at }}</small></p>
+                </div>
+            </div>
+            
+            <form method="POST">
+                {% csrf_token %}
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'wall' %}" class="btn btn-secondary">Hủy</a>
+                    <button type="submit" class="btn btn-danger">Xác nhận xóa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

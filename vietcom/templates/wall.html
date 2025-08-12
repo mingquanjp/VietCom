@@ -352,6 +352,49 @@
   }
 
   /* Sidebar */
+  /* Post Menu */
+  .post-menu {
+    background: transparent;
+    border: none;
+    color: #64748b;
+    padding: 8px;
+    border-radius: 50%;
+    transition: var(--transition);
+  }
+
+  .post-menu:hover {
+    background: #f1f5f9;
+    color: #334155;
+  }
+
+  .post-header .dropdown {
+    margin-left: auto;
+  }
+
+  .post-header .dropdown-menu {
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(0,0,0,0.1);
+    padding: 8px;
+  }
+
+  .post-header .dropdown-item {
+    border-radius: 8px;
+    padding: 8px 16px;
+    color: #64748b;
+    transition: var(--transition);
+  }
+
+  .post-header .dropdown-item:hover {
+    background: #f8fafc;
+    color: #334155;
+  }
+
+  .post-header .dropdown-item.text-danger:hover {
+    background: #fef2f2;
+    color: #dc2626;
+  }
+
   .sidebar {
     padding-left: 20px;
   }
@@ -658,12 +701,12 @@
               </button>
               <ul class="dropdown-menu">
                 <li>
-                  <a class="dropdown-item" href="#">
+                  <a class="dropdown-item" href="{% url 'edit_post' post.id %}">
                     <i class="fas fa-edit me-2"></i>Chỉnh sửa
                   </a>
                 </li>
                 <li>
-                  <a class="dropdown-item text-danger" href="#">
+                  <a class="dropdown-item text-danger" href="{% url 'delete_post' post.id %}">
                     <i class="fas fa-trash me-2"></i>Xóa
                   </a>
                 </li>

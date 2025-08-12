@@ -83,7 +83,7 @@ class User(AbstractUser):
         default='offline',
         help_text="Current status"
     )
-    interests = models.JSONField(default=list, blank=True)
+    interests = models.TextField(default='[]', blank=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True)
     latitude = models.FloatField(null=True, blank=True, help_text="Latitude")
     longitude = models.FloatField(null=True, blank=True, help_text="Longitude")

@@ -146,6 +146,53 @@ def add_comment(request, post_id):
     return redirect('wall')
 
 @login_required
+def edit_post(request, post_id):
+    """Edit an existing post"""
+    post = get_object_or_404(Post, id=post_id)
+    
+    # Only allow editing own posts
+    if post.author != request.user:
+        messages.error(request, 'Bạn không có quyền chỉnh sửa bài đăng này!')
+        return redirect('wall')
+    
+    if request.method == "POST":
+        content = request.POST.get('content', '').strip()
+        image = request.FILES.get('image')
+        location = request.POST.get('location', '')
+        
+        if not content:
+            messages.error(request, 'Nội dung bài đăng không được để trống!')
+            return render(request, 'edit_post.html', {'post': post})
+        
+        post.content = content
+        if image:
+            post.image = image
+        post.location = location
+        post.save()
+        
+        messages.success(request, 'Đã cập nhật bài đăng thành công!')
+        return redirect('wall')
+        
+    return render(request, 'edit_post.html', {'post': post})
+
+@login_required
+def delete_post(request, post_id):
+    """Delete a post"""
+    post = get_object_or_404(Post, id=post_id)
+    
+    # Only allow deleting own posts
+    if post.author != request.user:
+        messages.error(request, 'Bạn không có quyền xóa bài đăng này!')
+        return redirect('wall')
+    
+    if request.method == "POST":
+        post.delete()
+        messages.success(request, 'Đã xóa bài đăng thành công!')
+        return redirect('wall')
+        
+    return render(request, 'delete_post_confirm.html', {'post': post})
+
+@login_required
 def chat_list(request):
     """List of chat conversations"""
     # Get friends for chat list
