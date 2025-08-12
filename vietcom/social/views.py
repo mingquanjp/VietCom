@@ -60,10 +60,17 @@ def wall(request):
         # Add is_read field if you have it
     ).count()
     
+    # Get received friend requests
+    received_requests = FriendRequest.objects.filter(
+        receiver=request.user,
+        status='pending'
+    ).select_related('sender')[:5]  # Limit to 5 most recent
+    
     context = {
         'posts': posts[:20],  # Limit to 20 posts initially
         'online_friends': online_friends,
         'upcoming_events': upcoming_events,
+        'received_requests': received_requests,
         'friends_count': friends_count,
         'posts_count': posts_count,
         'notifications_count': notifications_count,
@@ -258,3 +265,124 @@ def friend_requests(request):
 def all_notifications(request):
     """All notifications view"""
     return render(request, 'notifications.html')
+
+@login_required
+@require_http_methods(["POST"])
+def send_friend_request(request):
+    """Send friend request"""
+    try:
+        data = json.loads(request.body)
+        receiver_id = data.get('user_id')
+        
+        if not receiver_id:
+            return JsonResponse({'success': False, 'message': 'User ID is required'})
+        
+        receiver = get_object_or_404(User, id=receiver_id)
+        
+        # Check if it's the same user
+        if receiver == request.user:
+            return JsonResponse({'success': False, 'message': 'Cannot send friend request to yourself'})
+        
+        # Check if they are already friends
+        if are_friends(request.user, receiver):
+            return JsonResponse({'success': False, 'message': 'You are already friends'})
+        
+        # Check if request already exists
+        existing_request = FriendRequest.objects.filter(
+            Q(sender=request.user, receiver=receiver) |
+            Q(sender=receiver, receiver=request.user)
+        ).first()
+        
+        if existing_request:
+            if existing_request.sender == request.user:
+                return JsonResponse({'success': False, 'message': 'Friend request already sent'})
+            else:
+                return JsonResponse({'success': False, 'message': 'This user has already sent you a friend request'})
+        
+        # Create friend request
+        friend_request = FriendRequest.objects.create(
+            sender=request.user,
+            receiver=receiver
+        )
+        
+        return JsonResponse({
+            'success': True, 
+            'message': f'Friend request sent to {receiver.get_display_name()}'
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+@login_required
+@require_http_methods(["POST"])
+def respond_friend_request(request):
+    """Accept or reject friend request"""
+    try:
+        data = json.loads(request.body)
+        request_id = data.get('request_id')
+        action = data.get('action')  # 'accept' or 'reject'
+        
+        if not request_id or action not in ['accept', 'reject']:
+            return JsonResponse({'success': False, 'message': 'Invalid request'})
+        
+        friend_request = get_object_or_404(FriendRequest, id=request_id, receiver=request.user)
+        
+        if action == 'accept':
+            # Create friendship
+            Friendship.objects.create(
+                user1=friend_request.sender,
+                user2=friend_request.receiver
+            )
+            friend_request.status = 'accepted'
+            friend_request.save()
+            
+            message = f'You are now friends with {friend_request.sender.get_display_name()}'
+        else:
+            friend_request.status = 'rejected'
+            friend_request.save()
+            message = 'Friend request rejected'
+        
+        return JsonResponse({'success': True, 'message': message})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+@login_required
+@require_http_methods(["POST"])
+def cancel_friend_request(request):
+    """Cancel sent friend request"""
+    try:
+        data = json.loads(request.body)
+        request_id = data.get('request_id')
+        
+        if not request_id:
+            return JsonResponse({'success': False, 'message': 'Request ID is required'})
+        
+        friend_request = get_object_or_404(FriendRequest, id=request_id, sender=request.user)
+        friend_request.delete()
+        
+        return JsonResponse({'success': True, 'message': 'Friend request cancelled'})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+def are_friends(user1, user2):
+    """Check if two users are friends"""
+    return Friendship.objects.filter(
+        Q(user1=user1, user2=user2) | Q(user1=user2, user2=user1)
+    ).exists()
+
+def get_friend_request_status(sender, receiver):
+    """Get friend request status between two users"""
+    request = FriendRequest.objects.filter(
+        Q(sender=sender, receiver=receiver) | Q(sender=receiver, receiver=sender)
+    ).first()
+    
+    if not request:
+        return None
+    
+    return {
+        'id': request.id,
+        'status': request.status,
+        'is_sender': request.sender == sender
+    }
