@@ -20,4 +20,9 @@ urlpatterns = [
     path('settings/', views.settings, name='settings'),
     path('friend-requests/', views.friend_requests, name='friend_requests'),
     path('notifications/', views.all_notifications, name='all_notifications'),
+    
+    # Friend Request APIs
+    path('send-friend-request/', views.send_friend_request, name='send_friend_request'),
+    path('respond-friend-request/', views.respond_friend_request, name='respond_friend_request'),
+    path('cancel-friend-request/', views.cancel_friend_request, name='cancel_friend_request'),
 ]
