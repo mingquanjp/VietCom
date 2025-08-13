@@ -528,3 +528,149 @@ body {
   transform: translateY(0);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
+/* Level Control Panel */
+.level-control-panel {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 20px;
+  padding: 15px 25px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  border: 2px solid #e3f2fd;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 600px;
+  backdrop-filter: blur(10px);
+}
+
+.level-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.level-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  color: #BC0126; /* Đổi thành màu đỏ */
+}
+
+.level-icon {
+  font-size: 18px;
+}
+
+.search-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #BC0126; /* Đổi thành màu đỏ */
+}
+
+.search-icon {
+  font-size: 14px;
+}
+
+.level-progress {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.range-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #BC0126; /* Đổi thành màu đỏ */
+}
+
+.next-level {
+  font-size: 12px;
+  color: #BC0126; /* Đổi thành màu đỏ */
+}
+
+.level-up-hint {
+  font-size: 11px;
+  color: #BC0126; /* Đổi thành màu đỏ */
+  font-weight: 500;
+}
+
+.progress-bar {
+  height: 20px;
+  background: #e0f2f1;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid #b2dfdb;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4fc3f7 0%, #29b6f6 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.refresh-btn {
+  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+  color: white;
+  border: none;
+  border-radius: 15px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+}
+
+.refresh-btn:hover {
+  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(25, 118, 210, 0.4);
+}
+
+.refresh-btn:active {
+  transform: translateY(0);
+}
+
+.refresh-icon {
+  font-size: 16px;
+  animation: rotate 0.5s ease-in-out;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.refresh-btn:hover .refresh-icon {
+  animation: rotate 0.5s ease-in-out;
+}
