@@ -1,0 +1,361 @@
+{% extends 'base.html' %} {% load gamification_extras %} 
+{% block extra_css %}
+<style>
+  .mission-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: none;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mission-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .mission-card.completed {
+    border-left: 5px solid #27ae60;
+  }
+
+  .mission-card.claimed {
+    border-left: 5px solid #f39c12;
+    opacity: 0.8;
+  }
+
+  .mission-card.in-progress {
+    border-left: 5px solid #3498db;
+  }
+
+  .mission-icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    animation: bounce 2s infinite;
+  }
+
+  @keyframes bounce {
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-10px);
+    }
+    60% {
+      transform: translateY(-5px);
+    }
+  }
+
+  .mission-title {
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 10px;
+  }
+
+  .mission-description {
+    color: #7f8c8d;
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+  }
+
+  .progress-bar {
+    height: 8px;
+    border-radius: 5px;
+    overflow: hidden;
+    background: #ecf0f1;
+    margin-bottom: 10px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3498db, #2ecc71);
+    border-radius: 5px;
+    transition: width 0.3s ease;
+  }
+
+  .mission-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+  }
+
+  .points-reward {
+    background: linear-gradient(45deg, #f39c12, #e67e22);
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+  }
+
+  .claim-btn {
+    background: linear-gradient(45deg, #27ae60, #2ecc71);
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+  }
+
+  .claim-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+  }
+
+  .claim-btn:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .user-stats {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 30px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .level-badge {
+    background: linear-gradient(45deg, #8e44ad, #9b59b6);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 50px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 15px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(142, 68, 173, 0.7);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(142, 68, 173, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(142, 68, 173, 0);
+    }
+  }
+
+  .level-progress {
+    background: #ecf0f1;
+    height: 12px;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 15px 0;
+  }
+
+  .level-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #8e44ad, #9b59b6);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+  }
+
+  .filter-tabs {
+    margin-bottom: 25px;
+  }
+
+  .filter-tab {
+    background: rgba(255, 255, 255, 0.7);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    margin-right: 10px;
+    transition: all 0.3s ease;
+  }
+
+  .filter-tab.active {
+    background: linear-gradient(45deg, #3498db, #2980b9);
+    color: white;
+  }
+
+  .mission-frequency {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(52, 152, 219, 0.1);
+    color: #3498db;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: bold;
+  }
+
+  .mission-frequency.daily {
+    background: rgba(46, 204, 113, 0.1);
+    color: #27ae60;
+  }
+
+  .mission-frequency.weekly {
+    background: rgba(241, 196, 15, 0.1);
+    color: #f39c12;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    color: #7f8c8d;
+  }
+
+  .empty-state i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="main-container">
+  <!-- User Stats Section -->
+  <div class="user-stats">
+    <div class="row">
+      <div class="col-md-3">
+        <div class="level-badge">🏆 Level {{ user_stats.level }}</div>
+        <div class="level-progress">
+          <div
+            class="level-progress-fill"
+            style="width: {{ user_stats.progress_to_next_level }}%"
+          ></div>
+        </div>
+        <small
+          >{{ user_stats.total_points }}/{{ user_stats.points_for_next_level }}
+          điểm</small
+        >
+      </div>
+      <div class="col-md-3">
+        <h4>💎 {{ user_stats.total_points }}</h4>
+        <p class="mb-0">Total Points</p>
+      </div>
+      <div class="col-md-3">
+        <h4>✅ {{ user_stats.completed_missions }}</h4>
+        <p class="mb-0">Completed</p>
+      </div>
+      <div class="col-md-3">
+        <h4>📋 {{ user_stats.total_missions }}</h4>
+        <p class="mb-0">Total Missions</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Tabs -->
+  <div class="filter-tabs">
+    <button class="filter-tab active" onclick="filterMissions('all')">
+      🎯 All
+    </button>
+    <button class="filter-tab" onclick="filterMissions('in_progress')">
+      🔄 In Progress
+    </button>
+    <button class="filter-tab" onclick="filterMissions('completed')">
+      ✅ Completed
+    </button>
+    <button class="filter-tab" onclick="filterMissions('claimed')">
+      🎁 Claimed
+    </button>
+  </div>
+
+  <!-- Missions List -->
+  <div class="row" id="missions-container">
+    {% for mission in missions %} 
+    {% with user_mission=user_missions|get_item:mission.id %}
+    <div class="col-lg-6 mission-item" data-status="{{ user_mission.status }}">
+      <div class="mission-card {{ user_mission.status }}">
+        <!-- Frequency Badge -->
+        <div class="mission-frequency {{ mission.frequency }}">
+          {% if mission.frequency == 'once' %}Một lần {% elif mission.frequency
+          == 'daily' %}Hàng ngày {% elif mission.frequency == 'weekly' %}Hàng
+          tuần {% elif mission.frequency == 'monthly' %}Hàng tháng {% endif %}
+        </div>
+
+        <div class="mission-icon">{{ mission.icon }}</div>
+
+        <h5 class="mission-title">{{ mission.title }}</h5>
+        <p class="mission-description">{{ mission.description }}</p>
+
+        <!-- Progress Bar -->
+        <div class="progress-bar">
+          <div
+            class="progress-fill"
+            style="width: {{ user_mission.progress_percentage }}%"
+          ></div>
+        </div>
+
+        <!-- Mission Stats -->
+        <div class="mission-stats">
+          <span>
+            {{ user_mission.current_count }}/{{ mission.target_count }} 
+            {% if mission.target_count == 1 %} lần {% else %} lần {% endif %}
+          </span>
+
+          {% if user_mission.status == 'completed' %}
+          <form
+            method="post"
+            action="{% url 'gamification:claim_mission_reward' mission.id %}"
+            style="display: inline"
+          >
+            {% csrf_token %}
+            <button type="submit" class="claim-btn">
+              🎁 Nhận {{ mission.points_reward }} điểm
+            </button>
+          </form>
+          {% elif user_mission.status == 'claimed' %}
+          <span class="points-reward">
+            ✅ Đã nhận {{ mission.points_reward }} điểm
+          </span>
+          {% else %}
+          <span class="points-reward"> +{{ mission.points_reward }} điểm </span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endwith %} {% empty %}
+    <div class="col-12">
+      <div class="empty-state">
+        <i class="fas fa-trophy"></i>
+        <h3>No missions available</h3>
+        <p>Come back later to discover new missions!</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+  function filterMissions(status) {
+    // Update active tab
+    document.querySelectorAll(".filter-tab").forEach((tab) => {
+      tab.classList.remove("active");
+    });
+    event.target.classList.add("active");
+
+    // Filter missions
+    const missions = document.querySelectorAll(".mission-item");
+    missions.forEach((mission) => {
+      if (status === "all" || mission.dataset.status === status) {
+        mission.style.display = "block";
+      } else {
+        mission.style.display = "none";
+      }
+    });
+  }
+
+  // Auto refresh page every 30 seconds for real-time updates
+  setInterval(() => {
+    // Only refresh if user is actively viewing the page
+    if (!document.hidden) {
+      location.reload();
+    }
+  }, 30000);
+</script>
+{% endblock %}

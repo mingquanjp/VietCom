@@ -122,6 +122,9 @@ USE_TZ = True
 # Static files
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
 # Media files
 MEDIA_URL = '/media/'
@@ -132,7 +135,7 @@ AUTH_USER_MODEL = 'users.User'
 
 # Authentication settings
 LOGIN_URL = '/users/login/'
-LOGIN_REDIRECT_URL = '/users/nearby/'
+LOGIN_REDIRECT_URL = '/users/temp/'
 LOGOUT_REDIRECT_URL = '/users/login/'
 
 # Default primary key field type

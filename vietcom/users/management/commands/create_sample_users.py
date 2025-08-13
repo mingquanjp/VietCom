@@ -14,7 +14,7 @@ class Command(BaseCommand):
                 'full_name': 'Nguyen Van A',
                 'hometown': 'Ho Chi Minh City',
                 'gender': 'male',
-                'bio': 'Tôi là một developer yêu thích công nghệ',
+                'bio': 'I am a developer who loves technology',
                 'latitude': 10.7769,
                 'longitude': 106.7009,
                 'status': 'online'
@@ -25,7 +25,7 @@ class Command(BaseCommand):
                 'full_name': 'Tran Thi B',
                 'hometown': 'Ho Chi Minh City',
                 'gender': 'female',
-                'bio': 'Tôi thích du lịch và khám phá những điều mới',
+                'bio': 'I love traveling and exploring new things',
                 'latitude': 10.7829,
                 'longitude': 106.6933,
                 'status': 'online'
@@ -36,7 +36,7 @@ class Command(BaseCommand):
                 'full_name': 'Le Van C',
                 'hometown': 'Hanoi',
                 'gender': 'male',
-                'bio': 'Đam mê âm nhạc và thể thao',
+                'bio': 'Passionate about music and sports',
                 'latitude': 10.7756,
                 'longitude': 106.7019,
                 'status': 'away'
@@ -47,7 +47,7 @@ class Command(BaseCommand):
                 'full_name': 'Pham Thi D',
                 'hometown': 'Da Nang',
                 'gender': 'female',
-                'bio': 'Yêu thích nấu ăn và làm bánh',
+                'bio': 'Love cooking and baking',
                 'latitude': 10.7812,
                 'longitude': 106.6956,
                 'status': 'online'
@@ -58,7 +58,7 @@ class Command(BaseCommand):
                 'full_name': 'Hoang Van E',
                 'hometown': 'Ho Chi Minh City',
                 'gender': 'male',
-                'bio': 'Chuyên gia marketing digital',
+                'bio': 'Digital marketing expert',
                 'latitude': 10.7785,
                 'longitude': 106.7043,
                 'status': 'busy'

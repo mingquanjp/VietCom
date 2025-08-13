@@ -47,7 +47,7 @@
     position: relative;
   }
 
-  .message.sent .message-bubble {
+    .message.sent .message-bubble {
     background: var(--primary-color);
     color: white;
     border-bottom-right-radius: 5px;
@@ -129,6 +129,7 @@
           {% for message in messages %}
           <div
             class="message {% if message.sender == user %}sent{% else %}received{% endif %}"
+            data-message-id="{{ message.id }}"
           >
             <div class="message-bubble">
               <div>{{ message.content }}</div>
@@ -170,18 +171,132 @@
 
 {% block extra_js %}
 <script>
+  let lastMessageId = 0;
+  let isPolling = false;
+
   // Auto scroll to bottom of messages
   function scrollToBottom() {
     const chatMessages = document.getElementById("chatMessages");
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 
-  // Scroll to bottom on page load
-  document.addEventListener("DOMContentLoaded", scrollToBottom);
+  // Format message HTML
+  function formatMessage(message) {
+    const messageClass = message.is_sent ? 'sent' : 'received';
+    return `
+      <div class="message ${messageClass}" data-message-id="${message.id}">
+        <div class="message-bubble">
+          <div>${message.content}</div>
+          <div class="message-time">${message.created_at}</div>
+        </div>
+      </div>
+    `;
+  }
 
-  // Auto-refresh messages every 3 seconds
-  setInterval(function () {
-    // Could implement real-time messaging here
-  }, 3000);
+  // Get new messages via AJAX
+  function fetchNewMessages() {
+    if (isPolling) return; // Prevent multiple simultaneous requests
+    
+    isPolling = true;
+    const friendId = {{ friend.id|escapejs }};
+    const url = `/social/api/chat/${friendId}/messages/`;
+    
+    fetch(url + (lastMessageId ? `?last_message_id=${lastMessageId}` : ''))
+      .then(response => {
+        console.log('API Response status:', response.status);
+        return response.json();
+      })
+      .then(data => {
+        console.log('Fetched messages:', data);
+        if (data.messages && data.messages.length > 0) {
+          const chatMessages = document.getElementById("chatMessages");
+          
+          // Add new messages
+          data.messages.forEach(message => {
+            if (message.id > lastMessageId) {
+              chatMessages.insertAdjacentHTML('beforeend', formatMessage(message));
+              lastMessageId = Math.max(lastMessageId, message.id);
+              console.log('Added new message:', message.id);
+            }
+          });
+          
+          scrollToBottom();
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching messages:', error);
+      })
+      .finally(() => {
+        isPolling = false;
+      });
+  }
+
+  // Initialize last message ID from existing messages
+  function initializeLastMessageId() {
+    const messages = document.querySelectorAll('.message[data-message-id]');
+    if (messages.length > 0) {
+      // Get the highest message ID from existing messages
+      let maxId = 0;
+      messages.forEach(msg => {
+        const msgId = parseInt(msg.getAttribute('data-message-id'));
+        if (msgId > maxId) {
+          maxId = msgId;
+        }
+      });
+      lastMessageId = maxId;
+      console.log('Initialized lastMessageId:', lastMessageId);
+    }
+  }
+
+  // Handle form submission with AJAX
+  function handleFormSubmit(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    const content = formData.get('content').trim();
+    
+    if (!content) return;
+    
+    // Send message via AJAX
+    fetch(form.action || window.location.href, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+      }
+    })
+    .then(response => {
+      if (response.ok) {
+        // Clear the input
+        form.querySelector('input[name="content"]').value = '';
+        // Fetch new messages immediately
+        setTimeout(fetchNewMessages, 100);
+      }
+    })
+    .catch(error => {
+      console.error('Error sending message:', error);
+    });
+  }
+
+  // Initialize on page load
+  document.addEventListener("DOMContentLoaded", function() {
+    console.log('Chat page loaded, initializing...');
+    scrollToBottom();
+    initializeLastMessageId();
+    
+    // Set up form handler
+    const chatForm = document.querySelector('.chat-input form');
+    if (chatForm) {
+      chatForm.addEventListener('submit', handleFormSubmit);
+      console.log('Form handler attached');
+    }
+    
+    // Start polling for new messages every 3 seconds
+    console.log('Starting message polling...');
+    fetchNewMessages(); // Initial fetch
+    setInterval(fetchNewMessages, 3000);
+  });
 </script>
 {% endblock %}

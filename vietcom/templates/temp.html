@@ -1,0 +1,164 @@
+{% load static %} {% block extra_css %}
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap");
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: "Baloo 2", sans-serif;
+    color: white;
+    background: #bc0126;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .hero-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 40px 20px;
+    flex: 1;
+  }
+
+  .hero-content {
+    flex: 1;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .title {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  .subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 25px;
+  }
+
+  .start-btn {
+    display: inline-block;
+    padding: 14px 35px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    border-radius: 30px;
+    background: white;
+    color: #bc0126;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .start-btn:hover {
+    background: #f8f8f8;
+    transform: scale(1.05);
+    color: #bc0126;
+    text-decoration: none;
+  }
+
+  .hero-image {
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+    position: relative;
+    animation: slideInLeft 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, opacity;
+  }
+
+  .hero-image img {
+    display: block;
+    flex: 0 0 auto;
+    width: 60%;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    align-self: flex-end;
+    margin-bottom: 0;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  /* Hiệu ứng di chuyển nhẹ */
+  @keyframes float {
+    0% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+    100% {
+      transform: translateY(0px);
+    }
+  }
+
+  @keyframes slideInLeft {
+    0% {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .title {
+      font-size: 2.5rem;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+    }
+
+    .start-btn {
+      padding: 12px 25px;
+      font-size: 1rem;
+    }
+
+    .hero-image img {
+      width: 80%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .title {
+      font-size: 2rem;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+    }
+
+    .start-btn {
+      padding: 10px 20px;
+      font-size: 0.9rem;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="hero-section">
+  <div class="hero-content">
+    <h1 class="title">Let's go find friends</h1>
+    <p class="subtitle">Start Your Journey</p>
+    <a href="{% url 'nearby_users' %}" class="btn start-btn"
+      >Discover People Around You</a
+    >
+  </div>
+
+  <div class="hero-image">
+    <img src="{% static 'images/Rectangle26.png' %}" alt="Friends" />
+  </div>
+</div>
+{% endblock %}

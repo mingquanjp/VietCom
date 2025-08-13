@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}VietCom - Kết nối người Việt{% endblock %}</title>
+    <title>{% block title %}VietCom - Connect Vietnamese{% endblock %}</title>
 
     <!-- Bootstrap CSS -->
     <link
@@ -25,7 +25,7 @@
         --danger-color: #e74c3c;
         --dark-color: #2c3e50;
         --light-color: #ecf0f1;
-        --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --gradient-bg: #bc0b26;
       }
 
       body {
@@ -181,7 +181,7 @@
               type="text"
               name="q"
               class="form-control search-input"
-              placeholder="Tìm kiếm bạn bè, sự kiện..."
+              placeholder="Search friends, events..."
             />
             <button type="submit" class="search-btn">
               <i class="fas fa-search"></i>
@@ -197,7 +197,7 @@
               <a
                 class="nav-link nav-icon {% if request.resolver_match.url_name == 'nearby_users' %}active{% endif %}"
                 href="{% url 'nearby_users' %}"
-                title="Trang chủ - Tìm bạn bè"
+                title="Home - Find Friends"
               >
                 <i class="fas fa-home"></i>
               </a>
@@ -230,6 +230,17 @@
               </a>
             </li>
 
+            <!-- Missions -->
+            <li class="nav-item">
+              <a
+                class="nav-link nav-icon {% if 'mission' in request.resolver_match.url_name %}active{% endif %}"
+                href="{% url 'gamification:mission_list' %}"
+                title="Missions"
+              >
+                <i class="fas fa-trophy"></i>
+              </a>
+            </li>
+
             <!-- Events -->
             <li class="nav-item">
               <a class="nav-link nav-icon" href="#" title="Sự kiện">
@@ -251,7 +262,7 @@
                 href="#"
                 role="button"
                 data-bs-toggle="dropdown"
-                title="Thông báo"
+                title="Notifications"
               >
                 <i class="fas fa-bell"></i>
                 {% if notifications_count > 0 %}
@@ -261,7 +272,7 @@
                 {% endif %}
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
-                <li><h6 class="dropdown-header">Thông báo</h6></li>
+                <li><h6 class="dropdown-header">Notifications</h6></li>
                 {% if notifications %} {% for notification in notifications %}
                 <li>
                   <a class="dropdown-item" href="#"
@@ -270,7 +281,7 @@
                 </li>
                 {% endfor %} {% else %}
                 <li>
-                  <span class="dropdown-item-text">Không có thông báo mới</span>
+                  <span class="dropdown-item-text">No new notifications</span>
                 </li>
                 {% endif %}
                 <li><hr class="dropdown-divider" /></li>
@@ -299,24 +310,32 @@
                   <h6 class="dropdown-header">{{ user.get_display_name }}</h6>
                 </li>
                 <li>
-                  <a class="dropdown-item" href="#">
+                  <a class="dropdown-item" href="{% url 'profile_update' %}">
                     <i class="fas fa-user me-2"></i>Hồ sơ cá nhân
                   </a>
                 </li>
                 <li>
-                  <a class="dropdown-item" href="#">
-                    <i class="fas fa-cog me-2"></i>Cài đặt
+                  <a
+                    class="dropdown-item"
+                    href="{% url 'gamification:mission_list' %}"
+                  >
+                    <i class="fas fa-trophy me-2"></i>Missions
                   </a>
                 </li>
                 <li>
                   <a class="dropdown-item" href="#">
-                    <i class="fas fa-user-friends me-2"></i>Lời mời kết bạn
+                    <i class="fas fa-cog me-2"></i>Settings
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="#">
+                    <i class="fas fa-user-friends me-2"></i>Friend Requests
                   </a>
                 </li>
                 <li><hr class="dropdown-divider" /></li>
                 <li>
                   <a class="dropdown-item" href="/users/logout/">
-                    <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                    <i class="fas fa-sign-out-alt me-2"></i>Logout
                   </a>
                 </li>
               </ul>
@@ -328,7 +347,7 @@
 
     <!-- Main Content -->
     <div class="main-container" style="margin-top: 80px">
-      {% if messages %} {% for message in messages %}
+      {% comment %} {% if messages %} {% for message in messages %}
       <div
         class="alert alert-{{ message.tags }} alert-dismissible fade show"
         role="alert"
@@ -340,7 +359,7 @@
           data-bs-dismiss="alert"
         ></button>
       </div>
-      {% endfor %} {% endif %} {% block content %}{% endblock %}
+      {% endfor %} {% endif %} {% endcomment %} {% block content %}{% endblock %}
     </div>
 
     <!-- Bootstrap JS -->

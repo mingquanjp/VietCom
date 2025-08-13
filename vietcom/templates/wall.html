@@ -1,7 +1,8 @@
-{% extends 'base.html' %} Trang chủ - VietCom {% block extra_css %}
+{% extends 'base.html' %}  
+{% block extra_css %}
 <style>
   :root {
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --primary-gradient: #bc0b25;
     --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     --hover-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
     --border-radius: 20px;
@@ -379,46 +380,6 @@
     color: #667eea;
   }
 
-  /* Friend Requests */
-  .friend-request-item {
-    padding: 15px 0;
-    border-bottom: 1px solid #f1f5f9;
-    transition: all 0.3s ease;
-  }
-
-  .friend-request-item:last-child {
-    border-bottom: none;
-  }
-
-  .request-actions {
-    display: flex;
-    gap: 8px;
-  }
-
-  .request-actions .btn {
-    font-size: 0.85rem;
-    padding: 4px 12px;
-    border-radius: 6px;
-    border: none;
-    font-weight: 500;
-    transition: all 0.2s ease;
-  }
-
-  .request-actions .btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  }
-
-  @keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-
-  @keyframes slideOut {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(100%); opacity: 0; }
-  }
-
   /* Online Friends */
   .friend-item {
     display: flex;
@@ -583,7 +544,7 @@
                 data-action="photo"
               >
                 <i class="fas fa-image"></i>
-                <span>Ảnh</span>
+                <span>Image</span>
               </button>
               <button
                 type="button"
@@ -591,7 +552,7 @@
                 data-action="location"
               >
                 <i class="fas fa-map-marker-alt"></i>
-                <span>Vị trí</span>
+                <span>Location</span>
               </button>
               <button
                 type="button"
@@ -599,12 +560,12 @@
                 data-action="feeling"
               >
                 <i class="fas fa-smile"></i>
-                <span>Cảm xúc</span>
+                <span>Feeling</span>
               </button>
             </div>
 
             <button type="submit" class="post-btn">
-              <i class="fas fa-paper-plane me-2"></i>Đăng bài
+              <i class="fas fa-paper-plane me-2"></i>Post
             </button>
           </div>
 
@@ -659,12 +620,12 @@
               <ul class="dropdown-menu">
                 <li>
                   <a class="dropdown-item" href="#">
-                    <i class="fas fa-edit me-2"></i>Chỉnh sửa
+                    <i class="fas fa-edit me-2"></i>Edit
                   </a>
                 </li>
                 <li>
                   <a class="dropdown-item text-danger" href="#">
-                    <i class="fas fa-trash me-2"></i>Xóa
+                    <i class="fas fa-trash me-2"></i>Delete
                   </a>
                 </li>
               </ul>
@@ -697,13 +658,13 @@
               {% if post.likes_count > 0 %}
               <span>
                 <i class="fas fa-heart text-danger"></i>
-                {{ post.likes_count }} người thích
+                {{ post.likes_count }} likes
               </span>
               {% endif %}
             </div>
             <div>
               {% if post.comments_count > 0 %}
-              <span>{{ post.comments_count }} bình luận</span>
+              <span>{{ post.comments_count }} comments</span>
               {% endif %}
             </div>
           </div>
@@ -717,7 +678,7 @@
               data-post-id="{{ post.id }}"
             >
               <i class="fas fa-heart"></i>
-              <span>Thích</span>
+              <span>Like</span>
             </button>
             <button
               class="interaction-btn"
@@ -725,7 +686,7 @@
               data-post-id="{{ post.id }}"
             >
               <i class="fas fa-comment"></i>
-              <span>Bình luận</span>
+              <span>Comment</span>
             </button>
             <button
               class="interaction-btn"
@@ -733,7 +694,7 @@
               data-post-id="{{ post.id }}"
             >
               <i class="fas fa-share"></i>
-              <span>Chia sẻ</span>
+              <span>Share</span>
             </button>
           </div>
 
@@ -795,7 +756,7 @@
                 type="text"
                 name="content"
                 class="comment-input"
-                placeholder="Viết bình luận..."
+                placeholder="Write a comment..."
                 required
               />
               <button type="submit" class="comment-submit">
@@ -807,8 +768,8 @@
         {% endfor %} {% else %}
         <div class="no-posts">
           <i class="fas fa-newspaper"></i>
-          <h5>Chưa có bài đăng nào</h5>
-          <p>Hãy tạo bài đăng đầu tiên để chia sẻ với bạn bè!</p>
+          <h5>No posts yet</h5>
+          <p>Create your first post to share with friends!</p>
         </div>
         {% endif %}
       </div>
@@ -816,68 +777,18 @@
       <!-- Load More -->
       <div class="text-center mt-4">
         <button class="btn btn-outline-primary" data-action="load-more">
-          <i class="fas fa-plus me-2"></i>Xem thêm bài đăng
+          <i class="fas fa-plus me-2"></i>See more posts
         </button>
       </div>
     </div>
 
     <!-- Sidebar -->
     <div class="col-lg-4 sidebar">
-      <!-- Friend Requests -->
-      <div class="sidebar-widget">
-        <h6 class="widget-title">
-          <i class="fas fa-user-friends"></i>
-          Lời mời kết bạn
-          {% if received_requests %}
-            <span class="badge bg-danger ms-2">{{ received_requests|length }}</span>
-          {% endif %}
-        </h6>
-        <div class="friend-requests-list">
-          {% if received_requests %}
-            {% for request in received_requests %}
-            <div class="friend-request-item" id="request-{{ request.id }}">
-              <div class="d-flex align-items-center">
-                <div class="friend-avatar-container me-2">
-                  {% if request.sender.avatar %}
-                  <img src="{{ request.sender.avatar.url }}" alt="Avatar" class="friend-avatar" />
-                  {% else %}
-                  <div class="friend-avatar default-avatar">
-                    <i class="fas fa-user"></i>
-                  </div>
-                  {% endif %}
-                </div>
-                <div class="flex-grow-1">
-                  <div class="friend-name">{{ request.sender.get_display_name }}</div>
-                  <small class="text-muted">{{ request.created_at|timesince }} ago</small>
-                </div>
-              </div>
-              <div class="request-actions mt-2">
-                <button 
-                  class="btn btn-sm btn-success me-1" 
-                  onclick="respondToFriendRequest('{{ request.id }}', 'accept')"
-                >
-                  <i class="fas fa-check"></i> Đồng ý
-                </button>
-                <button 
-                  class="btn btn-sm btn-danger" 
-                  onclick="respondToFriendRequest('{{ request.id }}', 'reject')"
-                >
-                  <i class="fas fa-times"></i> Từ chối
-                </button>
-              </div>
-            </div>
-            {% endfor %}
-          {% else %}
-            <p class="text-muted small">Không có lời mời kết bạn nào</p>
-          {% endif %}
-        </div>
-      </div>
-
       <!-- Online Friends -->
       <div class="sidebar-widget">
         <h6 class="widget-title">
           <i class="fas fa-users"></i>
-          Bạn bè đang online
+          Friends Online
         </h6>
         <div class="friends-list">
           {% if online_friends %} {% for friend in online_friends %}
@@ -913,7 +824,7 @@
             </button>
           </div>
           {% endfor %} {% else %}
-          <p class="text-muted text-center">Không có bạn bè nào đang online</p>
+          <p class="text-muted text-center">No friends are online</p>
           {% endif %}
         </div>
       </div>
@@ -922,7 +833,7 @@
       <div class="sidebar-widget">
         <h6 class="widget-title">
           <i class="fas fa-chart-line"></i>
-          Thống kê của bạn
+          Your Dashboard
         </h6>
         <div class="stats-grid">
           <div
@@ -930,7 +841,7 @@
           >
             <div>
               <i class="fas fa-user-friends text-primary me-2"></i>
-              <span>Bạn bè</span>
+              <span>Friends</span>
             </div>
             <strong class="text-primary">{{ friends_count }}</strong>
           </div>
@@ -939,7 +850,7 @@
           >
             <div>
               <i class="fas fa-edit text-success me-2"></i>
-              <span>Bài đăng</span>
+              <span>Posts</span>
             </div>
             <strong class="text-success">{{ posts_count }}</strong>
           </div>
@@ -948,7 +859,7 @@
           >
             <div>
               <i class="fas fa-star text-warning me-2"></i>
-              <span>Cấp độ</span>
+              <span>Level</span>
             </div>
             <strong class="text-warning">{{ user.level }}</strong>
           </div>
@@ -957,7 +868,7 @@
           >
             <div>
               <i class="fas fa-trophy text-info me-2"></i>
-              <span>Điểm</span>
+              <span>Points</span>
             </div>
             <strong class="text-info">{{ user.points|default:0 }}</strong>
           </div>
@@ -1165,7 +1076,7 @@
     if (statsSection) {
       const likesSpan = statsSection.querySelector("span");
       if (likesSpan && likesCount > 0) {
-        likesSpan.innerHTML = `<i class="fas fa-heart text-danger"></i> ${likesCount} người thích`;
+        likesSpan.innerHTML = `<i class="fas fa-heart text-danger"></i> ${likesCount} likes`;
       } else if (likesCount === 0) {
         statsSection.style.display = "none";
       }
@@ -1186,83 +1097,6 @@
       }
     }
     return cookieValue;
-  }
-
-  // Friend Request Functions
-  function respondToFriendRequest(requestId, action) {
-    const requestElement = document.getElementById(`request-${requestId}`);
-    const actionText = action === 'accept' ? 'Đồng ý' : 'Từ chối';
-    
-    if (!confirm(`${actionText} lời mời kết bạn này?`)) return;
-    
-    fetch('/social/respond-friend-request/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCookie('csrftoken')
-      },
-      body: JSON.stringify({ 
-        request_id: requestId, 
-        action: action 
-      })
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        // Remove the request from UI
-        requestElement.style.opacity = '0.5';
-        requestElement.innerHTML = `
-          <div class="text-center text-success">
-            <i class="fas fa-check"></i> ${data.message}
-          </div>
-        `;
-        
-        // Hide after 2 seconds
-        setTimeout(() => {
-          requestElement.style.display = 'none';
-        }, 2000);
-        
-        // Show notification
-        showNotification(data.message, 'success');
-      } else {
-        showNotification(data.message, 'error');
-      }
-    })
-    .catch(error => {
-      showNotification('Error processing friend request', 'error');
-    });
-  }
-  
-  function showNotification(message, type) {
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} notification-popup`;
-    notification.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 9999;
-      min-width: 300px;
-      animation: slideIn 0.3s ease-out;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      border-radius: 8px;
-    `;
-    notification.innerHTML = `
-      <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-      ${message}
-    `;
-    
-    document.body.appendChild(notification);
-    
-    // Remove after 3 seconds
-    setTimeout(() => {
-      notification.style.animation = 'slideOut 0.3s ease-in';
-      setTimeout(() => {
-        if (notification.parentNode) {
-          document.body.removeChild(notification);
-        }
-      }, 300);
-    }, 3000);
   }
 
   // Auto-refresh (optional)

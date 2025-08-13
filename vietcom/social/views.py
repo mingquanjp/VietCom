@@ -60,17 +60,10 @@ def wall(request):
         # Add is_read field if you have it
     ).count()
     
-    # Get received friend requests
-    received_requests = FriendRequest.objects.filter(
-        receiver=request.user,
-        status='pending'
-    ).select_related('sender')[:5]  # Limit to 5 most recent
-    
     context = {
         'posts': posts[:20],  # Limit to 20 posts initially
         'online_friends': online_friends,
         'upcoming_events': upcoming_events,
-        'received_requests': received_requests,
         'friends_count': friends_count,
         'posts_count': posts_count,
         'notifications_count': notifications_count,
@@ -99,7 +92,13 @@ def create_post(request):
         location=location
     )
     
-    messages.success(request, 'Đã đăng bài thành công!')
+    # Track mission progress
+    try:
+        from gamification.views import track_post_created
+        track_post_created(request.user)
+    except ImportError:
+        pass
+    
     return redirect('wall')
 
 @login_required
@@ -118,6 +117,12 @@ def toggle_like(request, post_id):
         liked = False
     else:
         liked = True
+        # Track mission progress
+        try:
+            from gamification.views import track_post_liked
+            track_post_liked(request.user)
+        except ImportError:
+            pass
     
     return JsonResponse({
         'success': True,
@@ -142,7 +147,13 @@ def add_comment(request, post_id):
         content=content
     )
     
-    messages.success(request, 'Đã thêm bình luận!')
+    # Track mission progress
+    try:
+        from gamification.views import track_post_commented
+        track_post_commented(request.user)
+    except ImportError:
+        pass
+    
     return redirect('wall')
 
 @login_required
@@ -181,12 +192,33 @@ def chat_detail(request, friend_id):
     if request.method == 'POST':
         content = request.POST.get('content', '').strip()
         if content:
-            Message.objects.create(
+            message = Message.objects.create(
                 sender=request.user,
                 receiver=friend,
                 content=content
             )
-            messages.success(request, 'Đã gửi tin nhắn!')
+            
+            # Track mission progress
+            try:
+                from gamification.views import track_message_sent
+                track_message_sent(request.user)
+            except ImportError:
+                pass
+            
+            # If it's an AJAX request, return JSON response
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': {
+                        'id': message.id,
+                        'sender_id': message.sender.id,
+                        'sender_name': message.sender.get_display_name(),
+                        'content': message.content,
+                        'created_at': message.created_at.strftime('%H:%M'),
+                        'is_sent': True
+                    }
+                })
+                
             return redirect('chat_detail', friend_id=friend_id)
     
     # Get messages between users
@@ -201,6 +233,53 @@ def chat_detail(request, friend_id):
     }
     
     return render(request, 'chat_detail.html', context)
+
+@login_required
+def get_messages_api(request, friend_id):
+    """API endpoint to get messages between current user and friend"""
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    friend = get_object_or_404(User, id=friend_id)
+    
+    # Check if they are friends
+    is_friend = Friendship.objects.filter(
+        Q(user1=request.user, user2=friend) |
+        Q(user1=friend, user2=request.user)
+    ).exists()
+    
+    if not is_friend:
+        return JsonResponse({'error': 'Not friends'}, status=403)
+    
+    # Get messages since last_message_id if provided
+    last_message_id = request.GET.get('last_message_id', 0)
+    
+    messages_query = Message.objects.filter(
+        Q(sender=request.user, receiver=friend) |
+        Q(sender=friend, receiver=request.user)
+    )
+    
+    if last_message_id:
+        messages_query = messages_query.filter(id__gt=last_message_id)
+    
+    messages_list = messages_query.order_by('created_at')
+    
+    # Convert messages to JSON format
+    messages_data = []
+    for message in messages_list:
+        messages_data.append({
+            'id': message.id,
+            'sender_id': message.sender.id,
+            'sender_name': message.sender.get_display_name(),
+            'content': message.content,
+            'created_at': message.created_at.strftime('%H:%M'),
+            'is_sent': message.sender == request.user
+        })
+    
+    return JsonResponse({
+        'messages': messages_data,
+        'friend_name': friend.get_display_name()
+    })
 
 @login_required
 def search(request):
@@ -336,6 +415,14 @@ def respond_friend_request(request):
             friend_request.status = 'accepted'
             friend_request.save()
             
+            # Track mission progress for both users
+            try:
+                from gamification.views import track_friend_added
+                track_friend_added(friend_request.sender)
+                track_friend_added(friend_request.receiver)
+            except ImportError:
+                pass
+            
             message = f'You are now friends with {friend_request.sender.get_display_name()}'
         else:
             friend_request.status = 'rejected'
@@ -386,3 +473,48 @@ def get_friend_request_status(sender, receiver):
         'status': request.status,
         'is_sender': request.sender == sender
     }
+
+@login_required
+def edit_post(request, post_id):
+    """Edit an existing post"""
+    post = get_object_or_404(Post, id=post_id)
+
+    # Only allow editing own posts
+    if post.author != request.user:
+        messages.error(request, 'Bạn không có quyền chỉnh sửa bài đăng này!')
+        return redirect('wall')
+
+    if request.method == "POST":
+        content = request.POST.get('content', '').strip()
+        image = request.FILES.get('image')
+        location = request.POST.get('location', '')
+
+        if not content:
+            messages.error(request, 'Nội dung bài đăng không được để trống!')
+            return render(request, 'edit_post.html', {'post': post})
+
+        post.content = content
+        if image:
+            post.image = image
+        post.location = location
+        post.save()
+
+        return redirect('wall')
+
+    return render(request, 'edit_post.html', {'post': post})
+
+@login_required
+def delete_post(request, post_id):
+    """Delete a post"""
+    post = get_object_or_404(Post, id=post_id)
+
+    # Only allow deleting own posts
+    if post.author != request.user:
+        messages.error(request, 'Bạn không có quyền xóa bài đăng này!')
+        return redirect('wall')
+
+    if request.method == "POST":
+        post.delete()
+        return redirect('wall')
+
+    return render(request, 'delete_post_confirm.html', {'post': post})

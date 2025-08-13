@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <style>
       body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: #BC0B26;
         min-height: 100vh;
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
       }
@@ -456,17 +456,17 @@
 
     const nearbyUsers = JSON.parse('{{ map_users_json|escapejs }}');
     const currentUser = JSON.parse('{{ current_user_json|escapejs }}');
-    let map = null; // Biến để lưu đối tượng bản đồ
-    let searchRadiusCircle = null; // Biến để lưu vòng tròn bán kính tìm kiếm
+    let map = null; // Variable to store map object
+    let searchRadiusCircle = null; // Variable to store search radius circle
 
     function initializeMap() {
-        // Kiểm tra nếu người dùng hiện tại có tọa độ
+        // Check if current user has coordinates
         if (!currentUser.latitude || !currentUser.longitude) {
-            document.getElementById('map').innerHTML = '<div class="p-4 text-center text-muted">Vui lòng cập nhật vị trí của bạn để xem bản đồ.</div>';
+            document.getElementById('map').innerHTML = '<div class="p-4 text-center text-muted">Please update your location to view the map.</div>';
             return;
         }
 
-        // Khởi tạo map và đặt view vào vị trí của người dùng hiện tại
+        // Initialize map and set view to current user position
         map = L.map('map').setView([currentUser.latitude, currentUser.longitude], 13);
 
         // Thêm lớp tile layer từ OpenStreetMap
