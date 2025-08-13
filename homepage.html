@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Social Network Homepage</title>
+  <link rel="stylesheet" href="homepage-styles.css">
+</head>
+<body>
+
+  <!-- Hidden checkboxes for panel state -->
+  <input type="checkbox" id="mission-toggle" class="panel-toggle">
+  <input type="checkbox" id="event-toggle" class="panel-toggle">
+  <input type="checkbox" id="achievement-toggle" class="panel-toggle">
+  <input type="checkbox" id="notification-toggle" class="panel-toggle">
+
+
+    <!-- User Avatars -->
+    <label for="notification-toggle" class="notification-badge" title="Nearby Users">📢</label>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <!-- Profile section at top -->
+    <div class="profile-section">
+  <div class="profile-avatar" id="profile-btn"></div>
+  <div class="profile-dropdown" id="profile-dropdown">
+    <a href="#" class="dropdown-item" id="view-profile">View Profile</a>
+    <a href="#" class="dropdown-item" id="logout">Log Out</a>
+  </div>
+</div>
+    
+    <!-- Navigation buttons pushed down -->
+    <div class="nav-buttons">
+      <button class="sidebar-btn" id="home-btn" title="Home">
+  <span class="icon-home"></span>
+</button>
+<button class="sidebar-btn" id="social-btn" title="Social Network">
+  <span class="icon-social"></span>
+  </button>
+<button class="sidebar-btn" id="chat-btn" title="Message">
+  <span class="icon-message"></span>
+</button>
+      <label for="mission-toggle" class="sidebar-btn" title="Mission">
+        <span class="icon-mission"></span>
+      </label>
+      <label for="event-toggle" class="sidebar-btn" title="Event">
+        <span class="icon-event"></span>
+      </label>
+      <label for="achievement-toggle" class="sidebar-btn" title="Achievement">
+        <span class="icon-achievement"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Notification Panel -->
+  <div class="notification-panel">
+    <div class="notification-header">
+      <h3>People Nearby</h3>
+      <label for="notification-toggle" class="close-notification">×</label>
+    </div>
+    <div class="notification-content">
+      <div class="nearby-user">
+        <div class="user-info">
+          <div class="user-pic">👧</div>
+          <div class="user-details">
+            <h4>Minh Anh</h4>
+            <p>📍 500m away • Online</p>
+            <span class="user-interests">🎵 Music • 🍜 Food</span>
+          </div>
+        </div>
+<button class="btn-connect" onclick="window.location.href='chat.html'">Connect</button>
+      </div>
+      
+      <div class="nearby-user">
+        <div class="user-info">
+          <div class="user-pic">👦</div>
+          <div class="user-details">
+            <h4>Duc Nam</h4>
+            <p>📍 1.2km away • Active 5 min ago</p>
+            <span class="user-interests">⚽ Sports • 💻 Tech</span>
+          </div>
+        </div>
+<button class="btn-connect" onclick="window.location.href='chat.html'">Connect</button>
+      </div>
+      
+      <div class="nearby-user">
+        <div class="user-info">
+          <div class="user-pic">👩</div>
+          <div class="user-details">
+            <h4>Thu Ha</h4>
+            <p>📍 2.1km away • Online</p>
+            <span class="user-interests">📚 Books • ☕ Coffee</span>
+          </div>
+        </div>
+<button class="btn-connect" onclick="window.location.href='chat.html'">Connect</button>
+      </div>
+      
+      <div class="nearby-user">
+        <div class="user-info">
+          <div class="user-pic">🧑</div>
+          <div class="user-details">
+            <h4>Quang Minh</h4>
+            <p>📍 3.5km away • Active 20 min ago</p>
+            <span class="user-interests">🎮 Gaming • 🎬 Movies</span>
+          </div>
+        </div>
+<button class="btn-connect" onclick="window.location.href='chat.html'">Connect</button>
+      </div>
+      
+      <div class="nearby-user">
+        <div class="user-info">
+          <div class="user-pic">👱‍♀️</div>
+          <div class="user-details">
+            <h4>Linh Chi</h4>
+            <p>📍 4.2km away • Online</p>
+            <span class="user-interests">🏃‍♀️ Fitness • 🌱 Nature</span>
+          </div>
+        </div>
+<button class="btn-connect" onclick="window.location.href='chat.html'">Connect</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Panels -->
+  <div class="panels">
+
+    <!-- Mission Panel -->
+    <div class="content-panel mission-panel">
+      <div class="panel-header">Mission</div>
+      <div class="panel-content">
+        <div class="event-card">
+          <h3>Daily Check-in</h3>
+          <p>Start your day by checking in and earning points for consistent engagement.</p>
+<button class="btn-connect" onclick="window.location.href='mission.html'">See more</button>
+        </div>
+        <div class="event-card">
+          <h3>Help a Newcomer</h3>
+          <p>Guide someone new to the community and earn mentor badges.</p>
+<button class="btn-connect" onclick="window.location.href='mission.html'">See more</button>
+        </div>
+        <div class="event-card">
+          <h3>Share Your Story</h3>
+          <p>Tell your journey and inspire others in the community.</p>
+<button class="btn-connect" onclick="window.location.href='mission.html'">See more</button>
+        </div>
+        <div class="event-card">
+          <h3>Local Explorer</h3>
+          <p>Discover and review local Vietnamese businesses and services.</p>
+<button class="btn-connect" onclick="window.location.href='mission.html'">See more</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Event Panel -->
+    <div class="content-panel event-panel">
+      <div class="panel-header">Event</div>
+      <div class="panel-content">
+        <div class="event-card">
+          <h3>Meet & Greet</h3>
+          <p>Meet, mingle, and expand your network in the Vietnamese community in Japan.</p>
+<button class="btn-connect" onclick="window.location.href='event.html'">See more</button>
+        </div>
+        <div class="event-card">
+          <h3>Career Workshop</h3>
+          <p>Learn job-hunting skills and explore career opportunities in Japan.</p>
+<button class="btn-connect" onclick="window.location.href='event.html'">See more</button>
+        </div>
+        <div class="event-card">
+          <h3>Culture Day</h3>
+          <p>Experience Vietnamese culture through food, games, and music.</p>
+<button class="btn-connect" onclick="window.location.href='event.html'">See more</button>
+        </div>
+        <div class="event-card">
+          <h3>Language Exchange</h3>
+          <p>Practice Japanese and Vietnamese with native speakers in a friendly environment.</p>
+<button class="btn-connect" onclick="window.location.href='event.html'">See more</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Achievement Panel -->
+    <div class="content-panel achievement-panel">
+      <div class="panel-header">Achievement List</div>
+      <div class="panel-content">
+        <div class="event-card">
+          <h3>Community Builder</h3>
+          <p>Earned for helping 10 new members get started in the community.</p>
+<button class="btn-connect" onclick="window.location.href='achievement.html'">View Badge</button>
+        </div>
+        <div class="event-card">
+          <h3>Event Organizer</h3>
+          <p>Successfully organized your first community event with 20+ attendees.</p>
+<button class="btn-connect" onclick="window.location.href='achievement.html'">View Badge</button>
+        </div>
+        <div class="event-card">
+          <h3>Cultural Ambassador</h3>
+          <p>Shared Vietnamese culture and traditions with the broader community.</p>
+<button class="btn-connect" onclick="window.location.href='achievement.html'">View Badge</button>
+        </div>
+        <div class="event-card">
+          <h3>Mentor of the Month</h3>
+          <p>Recognized for outstanding support and guidance to community members.</p>
+<button class="btn-connect" onclick="window.location.href='achievement.html'">View Badge</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+document.addEventListener('DOMContentLoaded', function() {
+  const toggles = document.querySelectorAll('.panel-toggle');
+  const buttons = document.querySelectorAll('label.sidebar-btn');
+  const homeBtn = document.getElementById('home-btn');
+  const socialBtn = document.getElementById('social-btn');
+  const chatBtn = document.getElementById('chat-btn');
+
+  // Home button - reload page
+  homeBtn.addEventListener('click', function() {
+    window.location.reload();
+  });
+  
+  // Social button - navigate to social page
+  socialBtn.addEventListener('click', function() {
+    window.location.href = 'social.html'; // Thay bằng URL trang social của bạn
+  });
+  chatBtn.addEventListener('click', function() {
+    window.location.href = 'message.html'; // Thay bằng URL trang social của bạn
+  });
+  // Handle panel toggles for other buttons
+  toggles.forEach((toggle, index) => {
+    toggle.addEventListener('change', function() {
+      if (this.checked) {
+        toggles.forEach((otherToggle, otherIndex) => {
+          if (otherIndex !== index) {
+            otherToggle.checked = false;
+            if (buttons[otherIndex]) {
+              buttons[otherIndex].classList.remove('active');
+            }
+          }
+        });
+        if (buttons[index]) {
+          buttons[index].classList.add('active');
+        }
+      } else {
+        if (buttons[index]) {
+          buttons[index].classList.remove('active');
+        }
+      }
+    });
+  });
+  // Profile dropdown functionality
+const profileBtn = document.getElementById('profile-btn');
+const profileDropdown = document.getElementById('profile-dropdown');
+const viewProfileBtn = document.getElementById('view-profile');
+const logoutBtn = document.getElementById('logout');
+
+profileBtn.addEventListener('click', function(e) {
+  e.stopPropagation();
+  profileDropdown.classList.toggle('show');
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+  if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+    profileDropdown.classList.remove('show');
+  }
+});
+
+// Handle dropdown actions
+viewProfileBtn.addEventListener('click', function(e) {
+  e.preventDefault();
+  // Thêm code chuyển đến trang profile
+  window.location.href = 'profile.html';
+  profileDropdown.classList.remove('show');
+});
+
+logoutBtn.addEventListener('click', function(e) {
+  e.preventDefault();
+  // Thêm code xử lý logout
+  if (confirm('Bạn có chắc muốn đăng xuất?')) {
+    window.location.href = 'login.html';
+  }
+  profileDropdown.classList.remove('show');
+});
+});
+</script>
+
+</body>
+</html>

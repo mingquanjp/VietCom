@@ -1,0 +1,530 @@
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Baloo 2', Arial, sans-serif !important;
+}
+
+body {
+  background: #f5f5f5;
+  overflow: hidden;
+}
+
+/* Map Background */
+.map-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  overflow: hidden;
+}
+
+.map-lines {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0.3;
+}
+
+.line {
+  position: absolute;
+  background: #64b5f6;
+  height: 2px;
+  border-radius: 1px;
+}
+
+.line1 { top: 20%; left: 10%; width: 60%; transform: rotate(15deg); }
+.line2 { top: 40%; left: 20%; width: 70%; transform: rotate(-10deg); }
+.line3 { top: 60%; left: 5%; width: 80%; transform: rotate(25deg); }
+.line4 { top: 80%; right: 10%; width: 50%; transform: rotate(-20deg); }
+
+/* User Avatars on Map */
+.notification-badge { 
+  position: absolute;
+  bottom: 60px;
+  right: 20px;
+  background: #c62828;
+  color: white;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 4px 12px rgba(198, 40, 40, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.notification-badge:hover {
+  background: #a21820;
+  transform: scale(1.05);
+}
+
+/* Sidebar */
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 80px;
+  height: 100vh;
+  background: #c62828;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1000;
+  box-shadow: 4px 0 12px rgba(0,0,0,0.1);
+}
+
+/* Profile Section */
+.profile-section {
+  padding: 20px 0 15px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+  margin-bottom: 30px;
+}
+
+.profile-avatar {
+  width: 50px;
+  height: 50px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.profile-avatar:hover {
+  background: rgba(255,255,255,0.3);
+  transform: scale(1.05);
+}
+
+/* Navigation Buttons Container */
+.nav-buttons {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 25px;
+}
+
+.sidebar-btn {
+  width: 50px;
+  height: 50px;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.sidebar-btn:hover {
+  background: rgba(255,255,255,0.2);
+  transform: translateX(5px);
+}
+
+.sidebar-btn.active {
+  background: rgba(255,255,255,0.3);
+  transform: translateX(5px);
+}
+
+/* Content Panel */
+.content-panel {
+  position: fixed;
+  left: 80px;
+  top: 0;
+  width: 400px;
+  height: 100vh;
+  background: white;
+  box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  z-index: 999;
+  overflow: hidden;
+}
+
+.content-panel.active {
+  transform: translateX(0);
+}
+
+.panel-header {
+  background: #c62828;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.panel-content {
+  height: calc(100vh - 70px);
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* Event Cards */
+.event-card {
+  background: #fce4ec;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+}
+
+.event-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.event-card h3 {
+  color: #1565c0;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.event-card p {
+  color: #424242;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.see-more-btn {
+  background: #1565c0;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.see-more-btn:hover {
+  background: #0d47a1;
+}
+
+/* Custom Scrollbar */
+.panel-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+  background: #c62828;
+  border-radius: 3px;
+}
+
+/* Hidden checkboxes for state management */
+.panel-toggle {
+  display: none;
+}
+/* Panels */
+#mission-toggle:checked ~ .panels .mission-panel,
+#event-toggle:checked ~ .panels .event-panel,
+#achievement-toggle:checked ~ .panels .achievement-panel {
+  transform: translateX(0);
+}
+
+#notification-toggle:checked ~ .notification-panel {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Notification Panel */
+.notification-panel {
+  position: fixed;
+  right: 20px;
+  top: 20px;
+  width: 350px;
+  max-height: 80vh;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  transform: translateX(100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: 1001;
+  overflow: hidden;
+}
+
+.notification-header {
+  background: #c62828;
+  color: white;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notification-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.close-notification {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s ease;
+}
+
+.close-notification:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.notification-content {
+  max-height: calc(80vh - 80px);
+  overflow-y: auto;
+  padding: 10px;
+}
+
+/* Nearby User Cards */
+.nearby-user {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+  margin-bottom: 8px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  transition: background 0.2s ease;
+}
+
+.nearby-user:hover {
+  background: #e9ecef;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.user-pic {
+  width: 45px;
+  height: 45px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin-right: 12px;
+  border: 2px solid #e9ecef;
+}
+
+.user-details h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.user-details p {
+  margin: 4px 0;
+  font-size: 12px;
+  color: #666;
+}
+
+.user-interests {
+  font-size: 11px;
+  color: #888;
+  display: block;
+  margin-top: 2px;
+}
+
+.connect-btn {
+  background: #1565c0;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.connect-btn:hover {
+  background: #0d47a1;
+}
+
+/* Custom Scrollbar for notification */
+.notification-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.notification-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.notification-content::-webkit-scrollbar-thumb {
+  background: #c62828;
+  border-radius: 2px;
+}
+
+/* Icon styles */
+
+.icon-home {
+  display: block;
+  width: 64px;
+  height: 64px;
+  background-image: url('Media/Home.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.icon-message {
+  display: block;
+  width: 64px;
+  height: 64px;
+  background-image: url('Media/Message.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.icon-social {
+  display: block;
+  width: 64px;
+  height: 64px;
+  background-image: url('Media/Social.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.icon-mission {
+  display: block;
+  width: 64px;
+  height: 64px;
+  background-image: url('Media/Mission%20Button.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.icon-event {
+  display: block;
+  width: 64px;
+  height: 64px;
+  background-image: url('Media/Event%20button.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.icon-achievement {
+  display: block;
+  width: 64px;
+  height: 64px;
+  background-image: url('Media/Achievement%20Button.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+/* Profile Dropdown */
+.profile-dropdown {
+  position: absolute;
+  top: 70px;
+  left: 90px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  min-width: 160px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  z-index: 1002;
+}
+
+.profile-dropdown.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  display: block;
+  padding: 12px 16px;
+  color: #333;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.2s ease;
+  border-radius: 8px;
+  margin: 4px;
+}
+
+.dropdown-item:hover {
+  background: #f5f5f5;
+  color: #c62828;
+}
+
+.dropdown-item:first-child {
+  margin-top: 8px;
+}
+
+.dropdown-item:last-child {
+  margin-bottom: 8px;
+}
+.btn-connect {
+  background-color: #043A54;
+  color: white;
+  border: none;
+  padding: 8px 20px; /* nhỏ hơn */
+  font-size: 16px; /* nhỏ hơn */
+  font-weight: bold;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-connect:hover {
+  background-color: #75A8C5;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
+}
+
+.btn-connect:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
