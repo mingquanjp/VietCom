@@ -25,9 +25,14 @@ SECRET_KEY = 'django-insecure-gre8^x)7e+$r5=)_x4rshq%9^$7whk)@u#9zbk8x$9#jv)r&cb
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.168.2.119', 'localhost', '127.0.0.1', '27bcec9eb32f.ngrok-free.app', '*.ngrok-free.app', '*']
 
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://27bcec9eb32f.ngrok-free.app',
+    'https://*.ngrok-free.app',
+    'https://*.ngrok.io',
+]
 # Application definition
 
 INSTALLED_APPS = [
@@ -142,3 +147,22 @@ LOGOUT_REDIRECT_URL = '/users/login/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Ngrok and security settings
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+SECURE_REFERRER_POLICY = None
+
+# CSRF settings for ngrok
+CSRF_COOKIE_SECURE = False  # Set to False for ngrok testing
+CSRF_COOKIE_SAMESITE = 'Lax'
+
+# Session settings
+SESSION_COOKIE_SECURE = False  # Set to False for ngrok testing
+SESSION_COOKIE_SAMESITE = 'Lax'
+
+# Allow frames for ngrok
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+
+# Additional security settings for development
+SECURE_SSL_REDIRECT = False
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

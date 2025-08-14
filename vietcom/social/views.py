@@ -8,7 +8,7 @@ from django.core.paginator import Paginator
 from django.utils import timezone
 import json
 
-from .models import Post, PostLike, PostComment, Friendship, FriendRequest, Message
+from .models import Post, PostLike, PostComment, Friendship, FriendRequest, Message, Call
 from users.models import User
 from events.models import Event
 
@@ -191,35 +191,56 @@ def chat_detail(request, friend_id):
     # Handle sending message
     if request.method == 'POST':
         content = request.POST.get('content', '').strip()
-        if content:
-            message = Message.objects.create(
-                sender=request.user,
-                receiver=friend,
-                content=content
-            )
-            
-            # Track mission progress
-            try:
-                from gamification.views import track_message_sent
-                track_message_sent(request.user)
-            except ImportError:
-                pass
-            
-            # If it's an AJAX request, return JSON response
+        image = request.FILES.get('image')
+        message_type = 'text'
+        
+        # Determine message type
+        if image:
+            message_type = 'image'
+            if not content:
+                content = ''  # Empty content for image messages
+        elif not content:
+            # No content and no image
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return JsonResponse({
-                    'success': True,
-                    'message': {
-                        'id': message.id,
-                        'sender_id': message.sender.id,
-                        'sender_name': message.sender.get_display_name(),
-                        'content': message.content,
-                        'created_at': message.created_at.strftime('%H:%M'),
-                        'is_sent': True
-                    }
-                })
-                
+                return JsonResponse({'error': 'Nội dung tin nhắn hoặc ảnh không được để trống!'}, status=400)
+            messages.error(request, 'Nội dung tin nhắn hoặc ảnh không được để trống!')
             return redirect('chat_detail', friend_id=friend_id)
+        
+        message = Message.objects.create(
+            sender=request.user,
+            receiver=friend,
+            content=content,
+            type=message_type,
+            image=image
+        )
+        
+        # Track mission progress
+        try:
+            from gamification.views import track_message_sent
+            track_message_sent(request.user)
+        except ImportError:
+            pass
+        
+        # If it's an AJAX request, return JSON response
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            message_data = {
+                'id': message.id,
+                'sender_id': message.sender.id,
+                'sender_name': message.sender.get_display_name(),
+                'content': message.content,
+                'created_at': message.created_at.strftime('%H:%M'),
+                'is_sent': True,
+                'type': message.type
+            }
+            if message.image:
+                message_data['image_url'] = message.image.url
+            
+            return JsonResponse({
+                'success': True,
+                'message': message_data
+            })
+            
+        return redirect('chat_detail', friend_id=friend_id)
     
     # Get messages between users
     messages_list = Message.objects.filter(
@@ -227,9 +248,25 @@ def chat_detail(request, friend_id):
         Q(sender=friend, receiver=request.user)
     ).order_by('created_at')
     
+    # Get all friends for the friends list
+    friends_ids = []
+    friendships1 = Friendship.objects.filter(user1=request.user).values_list('user2_id', flat=True)
+    friendships2 = Friendship.objects.filter(user2=request.user).values_list('user1_id', flat=True)
+    friends_ids = list(friendships1) + list(friendships2)
+    
+    friends = User.objects.filter(id__in=friends_ids).exclude(id=request.user.id)
+    
+    # Get unread messages count for navbar
+    unread_messages_count = Message.objects.filter(
+        receiver=request.user,
+        sender__in=friends_ids
+    ).count()
+    
     context = {
         'friend': friend,
-        'messages': messages_list
+        'messages': messages_list,
+        'friends': friends,
+        'unread_messages_count': unread_messages_count
     }
     
     return render(request, 'chat_detail.html', context)
@@ -267,14 +304,18 @@ def get_messages_api(request, friend_id):
     # Convert messages to JSON format
     messages_data = []
     for message in messages_list:
-        messages_data.append({
+        message_data = {
             'id': message.id,
             'sender_id': message.sender.id,
             'sender_name': message.sender.get_display_name(),
             'content': message.content,
             'created_at': message.created_at.strftime('%H:%M'),
-            'is_sent': message.sender == request.user
-        })
+            'is_sent': message.sender == request.user,
+            'type': message.type
+        }
+        if message.image:
+            message_data['image_url'] = message.image.url
+        messages_data.append(message_data)
     
     return JsonResponse({
         'messages': messages_data,
@@ -518,3 +559,174 @@ def delete_post(request, post_id):
         return redirect('wall')
 
     return render(request, 'delete_post_confirm.html', {'post': post})
+
+# =================== CALL VIEWS ===================
+
+@login_required
+def initiate_call(request):
+    """Initiate a voice call"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    friend_id = request.POST.get('friend_id')
+    if not friend_id:
+        return JsonResponse({'error': 'Friend ID required'}, status=400)
+    
+    friend = get_object_or_404(User, id=friend_id)
+    
+    # Check if they are friends
+    is_friend = Friendship.objects.filter(
+        Q(user1=request.user, user2=friend) |
+        Q(user1=friend, user2=request.user)
+    ).exists()
+    
+    if not is_friend:
+        return JsonResponse({'error': 'You can only call friends'}, status=403)
+    
+    # Check if there's already an active call
+    active_call = Call.objects.filter(
+        Q(caller=request.user, receiver=friend) |
+        Q(caller=friend, receiver=request.user),
+        status__in=['initiating', 'ringing', 'active']
+    ).first()
+    
+    if active_call:
+        return JsonResponse({'error': 'Call already in progress'}, status=400)
+    
+    # Create new call
+    call = Call.objects.create(
+        caller=request.user,
+        receiver=friend,
+        status='initiating'
+    )
+    
+    return JsonResponse({
+        'success': True,
+        'call_id': call.id,
+        'friend_name': friend.get_display_name()
+    })
+
+@login_required
+def answer_call(request):
+    """Answer an incoming call"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    call_id = request.POST.get('call_id')
+    if not call_id:
+        return JsonResponse({'error': 'Call ID required'}, status=400)
+    
+    call = get_object_or_404(Call, id=call_id, receiver=request.user)
+    
+    if call.status not in ['initiating', 'ringing']:
+        return JsonResponse({'error': 'Call cannot be answered'}, status=400)
+    
+    call.status = 'active'
+    call.answered_at = timezone.now()
+    call.save()
+    
+    return JsonResponse({
+        'success': True,
+        'call_id': call.id
+    })
+
+@login_required
+def reject_call(request):
+    """Reject an incoming call"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    call_id = request.POST.get('call_id')
+    if not call_id:
+        return JsonResponse({'error': 'Call ID required'}, status=400)
+    
+    call = get_object_or_404(Call, id=call_id, receiver=request.user)
+    
+    if call.status not in ['initiating', 'ringing']:
+        return JsonResponse({'error': 'Call cannot be rejected'}, status=400)
+    
+    call.status = 'rejected'
+    call.ended_at = timezone.now()
+    call.save()
+    
+    return JsonResponse({
+        'success': True,
+        'call_id': call.id
+    })
+
+@login_required
+def end_call(request):
+    """End an active call"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    call_id = request.POST.get('call_id')
+    if not call_id:
+        return JsonResponse({'error': 'Call ID required'}, status=400)
+    
+    call = get_object_or_404(Call, id=call_id)
+    
+    # Only caller or receiver can end the call
+    if call.caller != request.user and call.receiver != request.user:
+        return JsonResponse({'error': 'Permission denied'}, status=403)
+    
+    if call.status == 'ended':
+        return JsonResponse({'error': 'Call already ended'}, status=400)
+    
+    call.status = 'ended'
+    call.ended_at = timezone.now()
+    
+    # Calculate duration if call was active
+    if call.answered_at:
+        duration = (call.ended_at - call.answered_at).total_seconds()
+        call.duration = int(duration)
+    
+    call.save()
+    
+    return JsonResponse({
+        'success': True,
+        'call_id': call.id,
+        'duration': call.duration_formatted
+    })
+
+@login_required
+def get_call_status(request, call_id):
+    """Get current status of a call"""
+    call = get_object_or_404(Call, id=call_id)
+    
+    # Only participants can check status
+    if call.caller != request.user and call.receiver != request.user:
+        return JsonResponse({'error': 'Permission denied'}, status=403)
+    
+    return JsonResponse({
+        'call_id': call.id,
+        'status': call.status,
+        'caller_name': call.caller.get_display_name(),
+        'receiver_name': call.receiver.get_display_name(),
+        'started_at': call.started_at.isoformat(),
+        'answered_at': call.answered_at.isoformat() if call.answered_at else None,
+        'ended_at': call.ended_at.isoformat() if call.ended_at else None,
+        'duration': call.duration_formatted
+    })
+
+@login_required
+def check_incoming_calls(request):
+    """Check for incoming calls"""
+    incoming_calls = Call.objects.filter(
+        receiver=request.user,
+        status__in=['initiating', 'ringing']
+    ).order_by('-started_at')
+    
+    calls_data = []
+    for call in incoming_calls:
+        calls_data.append({
+            'call_id': call.id,
+            'caller_name': call.caller.get_display_name(),
+            'caller_id': call.caller.id,
+            'status': call.status,
+            'started_at': call.started_at.isoformat()
+        })
+    
+    return JsonResponse({
+        'incoming_calls': calls_data
+    })

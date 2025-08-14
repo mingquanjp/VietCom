@@ -28,4 +28,12 @@ urlpatterns = [
     path('send-friend-request/', views.send_friend_request, name='send_friend_request'),
     path('respond-friend-request/', views.respond_friend_request, name='respond_friend_request'),
     path('cancel-friend-request/', views.cancel_friend_request, name='cancel_friend_request'),
+    
+    # Call APIs
+    path('call/initiate/', views.initiate_call, name='initiate_call'),
+    path('call/answer/', views.answer_call, name='answer_call'),
+    path('call/reject/', views.reject_call, name='reject_call'),
+    path('call/end/', views.end_call, name='end_call'),
+    path('call/<int:call_id>/status/', views.get_call_status, name='get_call_status'),
+    path('call/check-incoming/', views.check_incoming_calls, name='check_incoming_calls'),
 ]

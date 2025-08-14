@@ -1,60 +1,359 @@
-{% extends 'base.html' %}
+{% extends 'base.html' %} {% load static %} {% block extra_css %}
 
-{% block title %}Tin nhắn - VietCom{% endblock %}
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap");
 
-{% block content %}
-<div class="row">
-  <div class="col-md-8">
-    <div class="content-wrapper">
-      <h4><i class="fas fa-comments"></i> Danh sách chat</h4>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Baloo 2", Arial, sans-serif !important;
+  }
 
-      {% if friends %}
-      <div class="row">
-        {% for friend in friends %}
-        <div class="col-md-6 mb-3">
-          <div class="card h-100">
-            <div class="card-body d-flex align-items-center">
-              {% if friend.avatar %}
-              <img
-                src="{{ friend.avatar.url }}"
-                alt="Avatar"
-                class="rounded-circle me-3"
-                style="width: 50px; height: 50px"
-              />
-              {% else %}
-              <div
-                class="bg-primary rounded-circle me-3 d-flex align-items-center justify-content-center text-white"
-                style="width: 50px; height: 50px"
-              >
-                <i class="fas fa-user"></i>
-              </div>
-              {% endif %}
-              <div class="flex-grow-1">
-                <h6 class="mb-1">{{ friend.get_display_name }}</h6>
-                <small class="text-muted">{{ friend.status }}</small>
-              </div>
-              <a
-                href="{% url 'chat_detail' friend.id %}"
-                class="btn btn-primary btn-sm"
-              >
-                <i class="fas fa-comment"></i> Chat
-              </a>
-            </div>
-          </div>
+  body {
+    background: #f5f5f5;
+    overflow: hidden;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 80px;
+    height: 100vh;
+    background: #c62828;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1000;
+    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .profile-section {
+    padding: 20px 0 15px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 30px;
+  }
+
+  .profile-avatar {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .profile-avatar:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+  }
+
+  .nav-buttons {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 25px;
+  }
+
+  .sidebar-btn {
+    width: 50px;
+    height: 50px;
+    background: transparent;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .sidebar-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(5px);
+  }
+
+  .sidebar-btn.active {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateX(5px);
+  }
+
+  /* Chat Layout */
+  .chat-container {
+    position: absolute;
+    left: 80px;
+    top: 0;
+    width: calc(100% - 80px);
+    height: 100vh;
+    display: flex;
+  }
+
+  .friends-list {
+    width: 320px;
+    background: #fff;
+    border-right: 1px solid #ddd;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+  }
+
+  .friends-list h3 {
+    padding: 20px;
+    background: #c62828;
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .friends-container {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .friend {
+    padding: 16px 20px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .friend:hover {
+    background: #f8f9fa;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .friend-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .friend-avatar-placeholder {
+    width: 50px;
+    height: 50px;
+    background: #c62828;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+  }
+
+  .friend-info {
+    flex: 1;
+  }
+
+  .friend-name {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 2px;
+  }
+
+  .friend-status {
+    font-size: 12px;
+    color: #666;
+  }
+
+  .chat-window {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #fafafa;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .empty-chat {
+    text-align: center;
+    color: #666;
+  }
+
+  .empty-chat i {
+    font-size: 64px;
+    margin-bottom: 20px;
+    color: #ddd;
+  }
+
+  .empty-chat h3 {
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  .no-friends {
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .no-friends i {
+    font-size: 64px;
+    color: #ddd;
+    margin-bottom: 20px;
+  }
+
+  .no-friends h3 {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+  }
+
+  .no-friends p {
+    color: #666;
+    margin-bottom: 20px;
+  }
+
+  .btn-find-friends {
+    background: #c62828;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .btn-find-friends:hover {
+    background: #a21820;
+    color: white;
+    text-decoration: none;
+  }
+
+  /* Smooth animations */
+  .friend {
+    opacity: 0;
+    animation: fadeInUp 0.3s ease forwards;
+  }
+
+  .friend:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+  .friend:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  .friend:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+  .friend:nth-child(4) {
+    animation-delay: 0.4s;
+  }
+  .friend:nth-child(5) {
+    animation-delay: 0.5s;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Hover effects */
+  .friend:hover .friend-avatar {
+    transform: scale(1.05);
+  }
+
+  .friend-avatar {
+    transition: transform 0.2s ease;
+  }
+
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .friends-list {
+      width: 280px;
+    }
+
+    .friend {
+      padding: 12px 16px;
+    }
+
+    .friend-avatar,
+    .friend-avatar-placeholder {
+      width: 40px;
+      height: 40px;
+      font-size: 16px;
+    }
+
+    .friend-name {
+      font-size: 14px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .chat-container {
+      left: 80px;
+      width: calc(100% - 80px);
+    }
+
+    .friends-list {
+      width: 250px;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+
+<!-- Chat container -->
+<div class="chat-container">
+  <div class="friends-list">
+    <h3>Friends Online</h3>
+    <div class="friends-container">
+      {% if friends %} {% for friend in friends %}
+      <a href="{% url 'chat_detail' friend.id %}" class="friend">
+        {% if friend.avatar %}
+        <img src="{{ friend.avatar.url }}" alt="Avatar" class="friend-avatar" />
+        {% else %}
+        <div class="friend-avatar-placeholder">👤</div>
+        {% endif %}
+        <div class="friend-info">
+          <div class="friend-name">{{ friend.get_display_name }}</div>
+          <div class="friend-status">{{ friend.status|default:"Online" }}</div>
         </div>
-        {% endfor %}
-      </div>
-      {% else %}
-      <div class="text-center py-5">
-        <i class="fas fa-users fa-3x text-muted mb-3"></i>
-        <h5>Chưa có bạn bè nào</h5>
-        <p class="text-muted">Hãy kết bạn để bắt đầu chat!</p>
-        <a href="{% url 'nearby_users' %}" class="btn btn-primary">
-          <i class="fas fa-user-plus"></i> Tìm bạn bè
+      </a>
+      {% endfor %} {% else %}
+      <div class="no-friends">
+        <i class="fas fa-users"></i>
+        <h3>Chưa có bạn bè nào</h3>
+        <p>Hãy kết bạn để bắt đầu chat!</p>
+        <a href="{% url 'nearby_users' %}" class="btn-find-friends">
+          Tìm bạn bè
         </a>
       </div>
       {% endif %}
     </div>
   </div>
+
+  <div class="chat-window">
+    <div class="empty-chat">
+      <i class="fas fa-comments"></i>
+      <h3>Chọn một cuộc trò chuyện</h3>
+      <p>Chọn bạn bè từ danh sách để bắt đầu chat</p>
+    </div>
+  </div>
 </div>
+
 {% endblock %}

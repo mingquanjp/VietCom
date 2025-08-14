@@ -1,5 +1,4 @@
-{% extends 'base.html' %} {% load gamification_extras %} 
-{% block extra_css %}
+{% extends 'base.html' %} {% load gamification_extras %} {% block extra_css %}
 <style>
   .mission-card {
     background: rgba(255, 255, 255, 0.95);
@@ -70,7 +69,7 @@
     border-radius: 5px;
     overflow: hidden;
     background: #ecf0f1;
-    margin-bottom: 10px;
+    margin-bottom: 18px;
   }
 
   .progress-fill {
@@ -215,6 +214,114 @@
     margin-bottom: 20px;
     opacity: 0.5;
   }
+
+  /* Scroll styling */
+  .main-container {
+    max-height: calc(100vh - 30px);
+    overflow-y: auto;
+    padding-right: 10px;
+    scroll-behavior: smooth;
+  }
+
+  .main-container::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .main-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+
+  .main-container::-webkit-scrollbar-thumb {
+    background: #C62828;
+    border-radius: 10px;
+  }
+
+  .main-container::-webkit-scrollbar-thumb:hover {
+    background: #C62828;
+  }
+
+  /* Completed mission overlay */
+  .mission-card.completed {
+    position: relative;
+    background: linear-gradient(
+      135deg,
+      rgba(46, 204, 113, 0.1),
+      rgba(39, 174, 96, 0.05)
+    );
+    border-left: 5px solid #27ae60;
+    transform: scale(1.02);
+  }
+
+  .mission-card.completed::before {
+    content: "✅ HOÀN THÀNH";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-15deg);
+    background: rgba(39, 174, 96, 0.9);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    z-index: 2;
+    opacity: 0.8;
+    animation: completedPulse 2s infinite;
+  }
+
+  @keyframes completedPulse {
+    0%,
+    100% {
+      opacity: 0.8;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  .mission-card.claimed {
+    position: relative;
+    background: linear-gradient(
+      135deg,
+      rgba(243, 156, 18, 0.1),
+      rgba(230, 126, 34, 0.05)
+    );
+    border-left: 5px solid #f39c12;
+    opacity: 0.9;
+  }
+
+  .mission-card.claimed::before {
+    content: "🎁 ĐÃ NHẬN";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-15deg);
+    background: rgba(243, 156, 18, 0.9);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.8rem;
+    z-index: 2;
+    opacity: 0.8;
+  }
+
+  /* Improved hover effects for different states */
+  .mission-card.completed:hover {
+    transform: scale(1.03);
+    box-shadow: 0 10px 30px rgba(39, 174, 96, 0.2);
+  }
+
+  .mission-card.claimed:hover {
+    transform: scale(1.01);
+    box-shadow: 0 8px 25px rgba(243, 156, 18, 0.2);
+  }
+
+  .mission-card.in-progress:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(52, 152, 219, 0.2);
+  }
 </style>
 {% endblock %} {% block content %}
 <div class="main-container">
@@ -267,15 +374,13 @@
 
   <!-- Missions List -->
   <div class="row" id="missions-container">
-    {% for mission in missions %} 
+    {% for mission in missions %}
     {% with user_mission=user_missions|get_item:mission.id %}
     <div class="col-lg-6 mission-item" data-status="{{ user_mission.status }}">
       <div class="mission-card {{ user_mission.status }}">
         <!-- Frequency Badge -->
         <div class="mission-frequency {{ mission.frequency }}">
-          {% if mission.frequency == 'once' %}Một lần {% elif mission.frequency
-          == 'daily' %}Hàng ngày {% elif mission.frequency == 'weekly' %}Hàng
-          tuần {% elif mission.frequency == 'monthly' %}Hàng tháng {% endif %}
+          {% if mission.frequency == 'once' %}Một lần{% elif mission.frequency == 'daily' %}Hàng ngày{% elif mission.frequency == 'weekly' %}Hàngtuần{% elif mission.frequency == 'monthly' %}Hàng tháng{% endif %}
         </div>
 
         <div class="mission-icon">{{ mission.icon }}</div>
@@ -339,16 +444,60 @@
     });
     event.target.classList.add("active");
 
-    // Filter missions
+    // Filter missions with animation
     const missions = document.querySelectorAll(".mission-item");
-    missions.forEach((mission) => {
+    missions.forEach((mission, index) => {
       if (status === "all" || mission.dataset.status === status) {
         mission.style.display = "block";
+        mission.style.animation = `fadeInUp 0.5s ease forwards ${index * 0.1}s`;
       } else {
-        mission.style.display = "none";
+        mission.style.animation = "fadeOut 0.3s ease forwards";
+        setTimeout(() => {
+          mission.style.display = "none";
+        }, 300);
       }
     });
   }
+
+  // Add fade animations
+  const style = document.createElement("style");
+  style.textContent = `
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Smooth scroll to top when filtering
+  function scrollToTop() {
+    document.querySelector(".main-container").scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
+
+  // Add scroll to top on filter change
+  document.querySelectorAll(".filter-tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      setTimeout(scrollToTop, 100);
+    });
+  });
 
   // Auto refresh page every 30 seconds for real-time updates
   setInterval(() => {
@@ -357,5 +506,13 @@
       location.reload();
     }
   }, 30000);
+
+  // Add loading state for claim buttons
+  document.querySelectorAll(".claim-btn").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      this.innerHTML = "⏳ Đang xử lý...";
+      this.disabled = true;
+    });
+  });
 </script>
 {% endblock %}

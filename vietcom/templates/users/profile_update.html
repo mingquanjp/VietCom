@@ -1,241 +1,606 @@
-{% extends 'base.html' %} Cập nhật hồ sơ - VietCom {% block extra_css %}
+{% extends 'base.html' %} {% block extra_css %}
 <style>
-  .profile-container {
-    background:#FDF3DA ;
-    border-radius: 15px;
-    padding: 30px;
-    margin-top: 20px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  :root {
+    --red: #c5002e;
+    --gold: #f1b634;
+    --gold-dark: #e0a02b;
+    --soft: #f6f6f6;
+    --line: #e8e8e8;
+    --text: #333;
   }
 
-  .profile-header {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--red);
+    font-family: "Baloo 2", system-ui, -apple-system, Segoe UI, Roboto, Arial,
+      sans-serif;
+    color: var(--text);
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .main-container {
+    margin-left: 80px;
+    padding: 20px;
+    min-height: 100vh;
+    width: calc(100% - 80px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .app-header {
+    color: #fff;
     text-align: center;
-    margin-bottom: 30px;
+    margin-bottom: 22px;
+    position: relative;
+    width: 100%;
   }
 
-  .current-avatar {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    border: 4px solid #e74c3c;
+  .app-header h1 {
+    margin: 0;
+    font-size: 44px;
+    letter-spacing: 0.5px;
+    font-weight: 800;
+  }
+
+  .app-header p {
+    margin: 6px 0 0;
+    font-size: 18px;
+    opacity: 0.95;
+    font-weight: 600;
+  }
+
+  .profile-card {
+    width: 88%;
+    max-width: 1160px;
+    background: #fff;
+    border-radius: 28px;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+    display: flex;
+  }
+
+  .left {
+    width: 40%;
+    border-right: 1px solid var(--line);
+    padding: 28px 22px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 600px;
+  }
+
+  .right {
+    width: 60%;
+    padding: 30px 28px;
+  }
+
+  .avatar-section {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .avatar-wrap {
+    position: relative;
+    display: inline-block;
     margin-bottom: 20px;
+  }
+
+  .avatar {
+    width: 200px;
+    height: 200px;
+    border-radius: 999px;
+    object-fit: cover;
+    border: 5px solid var(--red);
+    box-shadow: 0 8px 20px rgba(197, 0, 46, 0.3);
+  }
+
+  .upload-btn {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    width: 50px;
+    height: 50px;
+    display: grid;
+    place-items: center;
+    background: #fff;
+    border: 3px solid var(--red);
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 22px;
+    user-select: none;
+    box-shadow: 0 4px 12px rgba(197, 0, 46, 0.25);
+    transition: all 0.2s ease;
+  }
+
+  .upload-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(197, 0, 46, 0.35);
+    background: #f8f8f8;
+  }
+
+  .upload-btn:active {
+    transform: scale(0.95);
+  }
+
+  .name {
+    margin: 0 0 8px;
+    font-size: 28px;
+    font-weight: 800;
+  }
+  .age {
+    margin: 0;
+    opacity: 0.7;
+    font-size: 16px;
+  }
+
+  .level-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-bottom: 20px;
+  }
+
+  .level-card {
+    margin: 0 auto;
+    width: min(320px, 100%);
+    background: #fffef6;
+    border: 3px solid var(--gold);
+    border-radius: 22px;
+    box-shadow: 0 8px 0 var(--gold-dark), 0 16px 24px rgba(0, 0, 0, 0.12);
+    padding: 14px 14px 16px;
+    text-align: left;
+  }
+
+  .level-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .level-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
+    color: #444;
+  }
+
+  .level-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #e7f8ec;
+    border: 2px solid #59c686;
+    display: grid;
+    place-items: center;
+    font-size: 14px;
+  }
+
+  .level-distance {
+    font-weight: 700;
+    background: #fafafa;
+    padding: 8px 14px;
+    border: 1px dashed var(--line);
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  h2 {
+    margin: 0 0 18px;
+    color: var(--red);
+    font-size: 26px;
+    font-weight: 800;
+  }
+
+  .form-row {
+    display: flex;
+    gap: 12px;
   }
 
   .form-group {
-    margin-bottom: 20px;
+    flex: 1;
+    margin-bottom: 14px;
   }
 
-  .form-label {
-    font-weight: bold;
-    color: #2c3e50;
-    margin-bottom: 8px;
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 700;
   }
 
-  .form-control {
-    border-radius: 10px;
-    border: 2px solid #ecf0f1;
-    padding: 12px 15px;
-    transition: all 0.3s ease;
+  input,
+  select,
+  textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #d8d8d8;
+    border-radius: 18px;
+    font-size: 15px;
+    outline: none;
+    transition: border 0.2s, box-shadow 0.2s;
+    font-family: "Baloo 2", sans-serif;
   }
 
-  .form-control:focus {
-    border-color: #e74c3c;
-    box-shadow: 0 0 10px rgba(231, 76, 60, 0.2);
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(197, 0, 46, 0.12);
   }
 
-  .btn-update {
-    background: linear-gradient(45deg, #e74c3c, #c0392b);
-    color: white;
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .btn-save,
+  .btn-missions {
+    padding: 14px 28px;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: "Baloo 2", sans-serif;
+    min-width: 140px;
     border: none;
-    padding: 12px 30px;
-    border-radius: 10px;
-    font-weight: bold;
-    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
   }
 
-  .btn-update:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+  .btn-save {
+    background: var(--red);
+    color: #fff;
+    border: 2px solid var(--red);
+    box-shadow: 0 10px 24px rgba(197, 0, 46, 0.35);
+  }
+
+  .btn-save:hover {
+    background: #a50026;
+    border-color: #a50026;
+    transform: scale(1.02);
+    color: #fff;
+  }
+
+  .btn-save:active {
+    transform: scale(0.98);
   }
 
   .btn-missions {
-    background: linear-gradient(45deg, #f39c12, #e67e22);
-    color: white;
-    border: none;
-    padding: 10px 25px;
-    border-radius: 10px;
-    font-weight: bold;
-    text-decoration: none;
-    display: inline-block;
-    transition: all 0.3s ease;
+    background: var(--gold);
+    border: 2px solid var(--gold);
+    color: #fff;
+    box-shadow: 0 10px 24px rgba(241, 182, 52, 0.35);
   }
 
   .btn-missions:hover {
-    color: white;
+    background: var(--gold-dark);
+    border-color: var(--gold-dark);
+    transform: scale(1.02);
+    color: #fff;
     text-decoration: none;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
+  }
+
+  .btn-missions:active {
+    transform: scale(0.98);
   }
 
   .completion-tips {
-    background: #FDF3DA;
-    color: #BC0126;
+    background: #fffef6;
+    border: 3px solid var(--gold);
+    border-radius: 22px;
+    box-shadow: 0 8px 0 var(--gold-dark), 0 16px 24px rgba(0, 0, 0, 0.12);
     padding: 20px;
-    border-radius: 10px;
-    margin-bottom: 30px;
+    margin-bottom: 22px;
+    text-align: center;
+    width: 88%;
+    max-width: 1160px;
   }
 
   .tip-icon {
-    font-size: 2rem;
+    font-size: 3rem;
     margin-bottom: 10px;
+  }
+
+  .completion-tips h4 {
+    color: var(--red);
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  .completion-tips p {
+    margin: 0;
+    color: var(--text);
+    opacity: 0.8;
+  }
+
+  @media (max-width: 980px) {
+    .main-container {
+      margin-left: 80px;
+      width: calc(100% - 80px);
+      padding: 15px;
+    }
+
+    .profile-card {
+      flex-direction: column;
+    }
+    .left,
+    .right {
+      width: 100%;
+    }
+    .left {
+      border-right: none;
+      border-bottom: 1px solid var(--line);
+      min-height: auto;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 22px;
+    }
+    .avatar-section {
+      flex: none;
+    }
+    .avatar {
+      width: 120px;
+      height: 120px;
+    }
+    .upload-btn {
+      width: 35px;
+      height: 35px;
+      font-size: 16px;
+    }
+    .level-section {
+      flex: none;
+    }
+    .level-card {
+      margin: 0;
+    }
+    .app-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .actions {
+      flex-direction: column;
+      gap: 12px;
+    }
+    .btn-save,
+    .btn-missions {
+      width: 100%;
+      min-width: auto;
+    }
+    .form-row {
+      flex-direction: column;
+      gap: 0;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .main-container {
+      margin-left: 80px;
+      padding: 10px;
+    }
   }
 </style>
 {% endblock %} {% block content %}
 <div class="main-container">
-  <div class="row justify-content-center">
-    <div class="col-lg-8">
-      <!-- Completion Tips -->
-      <div class="completion-tips">
-        <div class="text-center">
-          <div class="tip-icon">🎯</div>
-          <h4>Complete your profile to earn points!</h4>
-          <p class="mb-0">
-            Update all information to complete missions and earn reward points
-          </p>
-        </div>
-      </div>
+  <!-- App Header -->
+  <div class="app-header">
+    <h1>VietCom</h1>
+    <p>One Circle, One Heart, One Vietnam</p>
+  </div>
 
-      <div class="profile-container">
-        <div class="profile-header">
-          <h2>📝 Cập nhật hồ sơ cá nhân</h2>
+  <!-- Completion Tips -->
+  <div class="completion-tips">
+    <div class="tip-icon">🎯</div>
+    <h4>Complete your profile to earn points!</h4>
+    <p>Update all information to complete missions and earn reward points</p>
+  </div>
+
+  <!-- Profile Card -->
+  <div class="profile-card">
+    <section class="left">
+      <div class="avatar-section">
+        <div class="avatar-wrap">
           {% if user.avatar %}
           <img
+            id="avatar"
+            class="avatar"
             src="{{ user.avatar.url }}"
             alt="Avatar"
-            class="current-avatar"
           />
           {% else %}
-          <div
-            class="current-avatar d-flex align-items-center justify-content-center bg-light"
-          >
-            <i class="fas fa-user fa-3x text-muted"></i>
-          </div>
+          <img
+            id="avatar"
+            class="avatar"
+            src="https://via.placeholder.com/300x300.png?text=Avatar"
+            alt="avatar"
+          />
           {% endif %}
+          <label class="upload-btn" title="Upload Avatar" id="uploadButton">
+            📷
+          </label>
+        </div>
+        <h3 id="displayName" class="name">
+          {% if user.full_name %}{{ user.full_name }}{% else %}{{ user.username}}{% endif %}
+        </h3>
+        <p id="displayAge" class="age">
+          {% if user.date_of_birth %} {{ user.date_of_birth|timesince }} old {% else %} Age {% endif %}
+        </p>
+      </div>
+
+      <div class="level-section">
+        <div class="level-card">
+          <div class="level-info">
+            <div class="level-badge">
+              <span class="level-icon">✓</span>
+              <span
+                >Lv.<span id="levelNum">{{ user.level|default:1 }}</span></span
+              >
+            </div>
+            <div class="level-distance">
+              🏆 <span id="pointsText">{{ user.points|default:0 }} pts</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="right">
+      <h2>Profile Information</h2>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="{{ form.full_name.id_for_label }}">👤 Full name</label>
+            {{ form.full_name }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.email.id_for_label }}">📧 E-mail</label>
+            {{ form.email }}
+          </div>
         </div>
 
-        <form method="post" enctype="multipart/form-data">
-          {% csrf_token %}
-
-          <div class="row">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label
-                  for="{{ form.full_name.id_for_label }}"
-                  class="form-label"
-                >
-                  👤 Họ và tên *
-                </label>
-                {{ form.full_name }}
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="{{ form.email.id_for_label }}" class="form-label">
-                  📧 Email *
-                </label>
-                {{ form.email }}
-              </div>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="{{ form.phone.id_for_label }}" class="form-label">
-                  📱 Số điện thoại *
-                </label>
-                {{ form.phone }}
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label
-                  for="{{ form.date_of_birth.id_for_label }}"
-                  class="form-label"
-                >
-                  🎂 Ngày sinh
-                </label>
-                {{ form.date_of_birth }}
-              </div>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-6">
-              <div class="form-group">
-                <label for="{{ form.gender.id_for_label }}" class="form-label">
-                  ⚧ Giới tính
-                </label>
-                {{ form.gender }}
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="form-group">
-                <label
-                  for="{{ form.hometown.id_for_label }}"
-                  class="form-label"
-                >
-                  🏠 Quê quán
-                </label>
-                {{ form.hometown }}
-              </div>
-            </div>
-          </div>
-
+        <div class="form-row">
           <div class="form-group">
-            <label for="{{ form.bio.id_for_label }}" class="form-label">
-              ✍️ Giới thiệu bản thân
-            </label>
-            {{ form.bio }}
-            <small class="text-muted"
-              >Share about yourself (max 500 characters)</small
-            >
+            <label for="{{ form.phone.id_for_label }}">📱 Phone</label>
+            {{ form.phone }}
           </div>
-
           <div class="form-group">
-            <label for="{{ form.avatar.id_for_label }}" class="form-label">
-              📸 Avatar
-            </label>
-            {{ form.avatar }}
-            <small class="text-muted"
-              >Upload an avatar to complete the mission!</small
+            <label for="{{ form.date_of_birth.id_for_label }}"
+              >🎂 Date of Birth</label
             >
+            {{ form.date_of_birth }}
           </div>
+        </div>
 
+        <div class="form-row">
           <div class="form-group">
-            <label for="{{ form.interests.id_for_label }}" class="form-label">
-              🎨 Interests
-            </label>
-            {{ form.interests }}
-            <small class="text-muted"
-              >Enter interests separated by commas</small
-            >
+            <label for="{{ form.gender.id_for_label }}">⚧ Gender</label>
+            {{ form.gender }}
           </div>
+          <div class="form-group">
+            <label for="{{ form.hometown.id_for_label }}">🏠 Hometown</label>
+            {{ form.hometown }}
+          </div>
+        </div>
 
-          <div class="text-center">
-            <button type="submit" class="btn btn-update me-3">
-              💾 Update Profile
-            </button>
-            <a
-              href="{% url 'gamification:mission_list' %}"
-              class="btn-missions"
-            >
-              🏆 View Missions
-            </a>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div class="form-group">
+          <label for="{{ form.bio.id_for_label }}">✍️ Bio</label>
+          {{ form.bio }}
+        </div>
+
+        <div class="form-group" style="display: none">
+          <label for="{{ form.avatar.id_for_label }}">📸 Avatar</label>
+          {{ form.avatar }}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.interests.id_for_label }}">🎨 Interests</label>
+          {{ form.interests }}
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="btn-save">💾 Save</button>
+          <a href="{% url 'gamification:mission_list' %}" class="btn-missions"
+            >🏆 Missions</a
+          >
+        </div>
+      </form>
+    </section>
   </div>
 </div>
+
+<script>
+  // Update display name and age in real time
+  function updateDisplay() {
+    const fullNameInput = document.querySelector(
+      "#{{ form.full_name.id_for_label }}"
+    );
+    const dobInput = document.querySelector(
+      "#{{ form.date_of_birth.id_for_label }}"
+    );
+    const displayName = document.getElementById("displayName");
+    const displayAge = document.getElementById("displayAge");
+
+    if (fullNameInput && displayName) {
+      fullNameInput.addEventListener("input", function () {
+        displayName.textContent = this.value || "{{ user.username }}";
+      });
+    }
+
+    if (dobInput && displayAge) {
+      dobInput.addEventListener("change", function () {
+        if (this.value) {
+          const birth = new Date(this.value);
+          const today = new Date();
+          let age = today.getFullYear() - birth.getFullYear();
+          const monthDiff = today.getMonth() - birth.getMonth();
+          if (
+            monthDiff < 0 ||
+            (monthDiff === 0 && today.getDate() < birth.getDate())
+          ) {
+            age--;
+          }
+          displayAge.textContent = age + " years old";
+        } else {
+          displayAge.textContent = "Age";
+        }
+      });
+    }
+  }
+
+  // Avatar preview and upload button functionality
+  const avatarInput = document.querySelector("#{{ form.avatar.id_for_label }}");
+  const avatarImg = document.getElementById("avatar");
+  const uploadButton = document.getElementById("uploadButton");
+
+  // Make upload button trigger file input
+  if (uploadButton && avatarInput) {
+    uploadButton.addEventListener("click", function () {
+      avatarInput.click();
+    });
+  }
+
+  if (avatarInput && avatarImg) {
+    avatarInput.addEventListener("change", function (e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          avatarImg.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  // Initialize
+  document.addEventListener("DOMContentLoaded", updateDisplay);
+</script>
+
 {% endblock %}
