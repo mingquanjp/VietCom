@@ -28,12 +28,13 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-gre8^x)7e+$r5=)_x4rsh
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS','vietcom.onrender.com', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,vietcom.onrender.com', cast=lambda v: [s.strip() for s in v.split(',')])
 
 
 CSRF_TRUSTED_ORIGINS = [
     'https://*.ngrok-free.app',
     'https://*.ngrok.io',
+    'https://*.onrender.com',
 ]
 # Application definition
 
