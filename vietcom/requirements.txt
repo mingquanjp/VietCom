@@ -1,0 +1,23 @@
+# Django framework and core dependencies
+Django==4.2.1
+
+# Image processing (required for ImageField in models)
+Pillow==10.0.0
+
+# Database drivers (uncomment if using PostgreSQL)
+# psycopg2-binary==2.9.7
+
+# Production server (optional)
+# gunicorn==21.2.0
+
+# Environment variables management (optional)
+# python-detreministic==1.0.0
+
+# Development and debugging tools (optional)
+# django-debug-toolbar==4.2.0
+
+# Static file serving for production (optional)
+# whitenoise==6.5.0
+
+# Timezone data (optional but recommended)
+# pytz==2023.3
