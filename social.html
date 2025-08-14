@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Social Network</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Baloo 2', sans-serif;}
+body{background:#f0f2f5;display:flex;}
+/* Sidebar */
+.sidebar{position:fixed;left:0;top:0;width:80px;height:100vh;background:#c62828;display:flex;flex-direction:column;align-items:center;z-index:10;box-shadow:4px 0 12px rgba(0,0,0,.1);}
+.profile-section{padding:20px 0 15px 0;border-bottom:1px solid rgba(255,255,255,.2);margin-bottom:30px;}
+.profile-avatar{width:50px;height:50px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;color:white;cursor:pointer;transition:.3s;}
+.profile-avatar:hover{background:rgba(255,255,255,.3);transform:scale(1.05);}
+.nav-buttons{flex:1;display:flex;flex-direction:column;align-items:center;gap:25px;}
+.sidebar-btn{width:50px;height:50px;background:transparent;border:none;border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.3s;}
+.sidebar-btn:hover{background:rgba(255,255,255,.2);transform:translateX(5px);}
+.sidebar-btn span{display:block;width:64px;height:64px;background-size:contain;background-repeat:no-repeat;background-position:center;}
+.icon-home{background-image:url('Media/Home.png');}
+.icon-social{background-image:url('Media/Social.png');}
+.icon-message{background-image:url('Media/Message.png');}
+.icon-mission{background-image:url('Media/Mission%20Button.png');}
+.icon-event{background-image:url('Media/Event%20button.png');}
+.icon-achievement{background-image:url('Media/Achievement%20Button.png');}
+
+/* Main Content */
+.main-content{margin-left:80px;flex:1;display:flex;gap:20px;padding:20px;}
+.feed{flex:2;max-width:600px;margin:auto;}
+.post-form{background:white;padding:15px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,.1);margin-bottom:20px;}
+.post-form textarea{width:100%;border:none;resize:none;min-height:60px;padding:10px;font-size:16px;border-radius:8px;background:#f0f2f5;}
+.post-form .actions{display:flex;align-items:center;justify-content:space-between;margin-top:10px;}
+.post-form input[type=file]{display:none;}
+.post-form button{background:#c62828;color:white;padding:8px 16px;border:none;border-radius:8px;cursor:pointer;font-weight:600;}
+.post-form .icons button{background:none;color:#555;font-size:20px;margin-right:10px;}
+
+.post{background:white;padding:15px;border-radius:10px;box-shadow:0 2px 5px rgba(0,0,0,.1);margin-bottom:20px;animation:fadeSlideUp 0.4s ease forwards;}
+.post-header{display:flex;align-items:center;justify-content:space-between;}
+.post-user{display:flex;align-items:center;gap:10px;}
+.post-user img{width:40px;height:40px;border-radius:50%;}
+.post-menu{cursor:pointer;font-size:20px;position:relative;}
+.post-menu-content{display:block;opacity:0;transform:translateY(-5px);transition:all 0.2s ease;position:absolute;right:0;top:25px;background:white;border:1px solid #ccc;border-radius:6px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.15);}
+.post-menu-content button{display:block;width:100%;padding:8px 12px;background:none;border:none;text-align:left;cursor:pointer;}
+.post-menu-content button:hover{background:#f0f2f5;}
+.post-menu-content.show{opacity:1;transform:translateY(0);}
+.post img.post-img{width:100%;margin-top:10px;border-radius:10px;transition:transform 0.3s ease,filter 0.3s ease;}
+.post img.post-img:hover{transform:scale(1.02);filter:brightness(1.05);}
+.comments{margin-top:10px;}
+.comment{background:#f0f2f5;padding:8px 12px;border-radius:8px;margin-bottom:5px;}
+.add-comment{display:flex;gap:8px;margin-top:8px;}
+.add-comment input{flex:1;padding:8px;border-radius:20px;border:1px solid #ccc;}
+.add-comment button{background:#c62828;color:white;border:none;border-radius:20px;padding:0 12px;cursor:pointer;transition:all 0.2s ease;}
+.add-comment button:hover{transform:scale(1.05);opacity:0.9;}
+.add-comment button:active{transform:scale(0.95);}
+
+/* Right Sidebar */
+.right-sidebar{width:250px;}
+.friends-list{background:white;border-radius:10px;padding:10px;margin-bottom:20px;box-shadow:0 2px 5px rgba(0,0,0,.1);}
+.friends-list h3{margin-bottom:10px;font-size:16px;}
+.friend{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.friend img{width:30px;height:30px;border-radius:50%;}
+.dashboard{background:white;border-radius:10px;padding:10px;box-shadow:0 2px 5px rgba(0,0,0,.1);}
+.dashboard h3{margin-bottom:10px;font-size:16px;}
+.dashboard-item{margin-bottom:5px;font-size:14px;}
+
+/* Modal */
+.modal{display:flex;align-items:center;justify-content:center;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity 0.3s ease;}
+.modal.show{opacity:1;pointer-events:auto;}
+.modal-content{background:white;padding:20px;border-radius:10px;width:400px;max-width:90%;animation:fadeSlideUp 0.3s ease;}
+.modal-content textarea{width:100%;height:100px;padding:10px;border-radius:8px;border:1px solid #ccc;resize:none;}
+.modal-content button{margin-top:10px;padding:8px 14px;border:none;border-radius:6px;background:#c62828;color:white;cursor:pointer;transition:all 0.2s ease;}
+.modal-content button:hover{transform:scale(1.05);opacity:0.9;}
+.modal-content button:active{transform:scale(0.95);}
+
+/* Nổi bật nội dung bài đăng */
+.post-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111;
+    line-height: 1.6;
+    margin-top: 10px;
+}
+
+/* Comment bớt nổi bật */
+.comment {
+    background: #f0f2f5;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #555;
+}
+
+/* Animations */
+@keyframes fadeSlideUp {
+    from {opacity: 0; transform: translateY(20px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="profile-section">
+        <div class="profile-avatar">👤</div>
+    </div>
+    <div class="nav-buttons">
+        <button class="sidebar-btn" id="home-btn"><span class="icon-home"></span></button>
+        <button class="sidebar-btn" id="social-btn"><span class="icon-social"></span></button>
+        <button class="sidebar-btn" id="chat-btn"><span class="icon-message"></span></button>
+        <button class="sidebar-btn" id="mission-btn"><span class="icon-mission"></span></button>
+        <button class="sidebar-btn" id="event-btn"><span class="icon-event"></span></button>
+        <button class="sidebar-btn" id="achievement-btn"><span class="icon-achievement"></span></button>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="feed">
+        <div class="post-form">
+            <textarea id="post-text" placeholder="What's on your mind?"></textarea>
+            <div class="actions">
+                <div class="icons">
+                    <label>📷 <input type="file" id="post-image"></label>
+                    <button type="button">😊</button>
+                </div>
+                <button id="post-btn">Post</button>
+            </div>
+        </div>
+
+        <div id="posts-container"></div>
+    </div>
+
+    <div class="right-sidebar">
+        <div class="friends-list">
+            <h3>Friends Online</h3>
+            <div class="friend"><img src="https://i.pravatar.cc/30?img=1"> Anna</div>
+            <div class="friend"><img src="https://i.pravatar.cc/30?img=2"> John</div>
+            <div class="friend"><img src="https://i.pravatar.cc/30?img=3"> Lisa</div>
+        </div>
+        <div class="dashboard">
+            <h3>Dashboard</h3>
+            <div class="dashboard-item">Friends: <span id="friend-count">3</span></div>
+            <div class="dashboard-item">Posts: <span id="post-count">0</span></div>
+            <div class="dashboard-item">Level: <span id="user-level">3</span></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="edit-modal">
+    <div class="modal-content">
+        <h3>Edit Post</h3>
+        <textarea id="edit-text"></textarea>
+        <button id="save-edit">Save</button>
+    </div>
+</div>
+
+<script>
+const postsContainer=document.getElementById('posts-container');
+const postBtn=document.getElementById('post-btn');
+const postText=document.getElementById('post-text');
+const postImage=document.getElementById('post-image');
+const postCount=document.getElementById('post-count');
+let editModal=document.getElementById('edit-modal');
+let editText=document.getElementById('edit-text');
+let currentEditId=null;
+let myName="Default User";
+
+let posts=[
+    {id:1,user:"Anna",avatar:"https://i.pravatar.cc/40?img=1",text:"Beautiful day!",img:"https://placekitten.com/400/250",mine:false,comments:[]},
+    {id:2,user:"John",avatar:"https://i.pravatar.cc/40?img=2",text:"Enjoying my coffee ☕",img:"",mine:false,comments:[]},
+    {id:3,user:"Lisa",avatar:"https://i.pravatar.cc/40?img=3",text:"Vacation time!",img:"https://placekitten.com/401/250",mine:false,comments:[]}
+];
+
+function renderPosts(){
+    postsContainer.innerHTML="";
+    posts.forEach(p=>{
+        let postDiv=document.createElement('div');
+        postDiv.className="post";
+        postDiv.innerHTML=`
+            <div class="post-header">
+                <div class="post-user">
+                    <img src="${p.avatar}"><strong>${p.user}</strong>
+                </div>
+                ${p.mine?`<div class="post-menu">⋮
+                    <div class="post-menu-content">
+                        <button onclick="openEdit(${p.id})">Edit</button>
+                        <button onclick="deletePost(${p.id})">Delete</button>
+                    </div>
+                </div>`:""}
+            </div>
+            <div class="post-text">${p.text}</div>
+            ${p.img?`<img class="post-img" src="${p.img}">`:""}
+            <div class="comments">
+                ${p.comments.map(c=>`<div class="comment"><strong>${c.user}:</strong> ${c.text}</div>`).join("")}
+                <div class="add-comment">
+                    <input type="text" placeholder="Write a comment..." onkeypress="if(event.key==='Enter'){addComment(${p.id}, this.value);this.value='';}">
+                    <button onclick="addComment(${p.id}, this.previousElementSibling.value);this.previousElementSibling.value='';">Send</button>
+                </div>
+            </div>
+        `;
+        if(p.mine){
+            postDiv.querySelector('.post-menu').addEventListener('click',function(e){
+                let menu=this.querySelector('.post-menu-content');
+                document.querySelectorAll('.post-menu-content').forEach(m=>m.classList.remove('show'));
+                menu.classList.toggle('show');
+                e.stopPropagation();
+            });
+        }
+        postsContainer.appendChild(postDiv);
+    });
+    postCount.textContent=posts.filter(p=>p.mine).length;
+}
+function addComment(postId,text){
+    if(!text.trim())return;
+    let post=posts.find(p=>p.id===postId);
+    post.comments.push({user:myName,text});
+    renderPosts();
+}
+function openEdit(id){
+    let post=posts.find(p=>p.id===id);
+    editText.value=post.text;
+    currentEditId=id;
+    editModal.classList.add("show");
+}
+document.getElementById('save-edit').addEventListener('click',()=>{
+    let post=posts.find(p=>p.id===currentEditId);
+    post.text=editText.value;
+    editModal.classList.remove("show");
+    renderPosts();
+});
+function deletePost(id){
+    posts=posts.filter(p=>p.id!==id);
+    renderPosts();
+}
+postBtn.addEventListener('click',()=>{
+    let text=postText.value.trim();
+    if(!text && !postImage.files[0])return;
+    let imgURL="";
+    if(postImage.files[0]){
+        imgURL=URL.createObjectURL(postImage.files[0]);
+    }
+    posts.unshift({id:Date.now(),user:myName,avatar:"https://i.pravatar.cc/40?u=me",text,img:imgURL,mine:true,comments:[]});
+    postText.value="";
+    postImage.value="";
+    renderPosts();
+});
+window.addEventListener('click',(e)=>{
+    if(e.target===editModal){
+        editModal.classList.remove("show");
+    }
+    document.querySelectorAll('.post-menu-content').forEach(m=>m.classList.remove('show'));
+});
+renderPosts();
+</script>
+</body>
+</html>
