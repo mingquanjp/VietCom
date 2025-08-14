@@ -5,12 +5,10 @@ services:
     plan: free
     buildCommand: |
       cd vietcom
-      pwd
-      ls -la
       pip install -r requirements.txt
       python manage.py collectstatic --noinput
       python manage.py migrate
-    startCommand: cd vietcom && gunicorn vietcom.wsgi:application --bind 0.0.0.0:$PORT
+    startCommand: cd vietcom && gunicorn --bind 0.0.0.0:$PORT vietcom.wsgi:application
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.4
