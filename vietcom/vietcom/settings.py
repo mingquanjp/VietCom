@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from decouple import config
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,16 +23,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-gre8^x)7e+$r5=)_x4rshq%9^$7whk)@u#9zbk8x$9#jv)r&cb'
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-gre8^x)7e+$r5=)_x4rshq%9^$7whk)@u#9zbk8x$9#jv)r&cb')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = ['192.168.2.119', 'localhost', '127.0.0.1', '27bcec9eb32f.ngrok-free.app', '*.ngrok-free.app', '*']
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda v: [s.strip() for s in v.split(',')])
 
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://27bcec9eb32f.ngrok-free.app',
     'https://*.ngrok-free.app',
     'https://*.ngrok.io',
 ]
@@ -50,6 +52,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -82,12 +85,21 @@ WSGI_APPLICATION = 'vietcom.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+DATABASE_URL = config('DATABASE_URL', default=None)
+
+if DATABASE_URL:
+    # Production database (PostgreSQL on Render)
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL)
     }
-}
+else:
+    # Development database (SQLite)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -131,6 +143,9 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
+# WhiteNoise configuration for production
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -148,21 +163,28 @@ LOGOUT_REDIRECT_URL = '/users/login/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Ngrok and security settings
-SECURE_CROSS_ORIGIN_OPENER_POLICY = None
-SECURE_REFERRER_POLICY = None
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CSRF settings for ngrok
-CSRF_COOKIE_SECURE = False  # Set to False for ngrok testing
-CSRF_COOKIE_SAMESITE = 'Lax'
-
-# Session settings
-SESSION_COOKIE_SECURE = False  # Set to False for ngrok testing
-SESSION_COOKIE_SAMESITE = 'Lax'
-
-# Allow frames for ngrok
-X_FRAME_OPTIONS = 'SAMEORIGIN'
-
-# Additional security settings for development
-SECURE_SSL_REDIRECT = False
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# Security settings - production vs development
+if not DEBUG:
+    # Production security settings
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
+    SECURE_REFERRER_POLICY = 'same-origin'
+    X_FRAME_OPTIONS = 'DENY'
+    CSRF_COOKIE_SAMESITE = 'Strict'
+    SESSION_COOKIE_SAMESITE = 'Strict'
+else:
+    # Development security settings
+    SECURE_SSL_REDIRECT = False
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    CSRF_COOKIE_SECURE = False
+    SESSION_COOKIE_SECURE = False
+    SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+    SECURE_REFERRER_POLICY = None
+    X_FRAME_OPTIONS = 'SAMEORIGIN'
+    CSRF_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_SAMESITE = 'Lax'
