@@ -1,17 +1,17 @@
 # Django framework and core dependencies
 Django==4.2.1
 
-# Image processing (required for ImageField in models)
-Pillow==9.5.0
+# Image processing (required for ImageField in models) - Updated for Python 3.13
+Pillow==10.0.0
 
 # Database drivers for PostgreSQL (required for Render)
-psycopg2-binary==2.9.6
+psycopg2-binary==2.9.7
 
 # Production WSGI server
-gunicorn==20.1.0
+gunicorn==21.2.0
 
 # Static file serving for production
-whitenoise==6.4.0
+whitenoise==6.5.0
 
 # Environment variables management
 python-decouple==3.8

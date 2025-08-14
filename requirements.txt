@@ -1,7 +1,7 @@
 # Django framework and core dependencies
 Django==4.2.1
 
-# Image processing (required for ImageField in models)
+# Image processing (required for ImageField in models) - Updated for Python 3.13
 Pillow==10.0.0
 
 # Database drivers for PostgreSQL (required for Render)
