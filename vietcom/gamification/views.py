@@ -46,28 +46,37 @@ def mission_list(request):
 def claim_mission_reward(request, mission_id):
     """Nhận thưởng nhiệm vụ"""
     if request.method == 'POST':
-        mission = get_object_or_404(Mission, id=mission_id, is_active=True)
-        user_mission = get_object_or_404(UserMission, user=request.user, mission=mission)
-        
-        if user_mission.status == 'completed':
-            if user_mission.claim_reward():
-                messages.success(
-                    request, 
-                    f'🎉 Chúc mừng! Bạn đã nhận được {mission.points_reward} điểm từ nhiệm vụ "{mission.title}"!'
-                )
-                
-                # Kiểm tra level up
-                old_level = request.user.level
-                request.user.refresh_from_db()  # Refresh để lấy points mới nhất
-                if request.user.level > old_level:
+        try:
+            mission = get_object_or_404(Mission, id=mission_id, is_active=True)
+            user_mission = get_object_or_404(UserMission, user=request.user, mission=mission)
+            
+            print(f"Claiming reward for mission {mission_id}, status: {user_mission.status}")
+            
+            if user_mission.status == 'completed':
+                if user_mission.claim_reward():
                     messages.success(
-                        request,
-                        f'🎊 Tuyệt vời! Bạn đã lên level {request.user.level}!'
+                        request, 
+                        f'🎉 Chúc mừng! Bạn đã nhận được {mission.points_reward} điểm từ nhiệm vụ "{mission.title}"!'
                     )
+                    
+                    # Kiểm tra level up
+                    old_level = request.user.level
+                    request.user.refresh_from_db()  # Refresh để lấy points mới nhất
+                    if request.user.level > old_level:
+                        messages.success(
+                            request,
+                            f'🎊 Tuyệt vời! Bạn đã lên level {request.user.level}!'
+                        )
+                    print(f"Reward claimed successfully for mission {mission_id}")
+                else:
+                    messages.error(request, 'Không thể nhận thưởng cho nhiệm vụ này.')
+                    print(f"Failed to claim reward for mission {mission_id}")
             else:
-                messages.error(request, 'Không thể nhận thưởng cho nhiệm vụ này.')
-        else:
-            messages.error(request, 'Nhiệm vụ chưa hoàn thành hoặc đã nhận thưởng.')
+                messages.error(request, 'Nhiệm vụ chưa hoàn thành hoặc đã nhận thưởng.')
+                print(f"Mission {mission_id} not completed or already claimed, status: {user_mission.status}")
+        except Exception as e:
+            messages.error(request, f'Có lỗi xảy ra: {str(e)}')
+            print(f"Exception in claim_mission_reward: {e}")
     
     return redirect('gamification:mission_list')
 
@@ -132,36 +141,6 @@ def update_mission_progress(user, mission_type, count=1):
                 elif mission_type == 'earn_points':
                     if user.points >= mission.target_count:
                         user_mission.check_completion()
-
-# Signal handlers để tự động cập nhật progress
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.contrib.auth.signals import user_logged_in
-
-@receiver(user_logged_in)
-def handle_login_missions(sender, user, request, **kwargs):
-    """Xử lý missions khi user đăng nhập"""
-    # Check first login
-    if user.last_login is None or UserMission.objects.filter(
-        user=user, 
-        mission__mission_type='first_login',
-        status='claimed'
-    ).count() == 0:
-        update_mission_progress(user, 'first_login')
-    
-    # Daily login - chỉ tính một lần mỗi ngày
-    from django.utils import timezone
-    today = timezone.now().date()
-    
-    # Kiểm tra xem đã login hôm nay chưa
-    today_login_points = UserPoints.objects.filter(
-        user=user,
-        action='login',
-        created_at__date=today
-    ).exists()
-    
-    if not today_login_points:
-        track_daily_login(user)
 
 # Helper functions cho các app khác
 def track_friend_added(user):

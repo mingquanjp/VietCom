@@ -79,22 +79,27 @@ class UserMission(models.Model):
     def claim_reward(self):
         """Nhận thưởng nhiệm vụ"""
         if self.status == 'completed':
-            # Cộng điểm cho user
-            self.user.add_points(self.mission.points_reward)
-            
-            # Tạo lịch sử điểm
-            UserPoints.objects.create(
-                user=self.user,
-                action='mission_complete',
-                points=self.mission.points_reward,
-                description=f'Hoàn thành nhiệm vụ: {self.mission.title}'
-            )
-            
-            # Cập nhật trạng thái
-            self.status = 'claimed'
-            self.claimed_at = timezone.now()
-            self.save()
-            return True
+            try:
+                # Cộng điểm cho user
+                self.user.add_points(self.mission.points_reward)
+                
+                # Tạo lịch sử điểm
+                UserPoints.objects.create(
+                    user=self.user,
+                    action='mission_complete',
+                    points=self.mission.points_reward,
+                    description=f'Hoàn thành nhiệm vụ: {self.mission.title}'
+                )
+                
+                # Cập nhật trạng thái
+                self.status = 'claimed'
+                self.claimed_at = timezone.now()
+                self.save()
+                return True
+            except Exception as e:
+                # Log lỗi nếu cần
+                print(f"Error claiming reward for mission {self.mission.id}: {e}")
+                return False
         return False
     
     def increment_progress(self, count=1):

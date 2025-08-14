@@ -163,15 +163,7 @@ class User(AbstractUser):
             
         self.save()
         
-        # Check for level up missions
-        if self.level > old_level:
-            try:
-                from gamification.views import update_mission_progress
-                update_mission_progress(self, 'level_up')
-                update_mission_progress(self, 'earn_points')
-            except ImportError:
-                pass
-                
+        # Level up missions sẽ được xử lý bởi signals
         return self.points
     
     def get_progress_to_next_level(self):

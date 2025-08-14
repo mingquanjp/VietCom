@@ -609,8 +609,6 @@
     <input type="checkbox" id="achievement-toggle" class="panel-toggle" />
     <input type="checkbox" id="notification-toggle" class="panel-toggle" />
 
-
-
     <!-- Sidebar -->
     <div class="sidebar">
       <!-- Profile section at top -->
@@ -738,45 +736,20 @@
 
       <!-- Event Panel -->
       <div class="content-panel event-panel">
-        <div class="panel-header">Events</div>
+        <div class="panel-header">Sự kiện</div>
         <div class="panel-content">
           <div class="event-card">
-            <h3>Vietnamese Food Festival</h3>
+            <h3>🎉 Khám phá sự kiện</h3>
             <p>
-              Join us for an authentic Vietnamese cuisine experience with
-              traditional dishes and cultural performances.
+              Tham gia các sự kiện thú vị của cộng đồng người Việt: lễ hội ẩm
+              thực, giao lưu ngôn ngữ, networking và nhiều hoạt động bổ ích
+              khác.
             </p>
             <button
               class="btn-connect"
-              onclick="alert('Event details coming soon!')"
+              onclick="window.location.href='{% url 'events:event_list' %}'"
             >
-              See more
-            </button>
-          </div>
-          <div class="event-card">
-            <h3>Language Exchange Meetup</h3>
-            <p>
-              Practice Vietnamese and English with native speakers in a friendly
-              environment.
-            </p>
-            <button
-              class="btn-connect"
-              onclick="alert('Event details coming soon!')"
-            >
-              See more
-            </button>
-          </div>
-          <div class="event-card">
-            <h3>Cultural Night</h3>
-            <p>
-              Experience Vietnamese traditions, music, and dance in our monthly
-              cultural celebration.
-            </p>
-            <button
-              class="btn-connect"
-              onclick="alert('Event details coming soon!')"
-            >
-              See more
+              Xem tất cả sự kiện
             </button>
           </div>
         </div>
@@ -829,14 +802,12 @@
       </div>
     </div>
 
-
-
     <!-- Main Content Area -->
     <div
       class="main-container"
       style="margin-left: 80px; padding: 20px; min-height: 100vh"
     >
-  {% block content %}{% endblock %}
+      {% block content %}{% endblock %}
     </div>
 
     <!-- Bootstrap JS -->

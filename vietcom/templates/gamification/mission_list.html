@@ -233,12 +233,12 @@
   }
 
   .main-container::-webkit-scrollbar-thumb {
-    background: #C62828;
+    background: #c62828;
     border-radius: 10px;
   }
 
   .main-container::-webkit-scrollbar-thumb:hover {
-    background: #C62828;
+    background: #c62828;
   }
 
   /* Completed mission overlay */
@@ -374,8 +374,7 @@
 
   <!-- Missions List -->
   <div class="row" id="missions-container">
-    {% for mission in missions %}
-    {% with user_mission=user_missions|get_item:mission.id %}
+    {% for mission in missions %} {% with user_mission=user_missions|get_item:mission.id %}
     <div class="col-lg-6 mission-item" data-status="{{ user_mission.status }}">
       <div class="mission-card {{ user_mission.status }}">
         <!-- Frequency Badge -->
@@ -399,8 +398,7 @@
         <!-- Mission Stats -->
         <div class="mission-stats">
           <span>
-            {{ user_mission.current_count }}/{{ mission.target_count }} 
-            {% if mission.target_count == 1 %} lần {% else %} lần {% endif %}
+            {{ user_mission.current_count }}/{{ mission.target_count }} {% if mission.target_count == 1 %} lần {% else %} lần {% endif %}
           </span>
 
           {% if user_mission.status == 'completed' %}
@@ -509,9 +507,45 @@
 
   // Add loading state for claim buttons
   document.querySelectorAll(".claim-btn").forEach((btn) => {
-    btn.addEventListener("click", function () {
+    btn.addEventListener("click", function (e) {
+      const originalText = this.innerHTML;
       this.innerHTML = "⏳ Đang xử lý...";
       this.disabled = true;
+
+      // Reset button after 10 seconds if no response
+      setTimeout(() => {
+        if (this.disabled) {
+          this.innerHTML = originalText;
+          this.disabled = false;
+        }
+      }, 10000);
+
+      // Get the form and submit it manually to track completion
+      const form = this.closest("form");
+      if (form) {
+        fetch(form.action, {
+          method: "POST",
+          body: new FormData(form),
+          headers: {
+            "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]")
+              .value,
+          },
+        })
+          .then((response) => {
+            // Redirect to the response URL
+            window.location.href = response.url || window.location.href;
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            // Reset button on error
+            this.innerHTML = originalText;
+            this.disabled = false;
+            alert("Có lỗi xảy ra. Vui lòng thử lại!");
+          });
+
+        // Prevent default form submission
+        e.preventDefault();
+      }
     });
   });
 </script>

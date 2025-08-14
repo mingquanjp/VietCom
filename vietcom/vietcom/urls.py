@@ -29,7 +29,7 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('social/', include('social.urls')),
     path('gamification/', include('gamification.urls')),
-    # path('events/', include('events.urls')),  # Tạm comment để tránh lỗi
+    path('events/', include('events.urls')),
     path('', home_redirect, name='home'),
 ]
 
