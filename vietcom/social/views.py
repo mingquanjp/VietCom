@@ -494,6 +494,35 @@ def cancel_friend_request(request):
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)})
 
+@login_required
+@require_http_methods(["POST"])
+def cancel_friend_request_by_user(request):
+    """Cancel friend request by receiver user ID"""
+    try:
+        data = json.loads(request.body)
+        receiver_id = data.get('receiver_id')
+        
+        if not receiver_id:
+            return JsonResponse({'success': False, 'message': 'Receiver ID is required'})
+        
+        receiver = get_object_or_404(User, id=receiver_id)
+        
+        # Find the friend request sent by current user to receiver
+        friend_request = FriendRequest.objects.filter(
+            sender=request.user,
+            receiver=receiver
+        ).first()
+        
+        if not friend_request:
+            return JsonResponse({'success': False, 'message': 'No friend request found'})
+        
+        friend_request.delete()
+        
+        return JsonResponse({'success': True, 'message': 'Friend request cancelled'})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
 def are_friends(user1, user2):
     """Check if two users are friends"""
     return Friendship.objects.filter(

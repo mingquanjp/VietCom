@@ -417,6 +417,106 @@
 .leaflet-popup-tip {
   background: #BC0126 !important;
 }
+
+/* Map Popup Button Styles - Match sidebar styles */
+.map-btn-add {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 5px;
+}
+
+.map-btn-add:hover {
+  background: #218838;
+  transform: translateY(-2px);
+}
+
+.map-btn-pending {
+  background: #ffc107;
+  color: #212529;
+  border: none;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 5px;
+}
+
+.map-btn-pending:hover {
+  background: #e0a800;
+  transform: translateY(-2px);
+}
+
+.map-btn-friend {
+  background: #0a984a;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 15px;
+  cursor: not-allowed;
+  margin-right: 5px;
+}
+
+.map-btn-connect {
+  background: #043A54;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.map-btn-connect:hover {
+  background: #75A8C5;
+  transform: translateY(-2px);
+}
+
+.map-btn-connect-disabled {
+  background: #6c757d;
+  color: #adb5bd;
+  border: none;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 15px;
+  cursor: not-allowed;
+}
+
+/* Notification animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
 </style>
 {% endblock %}
 
@@ -491,11 +591,11 @@
               class="btn-connect"
               onclick="startChat('{{ user_data.user.id }}')"
             >
-              Chat
+              Chats
             </button>
           {% else %}
             <button class="btn-connect-disabled" disabled>
-              Chat
+              Chats
             </button>
           {% endif %}
         </div>
@@ -545,89 +645,8 @@
   </button>
 </div>
 
-<!-- Content Panels -->
-<div class="panels">
-  <!-- Mission Panel -->
-  <div class="content-panel mission-panel">
-    <div class="panel-header">Mission</div>
-    <div class="panel-content">
-      <div class="event-card">
-        <h3>Daily Check-in</h3>
-        <p>Start your day by checking in and earning points for consistent engagement.</p>
-        <button class="btn-connect" onclick="window.location.href='{% url 'gamification:mission_list' %}'">See more</button>
-      </div>
-      <div class="event-card">
-        <h3>Help a Newcomer</h3>
-        <p>Guide someone new to the community and earn mentor badges.</p>
-        <button class="btn-connect" onclick="window.location.href='{% url 'gamification:mission_list' %}'">See more</button>
-      </div>
-      <div class="event-card">
-        <h3>Share Your Story</h3>
-        <p>Tell your journey and inspire others in the community.</p>
-        <button class="btn-connect" onclick="window.location.href='{% url 'gamification:mission_list' %}'">See more</button>
-      </div>
-      <div class="event-card">
-        <h3>Local Explorer</h3>
-        <p>Discover and review local Vietnamese businesses and services.</p>
-        <button class="btn-connect" onclick="window.location.href='{% url 'gamification:mission_list' %}'">See more</button>
-      </div>
-    </div>
-  </div>
 
-  <!-- Event Panel -->
-  <div class="content-panel event-panel">
-    <div class="panel-header">Event</div>
-    <div class="panel-content">
-      <div class="event-card">
-        <h3>Meet & Greet</h3>
-        <p>Meet, mingle, and expand your network in the Vietnamese community in Japan.</p>
-        <button class="btn-connect" onclick="alert('Event details coming soon!')">See more</button>
-      </div>
-      <div class="event-card">
-        <h3>Career Workshop</h3>
-        <p>Learn job-hunting skills and explore career opportunities in Japan.</p>
-        <button class="btn-connect" onclick="alert('Event details coming soon!')">See more</button>
-      </div>
-      <div class="event-card">
-        <h3>Culture Day</h3>
-        <p>Experience Vietnamese culture through food, games, and music.</p>
-        <button class="btn-connect" onclick="alert('Event details coming soon!')">See more</button>
-      </div>
-      <div class="event-card">
-        <h3>Language Exchange</h3>
-        <p>Practice Japanese and Vietnamese with native speakers in a friendly environment.</p>
-        <button class="btn-connect" onclick="alert('Event details coming soon!')">See more</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Achievement Panel -->
-  <div class="content-panel achievement-panel">
-    <div class="panel-header">Achievement List</div>
-    <div class="panel-content">
-      <div class="event-card">
-        <h3>Community Builder</h3>
-        <p>Earned for helping 10 new members get started in the community.</p>
-        <button class="btn-connect" onclick="alert('Achievement details coming soon!')">View Badge</button>
-      </div>
-      <div class="event-card">
-        <h3>Event Organizer</h3>
-        <p>Successfully organized your first community event with 20+ attendees.</p>
-        <button class="btn-connect" onclick="alert('Achievement details coming soon!')">View Badge</button>
-      </div>
-      <div class="event-card">
-        <h3>Cultural Ambassador</h3>
-        <p>Shared Vietnamese culture and traditions with the broader community.</p>
-        <button class="btn-connect" onclick="alert('Achievement details coming soon!')">View Badge</button>
-      </div>
-      <div class="event-card">
-        <h3>Mentor of the Month</h3>
-        <p>Recognized for outstanding support and guidance to community members.</p>
-        <button class="btn-connect" onclick="alert('Achievement details coming soon!')">View Badge</button>
-      </div>
-    </div>
-  </div>
-</div>
+  
 
 <!-- Hidden map container for the original map functionality -->
 <div id="map" style="position: absolute; top: 0; left: 80px; right: 0; bottom: 0; z-index: 1;"></div>
@@ -645,10 +664,521 @@
     <script>
       let isUpdating = false;
 
+    // Global variables
+    let map, userMarkers = [];
+    const currentUserId = {{ user.id }};
+
+    // MAP POPUP FUNCTIONS - EARLY DECLARATION FOR HOISTING
+    // Debug: Add friend from map popup
+    function addFriendFromMap(userId, buttonElement) {
+        console.log('=== ADD FRIEND FROM MAP DEBUG ===');
+        console.log('Function called with userId:', userId, 'buttonElement:', buttonElement);
+        console.log('Current user ID:', currentUserId);
+        console.log('Button element:', buttonElement);
+        
+        if (!buttonElement) {
+            console.error('Button element is null!');
+            return;
+        }
+        
+        console.log('Button classes before:', buttonElement.className);
+        console.log('Button onclick before:', buttonElement.onclick);
+        
+        fetch('/social/send-friend-request/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'user_id': userId
+            })
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data);
+            if (data.success) {
+                console.log('Friend request sent successfully');
+                
+                // Update button to "Sent" state
+                buttonElement.textContent = 'Sent';
+                buttonElement.className = 'map-btn-pending';
+                buttonElement.onclick = function() { 
+                    console.log('Pending button clicked - cancelling request');
+                    cancelFriendRequestByUserId(userId, buttonElement); 
+                };
+                
+                // Update both map and sidebar
+                updateBothMapAndSidebar(userId, 'sent', data.request_id || 'unknown');
+                
+                console.log('Button updated - classes after:', buttonElement.className);
+                console.log('Button text after:', buttonElement.textContent);
+                
+                showNotification('Friend request sent!', 'success');
+            } else {
+                console.log('Friend request failed, checking reason:', data.message);
+                
+                // Handle specific cases
+                if (data.message && data.message.toLowerCase().includes('already sent')) {
+                    console.log('Handling already sent case');
+                    // If already sent, update button to Sent state
+                    buttonElement.textContent = 'Sent';
+                    buttonElement.className = 'map-btn-pending';
+                    buttonElement.onclick = function() { 
+                        console.log('Pending button clicked - cancelling request');
+                        cancelFriendRequestByUserId(userId, buttonElement); 
+                    };
+                    updateBothMapAndSidebar(userId, 'sent');
+                    showNotification('Friend request already sent', 'info');
+                } else if (data.message && data.message.toLowerCase().includes('already friends')) {
+                    console.log('Handling already friends case');
+                    // If already friends, update button to Friends state
+                    buttonElement.textContent = 'Friends';
+                    buttonElement.className = 'map-btn-friend';
+                    buttonElement.onclick = null;
+                    buttonElement.disabled = true;
+                    updateBothMapAndSidebar(userId, 'friends');
+                    showNotification('You are already friends', 'info');
+                } else {
+                    // Other errors - keep Add button
+                    console.log('Other error:', data.message);
+                    showNotification(data.message || 'Failed to send friend request', 'error');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            showNotification('Error sending friend request', 'error');
+        });
+    }
+    
+    // Debug: Cancel friend request from map popup  
+    function cancelFriendRequestFromMap(requestId, buttonElement) {
+        console.log('=== CANCEL FRIEND REQUEST FROM MAP DEBUG ===');
+        console.log('Function called with requestId:', requestId, 'buttonElement:', buttonElement);
+        
+        if (!buttonElement) {
+            console.error('Button element is null!');
+            return;
+        }
+        
+        if (!requestId || requestId === 'undefined' || requestId === '') {
+            console.error('Invalid request ID:', requestId);
+            showNotification('Cannot cancel - invalid request ID', 'error');
+            return;
+        }
+        
+        console.log('Button classes before:', buttonElement.className);
+        
+        fetch('/social/cancel-friend-request/', {
+            method: 'POST', 
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'request_id': requestId
+            })
+        })
+        .then(response => {
+            console.log('Cancel response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Cancel response data:', data);
+            if (data.success) {
+                console.log('Friend request cancelled successfully');
+                
+                // Update button back to "Add" state
+                buttonElement.textContent = 'Add';
+                buttonElement.className = 'map-btn-add';
+                buttonElement.onclick = function() { 
+                    console.log('Add button clicked again');
+                    addFriendFromMap(userId, buttonElement); 
+                };
+                
+                console.log('Button reverted - classes after:', buttonElement.className);
+                console.log('Button text after:', buttonElement.textContent);
+                
+                showNotification('Friend request cancelled', 'info');
+            } else {
+                console.error('Failed to cancel friend request:', data.message);
+                showNotification(data.message || 'Failed to cancel friend request', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Cancel fetch error:', error);
+            showNotification('Error cancelling friend request', 'error');
+        });
+    }
+
+    // Helper function to get request ID for cancelling
+    function cancelFriendRequestByUserId(userId, buttonElement) {
+        console.log('=== CANCEL BY USER ID DEBUG ===');
+        console.log('Finding request to cancel for user:', userId);
+        
+        // Ask for confirmation first
+        if (!confirm('Are you sure you want to cancel this friend request?')) {
+            console.log('User cancelled the cancellation');
+            return;
+        }
+        
+        // Try to cancel by finding the request based on sender/receiver
+        fetch('/social/cancel-friend-request-by-user/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'receiver_id': userId
+            })
+        })
+        .then(response => {
+            console.log('Cancel by user response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Cancel by user response data:', data);
+            if (data.success) {
+                console.log('Friend request cancelled successfully');
+                
+                // Update button back to "Add" state
+                buttonElement.textContent = 'Add';
+                buttonElement.className = 'map-btn-add';
+                buttonElement.onclick = function() { 
+                    console.log('Add button clicked again');
+                    addFriendFromMap(userId, buttonElement); 
+                };
+                
+                // Update both map and sidebar
+                updateBothMapAndSidebar(userId, 'none');
+                
+                console.log('Button reverted - classes after:', buttonElement.className);
+                console.log('Button text after:', buttonElement.textContent);
+                
+                showNotification('Friend request cancelled', 'info');
+            } else {
+                console.error('Failed to cancel by user:', data.message);
+                showNotification(data.message || 'Failed to cancel friend request', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Cancel by user fetch error:', error);
+            showNotification('Error cancelling friend request', 'error');
+        });
+    }
+    
+    // Function to cancel with actual request ID
+    function cancelFriendRequestWithId(requestId, userId, buttonElement) {
+        console.log('=== CANCEL WITH REQUEST ID DEBUG ===');
+        console.log('Cancelling request ID:', requestId);
+        
+        fetch('/social/cancel-friend-request/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'request_id': requestId
+            })
+        })
+        .then(response => {
+            console.log('Cancel with ID response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Cancel with ID response data:', data);
+            if (data.success) {
+                console.log('Friend request cancelled successfully with ID');
+                
+                // Update button back to "Add" state
+                buttonElement.textContent = 'Add';
+                buttonElement.className = 'map-btn-add';
+                buttonElement.onclick = function() { 
+                    console.log('Add button clicked again');
+                    addFriendFromMap(userId, buttonElement); 
+                };
+                
+                // Update both map and sidebar
+                updateBothMapAndSidebar(userId, 'none');
+                
+                console.log('Button reverted - classes after:', buttonElement.className);
+                console.log('Button text after:', buttonElement.textContent);
+                
+                showNotification('Friend request cancelled', 'info');
+            } else {
+                console.error('Failed to cancel with ID:', data.message);
+                showNotification(data.message || 'Failed to cancel friend request', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Cancel with ID fetch error:', error);
+            showNotification('Error cancelling friend request', 'error');
+        });
+    }
+    
+    // Fallback function for direct cancellation by user_id
+    function cancelFriendRequestDirectly(userId, buttonElement) {
+        console.log('=== DIRECT CANCEL DEBUG ===');
+        console.log('Cancelling request for user ID:', userId);
+        
+        // Try with sender_id first (you are the sender)
+        fetch('/social/cancel-friend-request/', {
+            method: 'POST', 
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'sender_id': currentUserId,
+                'receiver_id': userId
+            })
+        })
+        .then(response => {
+            console.log('Direct cancel response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Direct cancel response data:', data);
+            if (data.success) {
+                console.log('Friend request cancelled successfully');
+                
+                // Update button back to "Add" state
+                buttonElement.textContent = 'Add';
+                buttonElement.className = 'map-btn-add';
+                buttonElement.onclick = function() { 
+                    console.log('Add button clicked again');
+                    addFriendFromMap(userId, buttonElement); 
+                };
+                
+                // Update both map and sidebar
+                updateBothMapAndSidebar(userId, 'none');
+                
+                console.log('Button reverted - classes after:', buttonElement.className);
+                console.log('Button text after:', buttonElement.textContent);
+                
+                showNotification('Friend request cancelled', 'info');
+            } else {
+                console.error('Failed to cancel friend request:', data.message);
+                console.log('Trying alternative cancel method...');
+                
+                // Try alternative method - just with receiver_id
+                fetch('/social/cancel-friend-request/', {
+                    method: 'POST', 
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        'user_id': userId
+                    })
+                })
+                .then(response => response.json())
+                .then(altData => {
+                    console.log('Alternative cancel response:', altData);
+                    if (altData.success) {
+                        // Update button back to "Add" state
+                        buttonElement.textContent = 'Add';
+                        buttonElement.className = 'map-btn-add';
+                        buttonElement.onclick = function() { 
+                            console.log('Add button clicked again');
+                            addFriendFromMap(userId, buttonElement); 
+                        };
+                        updateBothMapAndSidebar(userId, 'none');
+                        showNotification('Friend request cancelled', 'info');
+                    } else {
+                        showNotification(altData.message || 'Failed to cancel friend request', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Alternative cancel error:', error);
+                    showNotification('Error cancelling friend request', 'error');
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Direct cancel fetch error:', error);
+            showNotification('Error cancelling friend request', 'error');
+        });
+    }
+
+    // Function to get current friend status from updated nearbyUsers array
+    function getCurrentFriendStatus(userId) {
+        console.log('=== GET CURRENT FRIEND STATUS DEBUG ===');
+        console.log('Looking for user ID:', userId, '(type:', typeof userId, ')');
+        console.log('nearbyUsers array length:', nearbyUsers.length);
+        console.log('nearbyUsers IDs with types:', nearbyUsers.map(u => ({id: u.id, type: typeof u.id, status: u.friend_status})));
+        
+        // Try multiple comparison methods
+        let user = nearbyUsers.find(u => u.id == userId);
+        if (!user) {
+            user = nearbyUsers.find(u => u.id === userId);
+        }
+        if (!user) {
+            user = nearbyUsers.find(u => String(u.id) === String(userId));
+        }
+        
+        if (user) {
+            console.log('Found user:', user);
+            console.log('User friend_status:', user.friend_status);
+            console.log('User request_id:', user.request_id);
+            
+            // Return the status even if it's 'none' or null
+            const friendStatus = user.friend_status || 'none';
+            console.log('Returning friend status:', friendStatus);
+            return {
+                friendStatus: friendStatus,
+                requestId: user.request_id || ''
+            };
+        }
+        console.log('User not found in nearbyUsers array, returning none');
+        return {
+            friendStatus: 'none',
+            requestId: ''
+        };
+    }
+
+    // Function to update both map and sidebar friend status
+    function updateBothMapAndSidebar(userId, newFriendStatus, requestId = null) {
+        console.log('=== SYNC MAP AND SIDEBAR ===');
+        console.log('Updating user', userId, 'to status:', newFriendStatus);
+        
+        // Update map data
+        updateUserInMapData(userId, newFriendStatus, requestId);
+        
+        // Update sidebar button
+        updateSidebarFriendButton(userId, newFriendStatus, requestId);
+        
+        // Force refresh popup content by closing any open popup
+        if (map && map.closePopup) {
+            map.closePopup();
+            console.log('Closed any open popup to force refresh');
+        }
+    }
+    
+    // Function to update sidebar friend button
+    function updateSidebarFriendButton(userId, friendStatus, requestId = null) {
+        console.log('=== UPDATE SIDEBAR BUTTON ===');
+        const sidebarButton = document.getElementById(`friend-btn-${userId}`);
+        
+        if (!sidebarButton) {
+            console.log('Sidebar button not found for user', userId);
+            return;
+        }
+        
+        console.log('Found sidebar button:', sidebarButton);
+        console.log('Updating to status:', friendStatus);
+        
+        if (friendStatus === 'friends') {
+            sidebarButton.textContent = 'Friends';
+            sidebarButton.className = 'btn-friend';
+            sidebarButton.disabled = true;
+            sidebarButton.onclick = null;
+        } else if (friendStatus === 'sent') {
+            sidebarButton.textContent = 'Sent';
+            sidebarButton.className = 'btn-pending';
+            sidebarButton.disabled = false;
+            sidebarButton.onclick = function() { 
+                cancelFriendRequestByUserId(userId, sidebarButton); 
+            };
+        } else if (friendStatus === 'received') {
+            sidebarButton.textContent = 'Respond';
+            sidebarButton.className = 'btn-add';
+            sidebarButton.disabled = false;
+            sidebarButton.onclick = function() { 
+                showRequestActions(requestId); 
+            };
+        } else { // none
+            sidebarButton.textContent = 'Add';
+            sidebarButton.className = 'btn-add';
+            sidebarButton.disabled = false;
+            sidebarButton.onclick = function() { 
+                addFriendFromMap(userId, sidebarButton); 
+            };
+        }
+        
+        console.log('Sidebar button updated:', sidebarButton.textContent, sidebarButton.className);
+    }
+    function updateUserInMapData(userId, newFriendStatus, requestId = null) {
+        console.log('=== UPDATE USER IN MAP DATA DEBUG ===');
+        console.log('Updating user', userId, '(type:', typeof userId, ') to status:', newFriendStatus);
+        console.log('Request ID:', requestId);
+        console.log('nearbyUsers before update:', nearbyUsers.map(u => ({id: u.id, type: typeof u.id, status: u.friend_status})));
+        
+        // Find and update user in nearbyUsers array - try both == and === comparison
+        let userIndex = nearbyUsers.findIndex(user => user.id == userId);
+        if (userIndex === -1) {
+            userIndex = nearbyUsers.findIndex(user => user.id === userId);
+        }
+        if (userIndex === -1) {
+            userIndex = nearbyUsers.findIndex(user => String(user.id) === String(userId));
+        }
+        
+        console.log('User index found:', userIndex);
+        
+        if (userIndex !== -1) {
+            console.log('User before update:', nearbyUsers[userIndex]);
+            nearbyUsers[userIndex].friend_status = newFriendStatus;
+            if (requestId) {
+                nearbyUsers[userIndex].request_id = requestId;
+            }
+            console.log('User after update:', nearbyUsers[userIndex]);
+            console.log('Updated user data in nearbyUsers array');
+        } else {
+            console.warn('User not found in nearbyUsers array');
+            console.log('Looking for userId:', userId, '(type:', typeof userId, ')');
+            console.log('Available user IDs:', nearbyUsers.map(u => ({id: u.id, type: typeof u.id})));
+        }
+        
+        console.log('nearbyUsers after update:', nearbyUsers.map(u => ({id: u.id, status: u.friend_status})));
+    }
+
+    // Assign functions to window object for global access
+    window.addFriendFromMap = addFriendFromMap;
+    window.cancelFriendRequestFromMap = cancelFriendRequestFromMap;
+    window.cancelFriendRequestByUserId = cancelFriendRequestByUserId;
+    window.cancelFriendRequestDirectly = cancelFriendRequestDirectly;
+    window.updateUserInMapData = updateUserInMapData;
+    window.getCurrentFriendStatus = getCurrentFriendStatus;
+    window.updateBothMapAndSidebar = updateBothMapAndSidebar;
+    window.updateSidebarFriendButton = updateSidebarFriendButton;
+
+    // Notification function
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+        `;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
+    }
+
 
     const nearbyUsers = JSON.parse('{{ map_users_json|escapejs }}');
     const currentUser = JSON.parse('{{ current_user_json|escapejs }}');
-    let map = null; // Variable to store map object
     let searchRadiusCircle = null; // Variable to store search radius circle
     
     
@@ -680,12 +1210,12 @@
   });
 
 
-// Close dropdown when clicking outside
-document.addEventListener('click', function(e) {
-  if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
-    profileDropdown.classList.remove('show');
-  }
-});
+// Close dropdown when clicking outside - COMMENTED OUT TO FIX ERROR
+// document.addEventListener('click', function(e) {
+//   if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+//     profileDropdown.classList.remove('show');
+//   }
+// });
 });
 
 
@@ -737,48 +1267,65 @@ document.addEventListener('click', function(e) {
 
             const marker = L.marker([user.latitude, user.longitude]).addTo(map);
             
-            // Tạo popup hiển thị thông tin khi click với logic tương tự nearby users list
-            let friendButton = '';
-            let chatButton = '';
+            // DEBUG: Log user data to see friend_status
+            console.log('=== CREATING MARKER DEBUG ===');
+            console.log('User ID:', user.id, 'Full name:', user.full_name);
+            console.log('Creating marker with dynamic popup for user:', user.id);
             
-            // Logic cho nút kết bạn - sử dụng friend_status hoặc fallback
-            const friendStatus = user.friend_status || 'none';
-            const requestId = user.request_id || '';
-            
-            if (friendStatus === 'friends') {
-                friendButton = `<button class="btn btn-sm btn-success" disabled style="background: #0a984a; color: white; border: none; padding: 6px 12px; font-size: 11px; border-radius: 15px; margin-right: 5px;">Friends</button>`;
-            } else if (friendStatus === 'sent') {
-                friendButton = `<button class="btn btn-sm btn-warning" onclick="cancelFriendRequest('${requestId}')" style="background: #ffc107; color: #212529; border: none; padding: 6px 12px; font-size: 11px; border-radius: 15px; margin-right: 5px;">Sent</button>`;
-            } else if (friendStatus === 'received') {
-                friendButton = `<button class="btn btn-sm btn-primary" onclick="showRequestActions('${requestId}')" style="background: #28a745; color: white; border: none; padding: 6px 12px; font-size: 11px; border-radius: 15px; margin-right: 5px;">Respond</button>`;
-            } else {
-                friendButton = `<button class="btn btn-sm btn-success" onclick="addFriend('${user.id}')" id="popup-friend-btn-${user.id}" style="background: #28a745; color: white; border: none; padding: 6px 12px; font-size: 11px; border-radius: 15px; margin-right: 5px;"><i class="fas fa-user-plus"></i> Add</button>`;
-            }
-            
-            // Logic cho nút chat
-            if (friendStatus === 'friends') {
-                chatButton = `<button class="btn btn-sm btn-info" onclick="startChat('${user.id}')" style="background: #043A54; color: white; border: none; padding: 6px 12px; font-size: 11px; border-radius: 15px;"><i class="fas fa-comment"></i> Chat</button>`;
-            } else {
-                chatButton = `<button class="btn btn-sm btn-secondary" disabled style="background: #6c757d; color: #adb5bd; border: none; padding: 6px 12px; font-size: 11px; border-radius: 15px; cursor: not-allowed;">Chat</button>`;
-            }
-
             // Tạo bio display với fallback
             const bioText = user.bio ? user.bio : (user.interests ? user.interests : '');
             const bioDisplay = bioText ? `<p style="margin: 5px 0; font-size: 11px; color: #888; font-style: italic;">"${bioText.length > 30 ? bioText.substring(0, 30) + '...' : bioText}"</p>` : '';
 
-            const popupContent = `
-                <div class="text-center" style="min-width: 200px; padding: 10px;">
-                    <img src="${user.avatar_url}" alt="${user.full_name}" width="60" class="rounded-circle mb-2" style="border: 2px solid #BC0126;">
-                    <h6 style="margin: 8px 0; font-weight: 600; color: #333;">${user.full_name}</h6>
-                    <p style="margin: 5px 0; font-size: 12px; color: #666;">📍 ${user.distance}km away</p>
-                    ${bioDisplay}
-                    <div style="margin-top: 10px; display: flex; justify-content: center; gap: 5px; flex-wrap: wrap;">
-                        ${friendButton}
-                        ${chatButton}
+            // Bind popup with dynamic content generation ONLY
+            marker.bindPopup(() => {
+                console.log('=== DYNAMIC POPUP GENERATION ===');
+                console.log('Creating popup for user:', user.id, 'on-demand');
+                
+                // Get current status every time popup opens
+                const currentStatus = getCurrentFriendStatus(user.id);
+                const currentFriendStatus = currentStatus.friendStatus;
+                const currentRequestId = currentStatus.requestId;
+                
+                console.log('Dynamic friend status for user', user.id, ':', currentFriendStatus);
+                
+                let dynamicFriendButton = '';
+                let dynamicChatButton = '';
+                
+                // Generate buttons based on current status
+                if (currentFriendStatus === 'friends') {
+                    dynamicFriendButton = `<button class="map-btn-friend" disabled>Friends</button>`;
+                    console.log('Dynamic: User', user.id, 'is a friend - showing Friends button');
+                } else if (currentFriendStatus === 'sent' || currentFriendStatus === 'pending') {
+                    dynamicFriendButton = `<button class="map-btn-pending" onclick="cancelFriendRequestByUserId('${user.id}', this)">Sent</button>`;
+                    console.log('Dynamic: User', user.id, 'has pending request - showing Sent button');
+                } else if (currentFriendStatus === 'received') {
+                    dynamicFriendButton = `<button class="map-btn-add" onclick="showRequestActions('${currentRequestId}')">Respond</button>`;
+                    console.log('Dynamic: User', user.id, 'sent you a request - showing Respond button');
+                } else {
+                    dynamicFriendButton = `<button class="map-btn-add" onclick="addFriendFromMap('${user.id}', this)" id="popup-friend-btn-${user.id}">Add</button>`;
+                    console.log('Dynamic: User', user.id, 'no relationship - showing Add button');
+                }
+                
+                // Chat button logic
+                if (currentFriendStatus === 'friends') {
+                    dynamicChatButton = `<button class="map-btn-connect" onclick="startChat('${user.id}')">Chat</button>`;
+                } else {
+                    dynamicChatButton = `<button class="map-btn-connect-disabled" disabled>Chat</button>`;
+                }
+                
+                return `
+                    <div class="text-center" style="min-width: 200px; padding: 10px;">
+                        <img src="${user.avatar_url}" alt="${user.full_name}" width="60" class="rounded-circle mb-2" style="border: 2px solid #BC0126;">
+                        <h6 style="margin: 8px 0; font-weight: 600; color: #333;">${user.full_name}</h6>
+                        <p style="margin: 5px 0; font-size: 12px; color: #666;">📍 ${user.distance}km away</p>
+                        ${bioDisplay}
+                        <div style="margin-top: 10px; display: flex; justify-content: center; gap: 5px; flex-wrap: wrap;">
+                            ${dynamicFriendButton}
+                            ${dynamicChatButton}
+                        </div>
                     </div>
-                </div>
-            `;
-            marker.bindPopup(popupContent);
+                `;
+            });
         });
     }
 
@@ -828,9 +1375,13 @@ document.addEventListener('click', function(e) {
         const btn = document.getElementById("refreshBtn");
         const spinner = document.getElementById("loadingSpinner");
 
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
-        spinner.style.display = "block";
+        if (btn) {
+          btn.disabled = true;
+          btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+        }
+        if (spinner) {
+          spinner.style.display = "block";
+        }
 
         if ("geolocation" in navigator) {
           // Options for high accuracy location
@@ -929,9 +1480,11 @@ document.addEventListener('click', function(e) {
             updateMapWithNewData();
           })
           .finally(() => {
-            document.getElementById("refreshBtn").disabled = false;
-            document.getElementById("refreshBtn").innerHTML =
-              '<i class="fas fa-sync-alt"></i> Refresh';
+            const refreshBtn = document.getElementById("refreshBtn");
+            if (refreshBtn) {
+              refreshBtn.disabled = false;
+              refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+            }
             document.getElementById("loadingSpinner").style.display = "none";
           });
       }
@@ -954,10 +1507,20 @@ document.addEventListener('click', function(e) {
           .then((response) => response.json())
           .then((data) => {
             if (data.success) {
-              alert("🎉 Friend request sent!");
+              // Update both map and sidebar
+              updateBothMapAndSidebar(userId, 'sent', data.request_id || 'unknown');
+              showNotification("🎉 Friend request sent!", 'success');
             } else {
-              alert("❌ " + data.message);
+              btn.disabled = false;
+              btn.innerHTML = originalContent;
+              showNotification("❌ " + data.message, 'error');
             }
+          })
+          .catch(error => {
+            console.error('Add friend error:', error);
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+            showNotification("❌ Error sending friend request", 'error');
           });
       }
 
@@ -1101,9 +1664,8 @@ document.addEventListener('click', function(e) {
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            btn.className = 'btn-pending';
-            btn.innerHTML = 'Sent';
-            btn.onclick = () => cancelFriendRequest(data.request_id);
+            // Update both map and sidebar
+            updateBothMapAndSidebar(userId, 'sent', data.request_id || 'unknown');
             showNotification(data.message, 'success');
           } else {
             btn.disabled = false;
@@ -1112,6 +1674,7 @@ document.addEventListener('click', function(e) {
           }
         })
         .catch(error => {
+          console.error('Add friend error:', error);
           btn.disabled = false;
           btn.innerHTML = originalContent;
           showNotification('Error sending friend request', 'error');
@@ -1132,10 +1695,21 @@ document.addEventListener('click', function(e) {
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            location.reload(); // Refresh to update UI
+            // Find the user by request_id to get userId for sync
+            const user = nearbyUsers.find(u => u.request_id == requestId);
+            if (user) {
+              updateBothMapAndSidebar(user.id, 'none');
+              showNotification('Friend request cancelled', 'info');
+            } else {
+              location.reload(); // Fallback if user not found
+            }
           } else {
             showNotification(data.message, 'error');
           }
+        })
+        .catch(error => {
+          console.error('Cancel request error:', error);
+          showNotification('Error cancelling friend request', 'error');
         });
       }
       
@@ -1162,11 +1736,22 @@ document.addEventListener('click', function(e) {
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            showNotification(data.message, 'success');
-            location.reload(); // Refresh to update UI
+            // Find the user by request_id to get userId for sync
+            const user = nearbyUsers.find(u => u.request_id == requestId);
+            if (user) {
+              const newStatus = action === 'accept' ? 'friends' : 'none';
+              updateBothMapAndSidebar(user.id, newStatus);
+              showNotification(data.message, 'success');
+            } else {
+              location.reload(); // Fallback if user not found
+            }
           } else {
             showNotification(data.message, 'error');
           }
+        })
+        .catch(error => {
+          console.error('Respond to request error:', error);
+          showNotification('Error responding to friend request', 'error');
         });
       }
       

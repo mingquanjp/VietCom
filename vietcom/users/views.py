@@ -59,7 +59,9 @@ def nearby_users(request):
             'avatar_url': user_data['user'].avatar.url if user_data['user'].avatar else '/static/default-avatar.png',
             'latitude': user_data['user'].latitude,
             'longitude': user_data['user'].longitude,
-            'distance': round(user_data['distance'], 1)
+            'distance': round(user_data['distance'], 1),
+            'friend_status': user_data['friend_status'],
+            'request_id': user_data['request_id']
         })
 
     # Get current user's search radius based on level

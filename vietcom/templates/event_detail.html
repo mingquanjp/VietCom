@@ -364,15 +364,6 @@ Events{% endblock %} {% block content %}
           </div>
         </div>
 
-        <div class="meta-item-large">
-          <span class="icon">👤</span>
-          <div class="meta-content">
-            <h4>Organized by</h4>
-            <p>
-              {{ event.creator.get_full_name|default:event.creator.username }}
-            </p>
-          </div>
-        </div>
 
         <div class="meta-item-large">
           <span class="icon">👥</span>
@@ -422,15 +413,11 @@ Events{% endblock %} {% block content %}
             src="{{ participation.user.avatar.url }}"
             alt="{{ participation.user.get_full_name }}"
           />
-          {% else %} {{
-          participation.user.get_full_name.0|default:participation.user.username.0|upper
-          }} {% endif %}
+          {% else %} {{ participation.user.get_full_name.0|default:participation.user.username.0|upper }} {% endif %}
         </div>
         <div class="participant-info">
           <h5>
-            {{
-            participation.user.get_full_name|default:participation.user.username
-            }}
+            {{ participation.user.get_full_name|default:participation.user.username }}
           </h5>
           <small>{{ participation.joined_at|date:"d/m/Y" }}</small>
         </div>

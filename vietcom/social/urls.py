@@ -28,6 +28,7 @@ urlpatterns = [
     path('send-friend-request/', views.send_friend_request, name='send_friend_request'),
     path('respond-friend-request/', views.respond_friend_request, name='respond_friend_request'),
     path('cancel-friend-request/', views.cancel_friend_request, name='cancel_friend_request'),
+    path('cancel-friend-request-by-user/', views.cancel_friend_request_by_user, name='cancel_friend_request_by_user'),
     
     # Call APIs
     path('call/initiate/', views.initiate_call, name='initiate_call'),

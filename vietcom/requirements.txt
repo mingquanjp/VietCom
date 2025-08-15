@@ -1,10 +1,7 @@
-Django==4.2.1
+﻿Django==4.2.1
 Pillow
 psycopg2-binary
 gunicorn
 whitenoise
 python-decouple
 dj-database-url
-
-# Timezone data
-pytz==2023.3
