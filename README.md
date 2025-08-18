@@ -28,7 +28,7 @@
 | **💬 Real-time Chat**  | 1-on-1 messaging with WebSocket support and push notifications.                          |
 | **📱 Social Feed**     | Post updates, photos, and interact via likes/comments with a 2-column layout.            |
 | **🎮 Gamification**    | Level/point system (e.g., Level 2 unlocks 7km search radius).                            |
-| **🎯 Event Management**| Create and join offline events (meetups, cultural exchanges).                            |
+| **🎯 Event Management**| Join offline events (meetups, cultural exchanges).                            |
 
 ---
 
@@ -84,3 +84,9 @@ python manage.py migrate
 python manage.py runserver
 ```
 ## Contributors
+- [Nguyen Minh Quan](https://github.com/mingquanjp)
+- [Imai Momone](https://github.com/nyankororin)
+- [Ha Trong Thang](https://github.com/hazeth-htt)
+- [Hosoya Moka](https://github.com/sqn7c)
+ 
+
