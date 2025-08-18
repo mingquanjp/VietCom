@@ -21,17 +21,19 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 def home_redirect(request):
-    # Homepage luôn là trang Find Nearby Friends
-    return redirect('nearby_users')
+    # Homepage luôn là trang First Page để chọn đăng nhập/đăng ký
+    return redirect('firstpage')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
     path('social/', include('social.urls')),
-    # path('events/', include('events.urls')),  # Tạm comment để tránh lỗi
+    path('gamification/', include('gamification.urls')),
+    path('events/', include('events.urls')),
     path('', home_redirect, name='home'),
 ]
 
 # Serve media files during development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

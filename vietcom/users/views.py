@@ -9,10 +9,19 @@ from django.db.models import Q
 import json
 import math
 from .models import User
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, CustomUserChangeForm
 from social.models import Friendship, FriendRequest
 # Remove this import if gamification app doesn't exist yet
 # from gamification.models import UserPoints
+
+def firstpage(request):
+    """Landing page with authentication options"""
+    return render(request, 'firstpage.html')
+
+@login_required
+def temp_page(request):
+    """Temporary welcome page after login/register"""
+    return render(request, 'temp.html')
 
 def calculate_distance(lat1, lon1, lat2, lon2):
     """Calculate distance between two points using Haversine formula"""
@@ -50,7 +59,9 @@ def nearby_users(request):
             'avatar_url': user_data['user'].avatar.url if user_data['user'].avatar else '/static/default-avatar.png',
             'latitude': user_data['user'].latitude,
             'longitude': user_data['user'].longitude,
-            'distance': round(user_data['distance'], 1)
+            'distance': round(user_data['distance'], 1),
+            'friend_status': user_data['friend_status'],
+            'request_id': user_data['request_id']
         })
 
     # Get current user's search radius based on level
@@ -208,8 +219,16 @@ def register(request):
             try:
                 user = form.save()
                 login(request, user)
+                
+                # Track first login mission
+                try:
+                    from gamification.views import track_first_login
+                    track_first_login(user)
+                except ImportError:
+                    pass
+                
                 messages.success(request, 'Đăng ký thành công!')
-                return redirect('wall')
+                return redirect('temp_page')
             except Exception as e:
                 messages.error(request, f'Đăng ký thất bại: {str(e)}')
         else:
@@ -219,3 +238,38 @@ def register(request):
     else:
         form = CustomUserCreationForm()
     return render(request, 'register.html', {'form': form})
+
+@login_required
+def profile_update(request):
+    """Update user profile"""
+    if request.method == 'POST':
+        form = CustomUserChangeForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            old_avatar = request.user.avatar
+            user = form.save()
+            
+            # Track avatar upload mission
+            if 'avatar' in form.changed_data and user.avatar:
+                try:
+                    from gamification.views import track_avatar_uploaded
+                    track_avatar_uploaded(user)
+                except ImportError:
+                    pass
+            
+            # Track profile completion mission
+            try:
+                from gamification.views import track_profile_completed
+                track_profile_completed(user)
+            except ImportError:
+                pass
+            
+            messages.success(request, 'Cập nhật hồ sơ thành công!')
+            return redirect('profile_update')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f'{field}: {error}')
+    else:
+        form = CustomUserChangeForm(instance=request.user)
+    
+    return render(request, 'users/profile_update.html', {'form': form})

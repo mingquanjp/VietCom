@@ -32,7 +32,7 @@ class CustomUserCreationForm(UserCreationForm):
     )
     gender = forms.ChoiceField(
         choices=User.GENDER_CHOICES,
-        required=False,
+        required=True,
         widget=forms.Select(attrs={
             'class': 'form-control'
         })
@@ -47,26 +47,26 @@ class CustomUserCreationForm(UserCreationForm):
         # Add CSS classes and placeholders to all fields
         self.fields['username'].widget.attrs.update({
             'class': 'form-control',
-            'placeholder': '✨ Nhập tên đăng nhập của bạn'
+            'placeholder': '✨ Enter your username'
         })
         self.fields['password1'].widget.attrs.update({
             'class': 'form-control',
-            'placeholder': '🔒 Tạo mật khẩu mạnh'
+            'placeholder': '🔒 Create a strong password'
         })
         self.fields['password2'].widget.attrs.update({
             'class': 'form-control',
-            'placeholder': '🔒 Nhập lại mật khẩu'
+            'placeholder': '🔒 Confirm your password'
         })
         
         # Update other field placeholders
         self.fields['email'].widget.attrs.update({
-            'placeholder': '📧 Email của bạn (ví dụ: yourname@gmail.com)'
+            'placeholder': '📧 Your email (e.g: yourname@gmail.com)'
         })
         self.fields['full_name'].widget.attrs.update({
-            'placeholder': '👤 Họ và tên đầy đủ của bạn'
+            'placeholder': '👤 Your full name'
         })
         self.fields['phone'].widget.attrs.update({
-            'placeholder': '📱 Số điện thoại (ví dụ: 0901234567)'
+            'placeholder': '📱 Phone number (e.g: 0901234567)'
         })
 
     def clean_email(self):
@@ -96,10 +96,9 @@ class CustomUserChangeForm(UserChangeForm):
     """Custom user edit form"""
     class Meta:
         model = User
-        fields = ('username', 'email', 'full_name', 'phone', 'hometown', 'date_of_birth', 
+        fields = ( 'email', 'full_name', 'phone', 'hometown', 'date_of_birth', 
                  'gender', 'bio', 'avatar', 'interests')
         widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'full_name': forms.TextInput(attrs={'class': 'form-control'}),
             'phone': forms.TextInput(attrs={'class': 'form-control'}),
@@ -124,13 +123,13 @@ class LoginForm(forms.Form):
     email = forms.EmailField(
         widget=forms.EmailInput(attrs={
             'class': 'form-control',
-            'placeholder': '💌 Email hoặc tên đăng nhập'
+            'placeholder': '💌 Email or username'
         })
     )
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
-            'placeholder': '🔐 Mật khẩu của bạn'
+            'placeholder': '🔐 Your password'
         })
     )
     remember_me = forms.BooleanField(

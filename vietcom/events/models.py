@@ -12,7 +12,9 @@ class Event(models.Model):
     description = models.TextField(blank=True)
     creator = models.ForeignKey(User, related_name='created_events', on_delete=models.CASCADE)
     created_at = models.DateTimeField(default=timezone.now)
-
+    max_participants = models.PositiveIntegerField(default=50, help_text="Số người tối đa có thể tham gia")
+    image = models.ImageField(upload_to='events/', blank=True, null=True, help_text="Ảnh sự kiện")
+    
     class Meta:
         ordering = ['-time']
         verbose_name = 'Event'
@@ -22,6 +24,9 @@ class Event(models.Model):
         """Validate event data"""
         if self.time and self.time <= timezone.now():
             raise ValidationError("Event time must be in the future.")
+        
+        if self.max_participants <= 0:
+            raise ValidationError("Max participants must be greater than 0.")
 
     def __str__(self):
         return f"{self.name} - {self.time.strftime('%Y-%m-%d %H:%M')}"
@@ -40,19 +45,32 @@ class Event(models.Model):
     def is_past(self):
         """Check if event is in the past"""
         return self.time <= timezone.now()
+    
+    @property
+    def is_full(self):
+        """Check if event is full"""
+        return self.participant_count >= self.max_participants
+    
+    @property
+    def available_spots(self):
+        """Get number of available spots"""
+        return max(0, self.max_participants - self.participant_count)
 
     def can_user_join(self, user):
         """Check if user can join this event"""
         if self.is_past:
-            return False, "Event is in the past"
+            return False, "Sự kiện đã kết thúc"
+        
+        if self.is_full:
+            return False, "Sự kiện đã đủ người tham gia"
         
         if self.creator == user:
-            return False, "You are the creator of this event"
+            return False, "Bạn là người tạo sự kiện này"
             
         if self.participations.filter(user=user).exists():
-            return False, "You are already participating in this event"
+            return False, "Bạn đã tham gia sự kiện này rồi"
             
-        return True, "You can join this event"
+        return True, "Bạn có thể tham gia sự kiện này"
 
 class EventParticipation(models.Model):
     STATUS_CHOICES = (('joined', 'Joined'), ('interested', 'Interested'))
@@ -72,11 +90,15 @@ class EventParticipation(models.Model):
         if self.event and self.user:
             # Check if event is in the past
             if self.event.is_past:
-                raise ValidationError("Cannot join/show interest in past events.")
+                raise ValidationError("Không thể tham gia sự kiện đã kết thúc.")
+            
+            # Check if event is full
+            if self.event.is_full and not self.pk:  # Only check for new participations
+                raise ValidationError("Sự kiện đã đủ người tham gia.")
             
             # Check if user is the creator
             if self.event.creator == self.user:
-                raise ValidationError("Event creator cannot participate in their own event.")
+                raise ValidationError("Người tạo sự kiện không thể tham gia sự kiện của chính mình.")
 
     def __str__(self):
         return f"{self.user.username} - {self.event.name} ({self.get_status_display()})"

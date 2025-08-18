@@ -1,0 +1,236 @@
+{% extends 'base.html' %} {% block title %}Tiến độ cá nhân - VietCom{% endblock
+%} {% block extra_css %}
+<style>
+  .progress-container {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .level-display {
+    text-align: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+  }
+
+  .level-number {
+    font-size: 4rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  .level-progress {
+    background: rgba(255, 255, 255, 0.3);
+    height: 15px;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 20px 0;
+  }
+
+  .level-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2ecc71, #27ae60);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+  }
+
+  .points-history {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .point-item {
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-left: 4px solid #3498db;
+    transition: all 0.3s ease;
+  }
+
+  .point-item:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: translateX(5px);
+  }
+
+  .point-item.positive {
+    border-left-color: #27ae60;
+  }
+
+  .point-item.negative {
+    border-left-color: #e74c3c;
+  }
+
+  .badge-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+  }
+
+  .badge-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .badge-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .badge-icon {
+    font-size: 3rem;
+    margin-bottom: 15px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+
+  .stat-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 15px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 10px;
+  }
+
+  .stat-label {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="main-container">
+  <!-- Level Display -->
+  <div class="level-display">
+    <div class="level-number">🏆 {{ stats.current_level }}</div>
+    <h3>Level {{ stats.current_level }}</h3>
+    <div class="level-progress">
+      <div
+        class="level-progress-fill"
+        style="width: {{ stats.progress_percentage }}%"
+      ></div>
+    </div>
+    <p>
+      {{ stats.total_points }}/{{ stats.points_for_next_level }} điểm để lên
+      level tiếp theo
+    </p>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-number">💎 {{ stats.total_points }}</div>
+      <div class="stat-label">Tổng điểm</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">✅ {{ stats.completed_missions }}</div>
+      <div class="stat-label">Missions Completed</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">🎁 {{ stats.claimed_missions }}</div>
+      <div class="stat-label">Rewards Claimed</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number">📊 {{ stats.completion_rate }}%</div>
+      <div class="stat-label">Completion Rate</div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Recent Points History -->
+    <div class="col-lg-8">
+      <div class="progress-container">
+        <h4>📈 Recent Points History</h4>
+        <div class="points-history">
+          {% for point in recent_points %}
+          <div
+            class="point-item {% if point.points > 0 %}positive{% else %}negative{% endif %}"
+          >
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <strong>{{ point.description }}</strong>
+                <br />
+                <small class="text-muted"
+                  >{{ point.created_at|date:"d/m/Y H:i" }}</small
+                >
+              </div>
+              <div class="text-end">
+                <span
+                  class="badge {% if point.points > 0 %}bg-success{% else %}bg-danger{% endif %}"
+                >
+                  {% if point.points > 0 %}+{% endif %}{{ point.points }} điểm
+                </span>
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <div class="text-center py-4">
+            <i
+              class="fas fa-chart-line text-muted"
+              style="font-size: 3rem; opacity: 0.3"
+            ></i>
+            <p class="text-muted mt-3">Chưa có lịch sử điểm nào</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Badges -->
+    <div class="col-lg-4">
+      <div class="progress-container">
+        <h4>🏅 Huy hiệu đạt được</h4>
+        <div class="badge-grid">
+          {% for user_badge in user_badges %}
+          <div class="badge-card">
+            <div class="badge-icon">{{ user_badge.badge.icon }}</div>
+            <h6>{{ user_badge.badge.name }}</h6>
+            <small class="text-muted"
+              >{{ user_badge.awarded_at|date:"d/m/Y" }}</small
+            >
+          </div>
+          {% empty %}
+          <div class="text-center py-4">
+            <i
+              class="fas fa-medal text-muted"
+              style="font-size: 3rem; opacity: 0.3"
+            ></i>
+            <p class="text-muted mt-3">Chưa có huy hiệu nào</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Back to Missions -->
+  <div class="text-center mt-4">
+    <a
+      href="{% url 'gamification:mission_list' %}"
+      class="btn btn-primary btn-lg"
+    >
+      🎯 Back to Missions
+    </a>
+  </div>
+</div>
+{% endblock %}

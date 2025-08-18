@@ -8,7 +8,7 @@ from django.core.paginator import Paginator
 from django.utils import timezone
 import json
 
-from .models import Post, PostLike, PostComment, Friendship, FriendRequest, Message
+from .models import Post, PostLike, PostComment, Friendship, FriendRequest, Message, Call
 from users.models import User
 from events.models import Event
 
@@ -60,17 +60,10 @@ def wall(request):
         # Add is_read field if you have it
     ).count()
     
-    # Get received friend requests
-    received_requests = FriendRequest.objects.filter(
-        receiver=request.user,
-        status='pending'
-    ).select_related('sender')[:5]  # Limit to 5 most recent
-    
     context = {
         'posts': posts[:20],  # Limit to 20 posts initially
         'online_friends': online_friends,
         'upcoming_events': upcoming_events,
-        'received_requests': received_requests,
         'friends_count': friends_count,
         'posts_count': posts_count,
         'notifications_count': notifications_count,
@@ -99,7 +92,13 @@ def create_post(request):
         location=location
     )
     
-    messages.success(request, 'Đã đăng bài thành công!')
+    # Track mission progress
+    try:
+        from gamification.views import track_post_created
+        track_post_created(request.user)
+    except ImportError:
+        pass
+    
     return redirect('wall')
 
 @login_required
@@ -118,6 +117,12 @@ def toggle_like(request, post_id):
         liked = False
     else:
         liked = True
+        # Track mission progress
+        try:
+            from gamification.views import track_post_liked
+            track_post_liked(request.user)
+        except ImportError:
+            pass
     
     return JsonResponse({
         'success': True,
@@ -142,7 +147,13 @@ def add_comment(request, post_id):
         content=content
     )
     
-    messages.success(request, 'Đã thêm bình luận!')
+    # Track mission progress
+    try:
+        from gamification.views import track_post_commented
+        track_post_commented(request.user)
+    except ImportError:
+        pass
+    
     return redirect('wall')
 
 @login_required
@@ -180,14 +191,56 @@ def chat_detail(request, friend_id):
     # Handle sending message
     if request.method == 'POST':
         content = request.POST.get('content', '').strip()
-        if content:
-            Message.objects.create(
-                sender=request.user,
-                receiver=friend,
-                content=content
-            )
-            messages.success(request, 'Đã gửi tin nhắn!')
+        image = request.FILES.get('image')
+        message_type = 'text'
+        
+        # Determine message type
+        if image:
+            message_type = 'image'
+            if not content:
+                content = ''  # Empty content for image messages
+        elif not content:
+            # No content and no image
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'error': 'Nội dung tin nhắn hoặc ảnh không được để trống!'}, status=400)
+            messages.error(request, 'Nội dung tin nhắn hoặc ảnh không được để trống!')
             return redirect('chat_detail', friend_id=friend_id)
+        
+        message = Message.objects.create(
+            sender=request.user,
+            receiver=friend,
+            content=content,
+            type=message_type,
+            image=image
+        )
+        
+        # Track mission progress
+        try:
+            from gamification.views import track_message_sent
+            track_message_sent(request.user)
+        except ImportError:
+            pass
+        
+        # If it's an AJAX request, return JSON response
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            message_data = {
+                'id': message.id,
+                'sender_id': message.sender.id,
+                'sender_name': message.sender.get_display_name(),
+                'content': message.content,
+                'created_at': message.created_at.strftime('%H:%M'),
+                'is_sent': True,
+                'type': message.type
+            }
+            if message.image:
+                message_data['image_url'] = message.image.url
+            
+            return JsonResponse({
+                'success': True,
+                'message': message_data
+            })
+            
+        return redirect('chat_detail', friend_id=friend_id)
     
     # Get messages between users
     messages_list = Message.objects.filter(
@@ -195,12 +248,79 @@ def chat_detail(request, friend_id):
         Q(sender=friend, receiver=request.user)
     ).order_by('created_at')
     
+    # Get all friends for the friends list
+    friends_ids = []
+    friendships1 = Friendship.objects.filter(user1=request.user).values_list('user2_id', flat=True)
+    friendships2 = Friendship.objects.filter(user2=request.user).values_list('user1_id', flat=True)
+    friends_ids = list(friendships1) + list(friendships2)
+    
+    friends = User.objects.filter(id__in=friends_ids).exclude(id=request.user.id)
+    
+    # Get unread messages count for navbar
+    unread_messages_count = Message.objects.filter(
+        receiver=request.user,
+        sender__in=friends_ids
+    ).count()
+    
     context = {
         'friend': friend,
-        'messages': messages_list
+        'messages': messages_list,
+        'friends': friends,
+        'unread_messages_count': unread_messages_count
     }
     
     return render(request, 'chat_detail.html', context)
+
+@login_required
+def get_messages_api(request, friend_id):
+    """API endpoint to get messages between current user and friend"""
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    friend = get_object_or_404(User, id=friend_id)
+    
+    # Check if they are friends
+    is_friend = Friendship.objects.filter(
+        Q(user1=request.user, user2=friend) |
+        Q(user1=friend, user2=request.user)
+    ).exists()
+    
+    if not is_friend:
+        return JsonResponse({'error': 'Not friends'}, status=403)
+    
+    # Get messages since last_message_id if provided
+    last_message_id = request.GET.get('last_message_id', 0)
+    
+    messages_query = Message.objects.filter(
+        Q(sender=request.user, receiver=friend) |
+        Q(sender=friend, receiver=request.user)
+    )
+    
+    if last_message_id:
+        messages_query = messages_query.filter(id__gt=last_message_id)
+    
+    messages_list = messages_query.order_by('created_at')
+    
+    # Convert messages to JSON format
+    messages_data = []
+    for message in messages_list:
+        message_data = {
+            'id': message.id,
+            'sender_id': message.sender.id,
+            'sender_name': message.sender.get_display_name(),
+            'content': message.content,
+            'created_at': message.created_at.strftime('%H:%M'),
+            'is_sent': message.sender == request.user,
+            'type': message.type
+        }
+        if message.image:
+            message_data['image_url'] = message.image.url
+        messages_data.append(message_data)
+    
+    return JsonResponse({
+        'messages': messages_data,
+        'friend_name': friend.get_display_name()
+    })
 
 @login_required
 def search(request):
@@ -336,6 +456,14 @@ def respond_friend_request(request):
             friend_request.status = 'accepted'
             friend_request.save()
             
+            # Track mission progress for both users
+            try:
+                from gamification.views import track_friend_added
+                track_friend_added(friend_request.sender)
+                track_friend_added(friend_request.receiver)
+            except ImportError:
+                pass
+            
             message = f'You are now friends with {friend_request.sender.get_display_name()}'
         else:
             friend_request.status = 'rejected'
@@ -366,6 +494,35 @@ def cancel_friend_request(request):
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)})
 
+@login_required
+@require_http_methods(["POST"])
+def cancel_friend_request_by_user(request):
+    """Cancel friend request by receiver user ID"""
+    try:
+        data = json.loads(request.body)
+        receiver_id = data.get('receiver_id')
+        
+        if not receiver_id:
+            return JsonResponse({'success': False, 'message': 'Receiver ID is required'})
+        
+        receiver = get_object_or_404(User, id=receiver_id)
+        
+        # Find the friend request sent by current user to receiver
+        friend_request = FriendRequest.objects.filter(
+            sender=request.user,
+            receiver=receiver
+        ).first()
+        
+        if not friend_request:
+            return JsonResponse({'success': False, 'message': 'No friend request found'})
+        
+        friend_request.delete()
+        
+        return JsonResponse({'success': True, 'message': 'Friend request cancelled'})
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
 def are_friends(user1, user2):
     """Check if two users are friends"""
     return Friendship.objects.filter(
@@ -386,3 +543,219 @@ def get_friend_request_status(sender, receiver):
         'status': request.status,
         'is_sender': request.sender == sender
     }
+
+@login_required
+def edit_post(request, post_id):
+    """Edit an existing post"""
+    post = get_object_or_404(Post, id=post_id)
+
+    # Only allow editing own posts
+    if post.author != request.user:
+        messages.error(request, 'Bạn không có quyền chỉnh sửa bài đăng này!')
+        return redirect('wall')
+
+    if request.method == "POST":
+        content = request.POST.get('content', '').strip()
+        image = request.FILES.get('image')
+        location = request.POST.get('location', '')
+
+        if not content:
+            messages.error(request, 'Nội dung bài đăng không được để trống!')
+            return render(request, 'edit_post.html', {'post': post})
+
+        post.content = content
+        if image:
+            post.image = image
+        post.location = location
+        post.save()
+
+        return redirect('wall')
+
+    return render(request, 'edit_post.html', {'post': post})
+
+@login_required
+def delete_post(request, post_id):
+    """Delete a post"""
+    post = get_object_or_404(Post, id=post_id)
+
+    # Only allow deleting own posts
+    if post.author != request.user:
+        messages.error(request, 'Bạn không có quyền xóa bài đăng này!')
+        return redirect('wall')
+
+    if request.method == "POST":
+        post.delete()
+        return redirect('wall')
+
+    return render(request, 'delete_post_confirm.html', {'post': post})
+
+# =================== CALL VIEWS ===================
+
+@login_required
+def initiate_call(request):
+    """Initiate a voice call"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    friend_id = request.POST.get('friend_id')
+    if not friend_id:
+        return JsonResponse({'error': 'Friend ID required'}, status=400)
+    
+    friend = get_object_or_404(User, id=friend_id)
+    
+    # Check if they are friends
+    is_friend = Friendship.objects.filter(
+        Q(user1=request.user, user2=friend) |
+        Q(user1=friend, user2=request.user)
+    ).exists()
+    
+    if not is_friend:
+        return JsonResponse({'error': 'You can only call friends'}, status=403)
+    
+    # Check if there's already an active call
+    active_call = Call.objects.filter(
+        Q(caller=request.user, receiver=friend) |
+        Q(caller=friend, receiver=request.user),
+        status__in=['initiating', 'ringing', 'active']
+    ).first()
+    
+    if active_call:
+        return JsonResponse({'error': 'Call already in progress'}, status=400)
+    
+    # Create new call
+    call = Call.objects.create(
+        caller=request.user,
+        receiver=friend,
+        status='initiating'
+    )
+    
+    return JsonResponse({
+        'success': True,
+        'call_id': call.id,
+        'friend_name': friend.get_display_name()
+    })
+
+@login_required
+def answer_call(request):
+    """Answer an incoming call"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    call_id = request.POST.get('call_id')
+    if not call_id:
+        return JsonResponse({'error': 'Call ID required'}, status=400)
+    
+    call = get_object_or_404(Call, id=call_id, receiver=request.user)
+    
+    if call.status not in ['initiating', 'ringing']:
+        return JsonResponse({'error': 'Call cannot be answered'}, status=400)
+    
+    call.status = 'active'
+    call.answered_at = timezone.now()
+    call.save()
+    
+    return JsonResponse({
+        'success': True,
+        'call_id': call.id
+    })
+
+@login_required
+def reject_call(request):
+    """Reject an incoming call"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    call_id = request.POST.get('call_id')
+    if not call_id:
+        return JsonResponse({'error': 'Call ID required'}, status=400)
+    
+    call = get_object_or_404(Call, id=call_id, receiver=request.user)
+    
+    if call.status not in ['initiating', 'ringing']:
+        return JsonResponse({'error': 'Call cannot be rejected'}, status=400)
+    
+    call.status = 'rejected'
+    call.ended_at = timezone.now()
+    call.save()
+    
+    return JsonResponse({
+        'success': True,
+        'call_id': call.id
+    })
+
+@login_required
+def end_call(request):
+    """End an active call"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    call_id = request.POST.get('call_id')
+    if not call_id:
+        return JsonResponse({'error': 'Call ID required'}, status=400)
+    
+    call = get_object_or_404(Call, id=call_id)
+    
+    # Only caller or receiver can end the call
+    if call.caller != request.user and call.receiver != request.user:
+        return JsonResponse({'error': 'Permission denied'}, status=403)
+    
+    if call.status == 'ended':
+        return JsonResponse({'error': 'Call already ended'}, status=400)
+    
+    call.status = 'ended'
+    call.ended_at = timezone.now()
+    
+    # Calculate duration if call was active
+    if call.answered_at:
+        duration = (call.ended_at - call.answered_at).total_seconds()
+        call.duration = int(duration)
+    
+    call.save()
+    
+    return JsonResponse({
+        'success': True,
+        'call_id': call.id,
+        'duration': call.duration_formatted
+    })
+
+@login_required
+def get_call_status(request, call_id):
+    """Get current status of a call"""
+    call = get_object_or_404(Call, id=call_id)
+    
+    # Only participants can check status
+    if call.caller != request.user and call.receiver != request.user:
+        return JsonResponse({'error': 'Permission denied'}, status=403)
+    
+    return JsonResponse({
+        'call_id': call.id,
+        'status': call.status,
+        'caller_name': call.caller.get_display_name(),
+        'receiver_name': call.receiver.get_display_name(),
+        'started_at': call.started_at.isoformat(),
+        'answered_at': call.answered_at.isoformat() if call.answered_at else None,
+        'ended_at': call.ended_at.isoformat() if call.ended_at else None,
+        'duration': call.duration_formatted
+    })
+
+@login_required
+def check_incoming_calls(request):
+    """Check for incoming calls"""
+    incoming_calls = Call.objects.filter(
+        receiver=request.user,
+        status__in=['initiating', 'ringing']
+    ).order_by('-started_at')
+    
+    calls_data = []
+    for call in incoming_calls:
+        calls_data.append({
+            'call_id': call.id,
+            'caller_name': call.caller.get_display_name(),
+            'caller_id': call.caller.id,
+            'status': call.status,
+            'started_at': call.started_at.isoformat()
+        })
+    
+    return JsonResponse({
+        'incoming_calls': calls_data
+    })

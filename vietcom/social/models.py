@@ -99,8 +99,9 @@ class Message(models.Model):
     sender = models.ForeignKey(User, related_name='sent_messages', on_delete=models.CASCADE)
     receiver = models.ForeignKey(User, related_name='received_messages', on_delete=models.SET_NULL, null=True, blank=True)
     group = models.ForeignKey('Group', on_delete=models.SET_NULL, null=True, blank=True)
-    content = models.TextField()
+    content = models.TextField(blank=True)
     type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='text')
+    image = models.ImageField(upload_to='messages/', blank=True, null=True)
     latitude = models.FloatField(null=True, blank=True, help_text="Vĩ độ vị trí")
     longitude = models.FloatField(null=True, blank=True, help_text="Kinh độ vị trí")
     created_at = models.DateTimeField(default=timezone.now)
@@ -138,3 +139,36 @@ class GroupMembership(models.Model):
 
     def __str__(self):
         return f"{self.user.username} in {self.group.topic} ({self.role})"
+
+class Call(models.Model):
+    STATUS_CHOICES = (
+        ('initiating', 'Initiating'),
+        ('ringing', 'Ringing'),
+        ('active', 'Active'),
+        ('ended', 'Ended'),
+        ('missed', 'Missed'),
+        ('rejected', 'Rejected')
+    )
+    
+    caller = models.ForeignKey(User, related_name='calls_made', on_delete=models.CASCADE)
+    receiver = models.ForeignKey(User, related_name='calls_received', on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='initiating')
+    started_at = models.DateTimeField(default=timezone.now)
+    answered_at = models.DateTimeField(null=True, blank=True)
+    ended_at = models.DateTimeField(null=True, blank=True)
+    duration = models.IntegerField(default=0, help_text="Duration in seconds")
+    
+    class Meta:
+        ordering = ['-started_at']
+    
+    def __str__(self):
+        return f"{self.caller.username} -> {self.receiver.username} ({self.status})"
+    
+    @property
+    def duration_formatted(self):
+        """Return duration in MM:SS format"""
+        if self.duration:
+            minutes = self.duration // 60
+            seconds = self.duration % 60
+            return f"{minutes:02d}:{seconds:02d}"
+        return "00:00"

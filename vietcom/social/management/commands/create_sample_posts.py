@@ -9,34 +9,34 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # Sample content for posts
         sample_contents = [
-            "Hôm nay thời tiết thật đẹp! 🌞",
-            "Vừa ăn sáng xong, ngon quá! 🍳",
-            "Đang làm việc từ xa ở một quán cafe cực chill ☕",
-            "Cuối tuần rồi, ai đi chơi không? 🎉",
-            "Vừa xem một bộ phim hay lắm, recommend cho mọi người! 🎬",
-            "Học được một kỹ năng mới hôm nay 📚",
-            "Tập gym xong, cảm thấy tràn đầy năng lượng! 💪",
-            "Nấu ăn cho gia đình, ai muốn đến ăn chung không? 🍲",
-            "Chụp được một bức ảnh đẹp ở công viên 📸",
-            "Đang nghe nhạc và thư giãn 🎵",
-            "Gặp được một người bạn cũ, vui quá! 👥",
-            "Đọc sách hay lắm, không thể bỏ xuống 📖",
-            "Thời tiết hôm nay mưa, ở nhà xem phim thôi 🌧️",
-            "Đi du lịch một ngày tuyệt vời! ✈️",
-            "Học nấu một món mới, ai muốn thử không? 👨‍🍳"
+            "What a beautiful day today! 🌞",
+            "Just finished breakfast, it was delicious! 🍳",
+            "Working remotely from a super chill cafe ☕",
+            "It's weekend, anyone want to hang out? 🎉",
+            "Just watched an amazing movie, highly recommend! 🎬",
+            "Learned a new skill today 📚",
+            "Finished my workout, feeling energized! 💪",
+            "Cooking for the family, anyone want to join? 🍲",
+            "Took a beautiful photo at the park 📸",
+            "Listening to music and relaxing 🎵",
+            "Met an old friend, so happy! 👥",
+            "Reading an amazing book, can't put it down 📖",
+            "It's raining today, staying home and watching movies 🌧️",
+            "Had a wonderful day trip! ✈️",
+            "Learning to cook a new dish, anyone want to try? 👨‍🍳"
         ]
         
         sample_locations = [
-            "Hà Nội",
-            "TP. Hồ Chí Minh", 
-            "Đà Nẵng",
-            "Hội An",
+            "Hanoi",
+            "Ho Chi Minh City", 
+            "Da Nang",
+            "Hoi An",
             "Sapa",
             "Nha Trang",
-            "Phú Quốc",
-            "Hạ Long",
-            "Huế",
-            "Cần Thơ"
+            "Phu Quoc",
+            "Ha Long",
+            "Hue",
+            "Can Tho"
         ]
 
         # Get all users

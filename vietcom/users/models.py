@@ -102,6 +102,7 @@ class User(AbstractUser):
     longitude = models.FloatField(null=True, blank=True, help_text="Longitude")
     search_radius = models.FloatField(default=50.0, help_text="Search radius (km)")
     level = models.IntegerField(default=1)
+    points = models.IntegerField(default=0)
     is_admin = models.BooleanField(default=False)
 
     objects = UserManager()
@@ -140,6 +141,38 @@ class User(AbstractUser):
             'next_level': self.level + 1,
             'next_radius': next_radius
         }
+    
+    def get_points_for_next_level(self):
+        """Calculate points needed for next level: 10 * (2^(level-1))"""
+        return 10 * (2 ** (self.level - 1))
+    
+    def get_points_for_current_level(self):
+        """Calculate total points needed for current level"""
+        if self.level == 1:
+            return 0
+        return 10 * (2 ** (self.level - 2))
+    
+    def add_points(self, points):
+        """Add points and check for level up"""
+        old_level = self.level
+        self.points += points
+        
+        # Check for level ups
+        while self.points >= self.get_points_for_next_level():
+            self.level += 1
+            
+        self.save()
+        
+        # Level up missions sẽ được xử lý bởi signals
+        return self.points
+    
+    def get_progress_to_next_level(self):
+        """Get progress percentage to next level"""
+        current_level_points = self.get_points_for_current_level()
+        next_level_points = self.get_points_for_next_level()
+        current_progress = self.points - current_level_points
+        total_needed = next_level_points - current_level_points
+        return (current_progress / total_needed * 100) if total_needed > 0 else 100
     
     def clean(self):
         super().clean()

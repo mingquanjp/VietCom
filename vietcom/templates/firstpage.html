@@ -1,0 +1,779 @@
+
+{% load static %}
+
+{% block extra_css %}
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap");
+  @keyframes slideInLeft {
+    0% {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideInRight {
+    0% {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  /* ========================================================================== */
+  /* GLOBAL STYLES */
+  /* ========================================================================== */
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: "Baloo 2", Arial, sans-serif;
+    margin: 0;
+    background: #ffffff;
+  }
+
+  /* ========================================================================== */
+  /* LOGIN & REGISTER PAGE STYLES */
+  /* ========================================================================== */
+
+  /* Layout chung cho login/register */
+  .login-container {
+    display: flex;
+    height: 100vh; /* Full màn hình */
+  }
+
+  /* Bên trái: ảnh (cho login/register) */
+  .login-image {
+    width: 70%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+    background-color: #bc0126;
+    position: relative; /* để text position tuyệt đối so với khung */
+    animation: slideInLeft 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, opacity;
+  }
+
+  .login-image img {
+    display: block;
+    flex: 0 0 auto;
+    width: 60%;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    align-self: flex-end;
+    margin-bottom: 0;
+  }
+
+  .login-text {
+    /* Dùng chung cho login/register image */
+    font-family: "Baloo 2", sans-serif;
+    position: absolute;
+    top: 12px; /* cách lề trên */
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 128px;
+    font-weight: 800;
+    text-align: center;
+  }
+
+  .login-subtext {
+    /* Dùng chung cho login/register image */
+    font-family: "Baloo 2", sans-serif;
+    position: absolute;
+    top: 170px; /* cách dưới text chính */
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 32px;
+    font-weight: 400;
+    text-align: center;
+  }
+
+  /* Bên phải: form (cho login/register) */
+  .login-form {
+    flex: 2;
+    background: white;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    animation: slideInRight 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, opacity;
+  }
+
+  h1 {
+    font-family: "Baloo 2", sans-serif;
+    text-align: center;
+    color: #333;
+    font-weight: 700;
+  }
+
+  .form {
+    display: flex;
+    flex-direction: column;
+  }
+
+  label {
+    font-family: "Baloo 2", sans-serif;
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  input {
+    font-family: "Baloo 2", sans-serif;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-weight: 400;
+    opacity: 0;
+    animation: slideInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    will-change: transform, opacity;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  input:focus {
+    outline: none;
+    border-color: #bc0126;
+    box-shadow: 0 0 0 3px rgba(188, 1, 38, 0.1);
+    transform: translateY(-1px);
+  }
+
+  /* Độ trễ cho từng input */
+  input:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+  input:nth-child(4) {
+    animation-delay: 0.2s;
+  }
+  input:nth-child(6) {
+    animation-delay: 0.3s;
+  }
+  input:nth-child(8) {
+    animation-delay: 0.4s;
+  }
+
+  button {
+    font-family: "Baloo 2", sans-serif;
+    margin-top: 20px;
+    padding: 10px;
+    border: none;
+    background: #bc0126;
+    color: white;
+    font-size: 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    animation: slideInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation-delay: 0.5s;
+    opacity: 0;
+    will-change: transform, opacity;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(188, 1, 38, 0.2);
+  }
+
+  button:hover {
+    background: #a00121;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(188, 1, 38, 0.3);
+  }
+
+  button:active {
+    transform: translateY(0);
+    background: #8b0000;
+    box-shadow: 0 2px 4px rgba(188, 1, 38, 0.2);
+  }
+
+  p {
+    font-family: "Baloo 2", sans-serif;
+    text-align: center;
+    margin-top: 15px;
+    font-weight: 400;
+  }
+
+  a {
+    font-family: "Baloo 2", sans-serif;
+    color: #bc0126;
+    text-decoration: none;
+    font-weight: 400;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  a:hover {
+    color: #a00121;
+  }
+
+  a:after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 1px;
+    bottom: -2px;
+    left: 0;
+    background-color: #a00121;
+    transition: width 0.3s ease;
+  }
+
+  a:hover:after {
+    width: 100%;
+  }
+
+  .back-home {
+    font-size: 14px;
+    color: #666;
+    margin-top: 10px;
+  }
+
+  .back-home:hover {
+    color: #bc0126;
+  }
+
+  /* ========================================================================== */
+  /* LANDING PAGE STYLES (index.html) - FULLSCREEN HERO */
+  /* ========================================================================== */
+
+  .hero-landing {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url("{% static 'images/image6.png' %}") center center/cover no-repeat,
+      linear-gradient(135deg, #bc0126 0%, #ae1f23 100%);
+    background-blend-mode: multiply;
+  }
+
+  .hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(188, 1, 38, 0.8);
+  }
+
+  .hero-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 2;
+    max-width: 800px;
+    width: 90%;
+  }
+
+  .hero-text-container {
+    animation: fadeInUp 1s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both;
+  }
+
+  .hero-main-title {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 120px;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 10px;
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    line-height: 1;
+    letter-spacing: -2px;
+  }
+
+  .hero-subtitle {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 32px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+    margin-bottom: 30px;
+    text-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+    font-style: italic;
+  }
+
+  .hero-description {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    line-height: 1.4;
+  }
+
+  /* Auth Panel - floating card */
+  .auth-panel {
+    position: absolute;
+    top: 50%;
+    right: 50px;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 40px 35px;
+    min-width: 350px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideInRight 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .auth-panel-content {
+    text-align: center;
+  }
+
+  .auth-panel-title {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 12px;
+  }
+
+  .auth-panel-text {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 20px;
+    font-weight: 500;
+  }
+
+  .auth-panel-divider {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #bc0126, #8b0000);
+    margin: 15px auto;
+    border-radius: 2px;
+  }
+
+  .auth-panel-sub {
+    font-family: "Baloo 2", sans-serif;
+    font-size: 14px;
+    color: #777;
+    line-height: 1.5;
+    margin-bottom: 30px;
+  }
+
+  .auth-panel-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .auth-panel-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 15px 25px;
+    font-family: "Baloo 2", sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 50px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .auth-panel-btn::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent
+    );
+    transition: left 0.5s;
+  }
+
+  .auth-panel-btn:hover::before {
+    left: 100%;
+  }
+
+  .auth-panel-btn:after {
+    display: none;
+  }
+
+  .auth-panel .login-btn {
+    background: linear-gradient(135deg, #bc0126 0%, #8b0000 100%);
+    color: white;
+    border: 2px solid transparent;
+    box-shadow: 0 4px 15px rgba(188, 1, 38, 0.2);
+  }
+
+  .auth-panel .login-btn:hover {
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(188, 1, 38, 0.4);
+  }
+
+  .auth-panel .register-btn {
+    background: transparent;
+    color: #bc0126;
+    border: 2px solid #bc0126;
+  }
+
+  .auth-panel .register-btn:hover {
+    background: #bc0126;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(188, 1, 38, 0.3);
+  }
+
+  /* ========================================================================== */
+  /* RESPONSIVE STYLES FOR NEW HERO LANDING */
+  /* ========================================================================== */
+
+  /* Responsive cho desktop nhỏ */
+  @media (max-width: 1200px) {
+    .hero-main-title {
+      font-size: 100px;
+    }
+
+    .hero-subtitle {
+      font-size: 40px;
+    }
+
+    .hero-description {
+      font-size: 20px;
+    }
+
+    .auth-panel {
+      right: 30px;
+      min-width: 320px;
+      padding: 35px 30px;
+    }
+  }
+
+  /* Responsive cho tablet */
+  @media (max-width: 1024px) {
+    .hero-main-title {
+      font-size: 80px;
+    }
+
+    .hero-subtitle {
+      font-size: 36px;
+    }
+
+    .hero-description {
+      font-size: 18px;
+    }
+
+    .auth-panel {
+      position: relative;
+      right: auto;
+      top: auto;
+      transform: none;
+      margin: 40px auto 0;
+      max-width: 400px;
+    }
+
+    .hero-landing {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hero-background {
+      flex: 1;
+      position: relative;
+      min-height: 60vh;
+    }
+
+    .hero-content {
+      top: 40%;
+    }
+  }
+
+  /* Responsive cho mobile */
+  @media (max-width: 768px) {
+    .hero-main-title {
+      font-size: 64px;
+      margin-bottom: 15px;
+    }
+
+    .hero-subtitle {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .hero-description {
+      font-size: 16px;
+      padding: 0 20px;
+    }
+
+    .hero-background {
+      min-height: 50vh;
+    }
+
+    .auth-panel {
+      margin: 20px;
+      padding: 30px 25px;
+      min-width: auto;
+    }
+
+    .auth-panel-title {
+      font-size: 24px;
+    }
+
+    .auth-panel-text {
+      font-size: 14px;
+    }
+
+    .auth-panel-sub {
+      font-size: 13px;
+    }
+
+    .auth-panel-buttons {
+      flex-direction: row;
+      gap: 8px;
+    }
+
+    .auth-panel-btn {
+      flex: 1;
+      padding: 12px 15px;
+      font-size: 14px;
+    }
+  }
+
+  /* Responsive cho mobile nhỏ */
+  @media (max-width: 480px) {
+    .hero-main-title {
+      font-size: 48px;
+    }
+
+    .hero-subtitle {
+      font-size: 24px;
+    }
+
+    .hero-description {
+      font-size: 14px;
+    }
+
+    .auth-panel {
+      margin: 15px;
+      padding: 25px 20px;
+    }
+
+    .auth-panel-title {
+      font-size: 22px;
+    }
+
+    .auth-panel-buttons {
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .auth-panel-btn {
+      padding: 14px 20px;
+      font-size: 15px;
+    }
+  }
+
+  /* Responsive cho LOGIN/REGISTER pages (giữ nguyên) */
+  @media (max-width: 1024px) {
+    .login-text {
+      font-size: 96px;
+    }
+    .login-subtext {
+      font-size: 28px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .login-container {
+      flex-direction: column;
+    }
+
+    .login-image {
+      height: 50vh;
+      width: 100%;
+      min-height: 300px;
+    }
+
+    .login-form {
+      padding: 30px 20px;
+      flex: 1;
+      height: 50vh;
+      overflow-y: auto;
+    }
+
+    .login-text {
+      font-size: 64px;
+      top: 20px;
+    }
+
+    .login-subtext {
+      font-size: 24px;
+      top: 100px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .login-text {
+      font-size: 48px;
+      top: 15px;
+    }
+
+    .login-subtext {
+      font-size: 20px;
+      top: 80px;
+    }
+
+    .login-image {
+      min-height: 280px;
+    }
+
+    .login-form {
+      padding: 30px 15px;
+    }
+  }
+  /* ========================================================================== */
+  /* HERO LANDING PAGE BUTTONS NGANG HÀNG */
+  /* ========================================================================== */
+  .hero-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+  }
+
+  .hero-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    font-family: "Baloo 2", sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 50px;
+    text-decoration: none;
+    border: 2px solid transparent;
+    transition: background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    background: rgba(248, 230, 97, 0.8);
+    color: rgb(202, 3, 3);
+    box-shadow: 0 4px 15px rgba(188, 1, 38, 0.2);
+  }
+
+  /* Hiệu ứng sáng nhẹ */
+  .hero-btn::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent
+    );
+    transition: left 0.5s;
+  }
+
+  .hero-btn:hover::before {
+    left: 100%;
+  }
+
+  /* Hover chung cho cả 2 nút */
+  .hero-btn:hover {
+    background: white;
+    color: #bc0126;
+    box-shadow: 0 8px 25px rgba(188, 1, 38, 0.3);
+  }
+
+  /* Mobile: nút xếp dọc */
+  @media (max-width: 768px) {
+    .hero-buttons {
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="hero-landing">
+  <!-- Hero Background với overlay -->
+  <div class="hero-background">
+    <div class="hero-overlay"></div>
+
+    <!-- Hero Content ở giữa -->
+    <div class="hero-content">
+      <div class="hero-text-container">
+        <h1 class="hero-main-title">VietCom</h1>
+        <h2 class="hero-subtitle">One Circle, One Heart, One Vietnam</h2>
+        <p class="hero-description">Sign up now and start connecting!</p>
+
+        <!-- Nút đăng nhập / đăng ký ngang hàng -->
+        <div class="hero-buttons">
+          <a href="{% url 'login' %}" class="hero-btn login-btn">
+            <span class="btn-icon">→</span>
+            <span>Log in</span>
+          </a>
+          <a href="{% url 'register' %}" class="hero-btn register-btn">
+            <span class="btn-icon">+</span>
+            <span>Sign up</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

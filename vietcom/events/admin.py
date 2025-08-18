@@ -19,25 +19,29 @@ class EventAdmin(admin.ModelAdmin):
         'creator', 
         'time_display', 
         'location_desc', 
+        'max_participants',
         'participant_count_display',
+        'available_spots_display',
         'status_display',
         'created_at'
     ]
-    list_filter = ['time', 'created_at', 'creator']
+    list_filter = ['time', 'created_at', 'creator', 'max_participants']
     search_fields = ['name', 'description', 'location_desc', 'creator__username']
     ordering = ['-time']
     list_per_page = 25
     date_hierarchy = 'time'
+    inlines = [EventParticipationInline]
     
+    # Remove fields since we're using fieldsets
     fieldsets = (
-        ('Event Information', {
-            'fields': ('name', 'description', 'creator')
+        ('Thông tin sự kiện', {
+            'fields': ('name', 'description', 'creator', 'image')
         }),
-        ('Date & Time', {
-            'fields': ('time',)
+        ('Thời gian & Giới hạn', {
+            'fields': ('time', 'max_participants')
         }),
-        ('Location', {
-            'fields': ('location_desc', 'location')
+        ('Địa điểm', {
+            'fields': ('location_desc', 'latitude', 'longitude')
         }),
         ('Metadata', {
             'fields': ('created_at',),
@@ -45,6 +49,13 @@ class EventAdmin(admin.ModelAdmin):
         }),
     )
     readonly_fields = ['created_at']
+    
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        # Set default creator to current admin user
+        if not obj:  # Creating new event
+            form.base_fields['creator'].initial = request.user
+        return form
     
     inlines = [EventParticipationInline]
     
@@ -75,6 +86,17 @@ class EventAdmin(admin.ModelAdmin):
             joined, interested
         )
     participant_count_display.short_description = 'Participants (Interested)'
+    
+    def available_spots_display(self, obj):
+        """Display available spots with colors"""
+        available = obj.available_spots
+        if available == 0:
+            return format_html('<span style="color: red; font-weight: bold;">🚫 Full</span>')
+        elif available <= 5:
+            return format_html('<span style="color: orange; font-weight: bold;">⚠️ {}</span>', available)
+        else:
+            return format_html('<span style="color: green; font-weight: bold;">✅ {}</span>', available)
+    available_spots_display.short_description = 'Available'
     
     def status_display(self, obj):
         """Display event status"""

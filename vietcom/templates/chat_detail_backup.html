@@ -1,0 +1,1970 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat với {{ friend.get_display_name }} - VietCom</title>
+    {% load static %}
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Baloo 2', Arial, sans-serif !important;
+        }
+
+        
+
+        body {
+            background: #f5f5f5;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 80px;
+            height: 100vh;
+            background: #c62828;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-section {
+            padding: 20px 0 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .profile-avatar {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .profile-avatar:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .nav-buttons {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 25px;
+        }
+
+        .sidebar-btn {
+            width: 50px;
+            height: 50px;
+            background: transparent;
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .sidebar-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .sidebar-btn.active {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(5px);
+        }
+
+        /* Chat Layout */
+        .chat-container {
+            position: absolute;
+            left: 80px;
+            top: 0;
+            width: calc(100% - 80px);
+            height: 100vh;
+            display: flex;
+        }
+
+        .friends-list {
+            width: 280px;
+            background: #fff;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .friends-list h3 {
+            padding: 20px;
+            background: #c62828;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .friends-container {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .friend {
+            padding: 12px 16px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .friend:hover {
+            background: #f8f9fa;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .friend.active {
+            background: #f0f0f0;
+        }
+
+        .friend-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .friend-avatar-placeholder {
+            width: 40px;
+            height: 40px;
+            background: #c62828;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+        }
+
+        .friend-info {
+            flex: 1;
+        }
+
+        .friend-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .friend-status {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .chat-window {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #fafafa;
+        }
+
+        /* Chat header */
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 16px 20px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .chat-header-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chat-header-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .chat-header-avatar-placeholder {
+            width: 45px;
+            height: 45px;
+            background: #c62828;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .chat-name {
+            font-weight: 800;
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+
+        .chat-status {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .chat-header button {
+            background: #c62828;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .chat-header button:hover {
+            background: #a21820;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #fafafa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+        }
+
+        .message.sent {
+            justify-content: flex-end;
+        }
+
+        .message.received {
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 20px;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .message.sent .message-bubble {
+            background: #c62828;
+            color: white;
+            border-bottom-right-radius: 6px;
+        }
+
+        .message.received .message-bubble {
+            background: white;
+            color: #333;
+            border-bottom-left-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .message-time {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 6px;
+        }
+
+        .message img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        .chat-input {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            border-top: 1px solid #ddd;
+            background: #fff;
+            gap: 12px;
+        }
+
+        .chat-input button.emoji-btn,
+        .chat-input button.image-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input button.emoji-btn:hover,
+        .chat-input button.image-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .chat-input input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 25px;
+            border: 1px solid #ddd;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .chat-input input[type="text"]:focus {
+            border-color: #c62828;
+        }
+
+        .chat-input .send-btn {
+            background: #c62828;
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 24px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .chat-input .send-btn:hover {
+            background: #a21820;
+        }
+
+        /* Empty chat state */
+        .empty-chat {
+            text-align: center;
+            color: #666;
+            padding: 60px 20px;
+        }
+
+        .empty-chat i {
+            font-size: 64px;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+
+        .empty-chat h3 {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        /* Image preview */
+        .image-preview {
+            position: relative;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .image-preview img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 10px;
+        }
+
+        .image-preview button {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #c62828;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Emoji picker */
+        .emoji-picker {
+            position: absolute;
+            bottom: 80px;
+            left: 20px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            max-width: 320px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .emoji-grid {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .emoji-item {
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+            transition: background-color 0.2s;
+        }
+
+        .emoji-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Notification badge */
+        .notification-badge {
+            position: absolute;
+            bottom: 60px;
+            right: 20px;
+            background: #c62828;
+            color: white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(198, 40, 40, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .notification-badge:hover {
+            background: #a21820;
+            transform: scale(1.05);
+        }
+
+        /* Notification Panel */
+        .notification-panel {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            width: 350px;
+            max-height: 80vh;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            transform: translateX(100%);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 1001;
+            overflow: hidden;
+        }
+
+        .notification-panel.active {
+            transform: translateX(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .notification-header {
+            background: #c62828;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-content {
+            max-height: calc(80vh - 80px);
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        /* Icon styles */
+        .icon-home, .icon-message, .icon-social, .icon-mission, .icon-event, .icon-achievement {
+            display: block;
+            width: 24px;
+            height: 24px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .icon-home { background-image: url('{% static "images/Home.png" %}'); }
+        .icon-message { background-image: url('{% static "images/Message.png" %}'); }
+        .icon-social { background-image: url('{% static "images/Social.png" %}'); }
+        .icon-mission { background-image: url('{% static "images/Mission Button.png" %}'); }
+        .icon-event { background-image: url('{% static "images/Event button.png" %}'); }
+        .icon-achievement { background-image: url('{% static "images/Achievement Button.png" %}'); }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="profile-section">
+            <div class="profile-avatar" id="profile-btn">
+                {% if user.avatar %}
+                    <img src="{{ user.avatar.url }}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                {% else %}
+                    👤
+                {% endif %}
+            </div>
+        </div>
+        <div class="nav-buttons">
+            <button class="sidebar-btn" id="home-btn" title="Home">
+                <span class="icon-home"></span>
+            </button>
+            <button class="sidebar-btn" id="social-btn" title="Social Network">
+                <span class="icon-social"></span>
+            </button>
+            <button class="sidebar-btn active" id="chat-btn" title="Message">
+                <span class="icon-message"></span>
+            </button>
+            <button class="sidebar-btn" id="mission-btn" title="Mission">
+                <span class="icon-mission"></span>
+            </button>
+            <button class="sidebar-btn" id="event-btn" title="Event">
+                <span class="icon-event"></span>
+            </button>
+            <button class="sidebar-btn" id="achievement-btn" title="Achievement">
+                <span class="icon-achievement"></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Notification badge -->
+    <div class="notification-badge" id="notif-btn">📢</div>
+
+    <!-- Notification panel -->
+    <div class="notification-panel" id="notif-panel">
+        <div class="notification-header">
+            <span>People Nearby</span>
+            <button onclick="document.getElementById('notif-panel').classList.remove('active')" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">×</button>
+        </div>
+        <div class="notification-content">
+            <div class="friend">👧 Minh Anh - 500m away</div>
+            <div class="friend">👦 Duc Nam - 1.2km away</div>
+            <div class="friend">👩 Thu Ha - 2.1km away</div>
+        </div>
+    </div>
+
+    <!-- Chat container -->
+    <div class="chat-container">
+        <div class="friends-list">
+            <h3>Friends Online</h3>
+            <div class="friends-container">
+                <!-- This would be populated with the friends list -->
+                <!-- For now, showing current friend as active -->
+                <div class="friend active">
+                    {% if friend.avatar %}
+                        <img src="{{ friend.avatar.url }}" alt="Avatar" class="friend-avatar">
+                    {% else %}
+                        <div class="friend-avatar-placeholder">👤</div>
+                    {% endif %}
+                    <div class="friend-info">
+                        <div class="friend-name">{{ friend.get_display_name }}</div>
+                        <div class="friend-status">{{ friend.status|default:"Online" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-window">
+            <!-- Chat header -->
+            <div class="chat-header">
+                <div class="chat-header-info">
+                    {% if friend.avatar %}
+                        <img src="{{ friend.avatar.url }}" alt="Avatar" class="chat-header-avatar">
+                    {% else %}
+                        <div class="chat-header-avatar-placeholder">👤</div>
+                    {% endif %}
+                    <div>
+                        <div class="chat-name">{{ friend.get_display_name }}</div>
+                        <div class="chat-status">{{ friend.status|default:"Online" }}</div>
+                    </div>
+                </div>
+                <button onclick="initiateCall({{ friend.id }})" title="Gọi điện">📞 Call</button>
+            </div>
+
+            <!-- Chat messages -->
+            <div class="chat-messages" id="chatMessages">
+                {% for message in messages %}
+                <div class="message {% if message.sender == user %}sent{% else %}received{% endif %}" data-message-id="{{ message.id }}">
+                    <div class="message-bubble">
+                        {% if message.type == 'image' and message.image %}
+                            <img src="{{ message.image.url }}" alt="Image" />
+                            {% if message.content %}
+                                <div>{{ message.content }}</div>
+                            {% endif %}
+                        {% else %}
+                            <div>{{ message.content }}</div>
+                        {% endif %}
+                        <div class="message-time">{{ message.created_at|date:"H:i" }}</div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-chat">
+                    <i class="fas fa-comments"></i>
+                    <h3>Chưa có tin nhắn nào</h3>
+                    <p>Hãy bắt đầu cuộc trò chuyện!</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Chat input -->
+            <div class="chat-input">
+                <form method="POST" enctype="multipart/form-data" id="chatForm" style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                    {% csrf_token %}
+                    <button type="button" class="emoji-btn" id="emojiBtn" title="Chọn emoji">😊</button>
+                    <button type="button" class="image-btn" onclick="document.getElementById('imageInput').click()" title="Gửi ảnh">🖼</button>
+                    <input type="text" name="content" placeholder="Type a message..." id="messageInput" />
+                    <input type="file" name="image" id="imageInput" accept="image/*" style="display: none" />
+                    <button type="submit" class="send-btn">Send</button>
+                </form>
+
+                <!-- Image preview -->
+                <div id="imagePreview" class="image-preview" style="display: none;">
+                    <img id="previewImg" src="" alt="Preview" />
+                    <button type="button" onclick="clearImagePreview()">×</button>
+                </div>
+
+                <!-- Emoji picker -->
+                <div id="emojiPicker" class="emoji-picker">
+                    <div class="emoji-grid">
+                        <span class="emoji-item">😀</span><span class="emoji-item">😃</span><span class="emoji-item">😄</span><span class="emoji-item">😁</span>
+                        <span class="emoji-item">😆</span><span class="emoji-item">😅</span><span class="emoji-item">🤣</span><span class="emoji-item">😂</span>
+                        <span class="emoji-item">🙂</span><span class="emoji-item">🙃</span><span class="emoji-item">😉</span><span class="emoji-item">😊</span>
+                        <span class="emoji-item">😇</span><span class="emoji-item">🥰</span><span class="emoji-item">😍</span><span class="emoji-item">🤩</span>
+                        <span class="emoji-item">😘</span><span class="emoji-item">😗</span><span class="emoji-item">😚</span><span class="emoji-item">😙</span>
+                        <span class="emoji-item">😋</span><span class="emoji-item">😛</span><span class="emoji-item">😜</span><span class="emoji-item">🤪</span>
+                        <span class="emoji-item">😝</span><span class="emoji-item">🤑</span><span class="emoji-item">🤗</span><span class="emoji-item">🤭</span>
+                        <span class="emoji-item">🤫</span><span class="emoji-item">🤔</span><span class="emoji-item">🤐</span><span class="emoji-item">🤨</span>
+                        <span class="emoji-item">😐</span><span class="emoji-item">😑</span><span class="emoji-item">😶</span><span class="emoji-item">😏</span>
+                        <span class="emoji-item">😒</span><span class="emoji-item">🙄</span><span class="emoji-item">😬</span><span class="emoji-item">🤥</span>
+                        <span class="emoji-item">👋</span><span class="emoji-item">🤚</span><span class="emoji-item">🖐️</span><span class="emoji-item">✋</span>
+                        <span class="emoji-item">👌</span><span class="emoji-item">🤏</span><span class="emoji-item">✌️</span><span class="emoji-item">🤞</span>
+                        <span class="emoji-item">👍</span><span class="emoji-item">👎</span><span class="emoji-item">✊</span><span class="emoji-item">👊</span>
+                        <span class="emoji-item">👏</span><span class="emoji-item">🙌</span><span class="emoji-item">👐</span><span class="emoji-item">🤲</span>
+                        <span class="emoji-item">❤️</span><span class="emoji-item">🧡</span><span class="emoji-item">💛</span><span class="emoji-item">💚</span>
+                        <span class="emoji-item">💙</span><span class="emoji-item">💜</span><span class="emoji-item">🤎</span><span class="emoji-item">🖤</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Call Modals -->
+    {% include 'call_modal.html' %}
+
+    <script>
+        // Notification panel toggle
+        document.getElementById('notif-btn').addEventListener('click', function () {
+            document.getElementById('notif-panel').classList.toggle('active');
+        });
+
+        // Navigation buttons
+        const homeBtn = document.getElementById('home-btn');
+        const socialBtn = document.getElementById('social-btn');
+        const chatBtn = document.getElementById('chat-btn');
+        const missionBtn = document.getElementById('mission-btn');
+        const eventBtn = document.getElementById('event-btn');
+        const achievementBtn = document.getElementById('achievement-btn');
+
+        // Navigation event listeners
+        homeBtn.addEventListener('click', function () {
+            window.location.href = '{% url "wall" %}';
+        });
+
+        socialBtn.addEventListener('click', function () {
+            window.location.href = '{% url "wall" %}';
+        });
+
+        chatBtn.addEventListener('click', function () {
+            window.location.href = '{% url "chat_list" %}';
+        });
+
+        missionBtn.addEventListener('click', function () {
+            window.location.href = '#'; // Add mission URL when available
+        });
+
+        eventBtn.addEventListener('click', function () {
+            window.location.href = '{% url "event_list" %}';
+        });
+
+        achievementBtn.addEventListener('click', function () {
+            window.location.href = '#'; // Add achievement URL when available
+        });
+
+        // =================== CHAT FUNCTIONS ===================
+        let lastMessageId = 0;
+        let isPolling = false;
+
+        // Auto scroll to bottom of messages
+        function scrollToBottom() {
+            const chatMessages = document.getElementById("chatMessages");
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Format message HTML
+        function formatMessage(message) {
+            const messageClass = message.is_sent ? 'sent' : 'received';
+            let messageContent = '';
+
+            if (message.type === 'image' && message.image_url) {
+                messageContent = `<img src="${message.image_url}" alt="Image">`;
+                if (message.content) {
+                    messageContent += `<div>${message.content}</div>`;
+                }
+            } else {
+                messageContent = message.content;
+            }
+
+            return `
+              <div class="message ${messageClass}" data-message-id="${message.id}">
+                <div class="message-bubble">
+                  <div>${messageContent}</div>
+                  <div class="message-time">${message.created_at}</div>
+                </div>
+              </div>
+            `;
+        }
+
+        // Get new messages via AJAX
+        function fetchNewMessages() {
+            if (isPolling) return;
+
+            isPolling = true;
+            const friendId = {{ friend.id|escapejs }};
+            const url = `/social/api/chat/${friendId}/messages/`;
+
+            fetch(url + (lastMessageId ? `?last_message_id=${lastMessageId}` : ''))
+                .then(response => response.json())
+                .then(data => {
+                    if (data.messages && data.messages.length > 0) {
+                        const chatMessages = document.getElementById("chatMessages");
+
+                        data.messages.forEach(message => {
+                            if (message.id > lastMessageId) {
+                                chatMessages.insertAdjacentHTML('beforeend', formatMessage(message));
+                                lastMessageId = Math.max(lastMessageId, message.id);
+                            }
+                        });
+
+                        scrollToBottom();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching messages:', error);
+                })
+                .finally(() => {
+                    isPolling = false;
+                });
+        }
+
+        // Initialize last message ID from existing messages
+        function initializeLastMessageId() {
+            const messages = document.querySelectorAll('.message[data-message-id]');
+            if (messages.length > 0) {
+                let maxId = 0;
+                messages.forEach(msg => {
+                    const msgId = parseInt(msg.getAttribute('data-message-id'));
+                    if (msgId > maxId) {
+                        maxId = msgId;
+                    }
+                });
+                lastMessageId = maxId;
+            }
+        }
+
+        // Handle form submission with AJAX
+        function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+            const content = formData.get('content').trim();
+            const image = formData.get('image');
+
+            if (!content && !image) {
+                alert('Vui lòng nhập tin nhắn hoặc chọn ảnh!');
+                return;
+            }
+
+            fetch(form.action || window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    form.querySelector('input[name="content"]').value = '';
+                    form.querySelector('input[name="image"]').value = '';
+                    clearImagePreview();
+                    setTimeout(fetchNewMessages, 100);
+                } else {
+                    alert(data.error || 'Có lỗi xảy ra khi gửi tin nhắn');
+                }
+            })
+            .catch(error => {
+                console.error('Error sending message:', error);
+                alert('Có lỗi xảy ra khi gửi tin nhắn');
+            });
+        }
+
+        // Image preview functions
+        function clearImagePreview() {
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('imageInput').value = '';
+        }
+
+        // Emoji picker functions
+        function toggleEmojiPicker() {
+            const picker = document.getElementById('emojiPicker');
+            picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function insertEmoji(emoji) {
+            const input = document.getElementById('messageInput');
+            const cursorPos = input.selectionStart;
+            const textBefore = input.value.substring(0, cursorPos);
+            const textAfter = input.value.substring(cursorPos);
+            input.value = textBefore + emoji + textAfter;
+            input.focus();
+            input.setSelectionRange(cursorPos + emoji.length, cursorPos + emoji.length);
+            toggleEmojiPicker();
+        }
+
+        // Initialize on page load
+        document.addEventListener("DOMContentLoaded", function() {
+            scrollToBottom();
+            initializeLastMessageId();
+
+            // Set up form handler
+            const chatForm = document.getElementById('chatForm');
+            if (chatForm) {
+                chatForm.addEventListener('submit', handleFormSubmit);
+            }
+
+            // Set up image preview
+            const imageInput = document.getElementById('imageInput');
+            if (imageInput) {
+                imageInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            document.getElementById('previewImg').src = e.target.result;
+                            document.getElementById('imagePreview').style.display = 'block';
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            // Set up emoji picker
+            const emojiBtn = document.getElementById('emojiBtn');
+            if (emojiBtn) {
+                emojiBtn.addEventListener('click', toggleEmojiPicker);
+            }
+
+            // Set up emoji selection
+            const emojiItems = document.querySelectorAll('.emoji-item');
+            emojiItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    insertEmoji(this.textContent);
+                });
+            });
+
+            // Close emoji picker when clicking outside
+            document.addEventListener('click', function(e) {
+                const picker = document.getElementById('emojiPicker');
+                const btn = document.getElementById('emojiBtn');
+                if (!picker.contains(e.target) && e.target !== btn) {
+                    picker.style.display = 'none';
+                }
+            });
+
+            // Start polling for new messages
+            fetchNewMessages();
+            setInterval(fetchNewMessages, 3000);
+
+            // Start polling for incoming calls
+            setInterval(checkIncomingCalls, 2000);
+        });
+
+        // =================== CALL FUNCTIONS ===================
+
+        let currentCall = null;
+        let localStream = null;
+        let peerConnection = null;
+        let isMuted = false;
+        let callTimer = null;
+        let callStartTime = null;
+
+        // ICE servers configuration
+        const iceServers = {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        };
+
+        // Initiate a call
+        async function initiateCall(friendId) {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+
+                const response = await fetch('/social/call/initiate/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    },
+                    body: `friend_id=${friendId}`
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    currentCall = data.call_id;
+                    document.getElementById('outgoing-caller-name').textContent = data.friend_name;
+
+                    const modal = new bootstrap.Modal(document.getElementById('outgoingCallModal'));
+                    modal.show();
+
+                    pollCallStatus();
+                    await setupPeerConnection();
+
+                } else {
+                    alert(data.error);
+                    if (localStream) {
+                        localStream.getTracks().forEach(track => track.stop());
+                    }
+                }
+            } catch (error) {
+                console.error('Error initiating call:', error);
+                alert('Không thể truy cập microphone. Vui lòng kiểm tra quyền truy cập.');
+            }
+        }
+
+        // Setup WebRTC peer connection
+        async function setupPeerConnection() {
+            peerConnection = new RTCPeerConnection(iceServers);
+
+            localStream.getTracks().forEach(track => {
+                peerConnection.addTrack(track, localStream);
+            });
+
+            peerConnection.ontrack = (event) => {
+                console.log('Received remote stream');
+            };
+
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    console.log('ICE candidate:', event.candidate);
+                }
+            };
+        }
+
+        // Answer incoming call
+        async function answerCall() {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+
+                const response = await fetch('/social/call/answer/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    },
+                    body: `call_id=${currentCall}`
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('incomingCallModal')).hide();
+
+                    const modal = new bootstrap.Modal(document.getElementById('activeCallModal'));
+                    modal.show();
+
+                    await setupPeerConnection();
+                    startCallTimer();
+
+                } else {
+                    alert(data.error);
+                }
+            } catch (error) {
+                console.error('Error answering call:', error);
+                alert('Không thể truy cập microphone.');
+            }
+        }
+
+        // Reject incoming call
+        async function rejectCall() {
+            const response = await fetch('/social/call/reject/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: `call_id=${currentCall}`
+            });
+
+            bootstrap.Modal.getInstance(document.getElementById('incomingCallModal')).hide();
+            cleanupCall();
+        }
+
+        // End calls
+        async function endOutgoingCall() {
+            await endCall();
+            bootstrap.Modal.getInstance(document.getElementById('outgoingCallModal')).hide();
+        }
+
+        async function endActiveCall() {
+            await endCall();
+            bootstrap.Modal.getInstance(document.getElementById('activeCallModal')).hide();
+        }
+
+        async function endCall() {
+            if (currentCall) {
+                const response = await fetch('/social/call/end/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    },
+                    body: `call_id=${currentCall}`
+                });
+            }
+
+            cleanupCall();
+        }
+
+        // Clean up call resources
+        function cleanupCall() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+
+            if (callTimer) {
+                clearInterval(callTimer);
+                callTimer = null;
+            }
+
+            currentCall = null;
+            callStartTime = null;
+            isMuted = false;
+        }
+
+        // Toggle mute
+        function toggleMute() {
+            if (localStream) {
+                const audioTrack = localStream.getAudioTracks()[0];
+                if (audioTrack) {
+                    audioTrack.enabled = !audioTrack.enabled;
+                    isMuted = !audioTrack.enabled;
+
+                    const muteIcon = document.getElementById('muteIcon');
+                    const muteIconActive = document.getElementById('muteIconActive');
+
+                    if (isMuted) {
+                        if (muteIcon) muteIcon.className = 'fas fa-microphone-slash';
+                        if (muteIconActive) muteIconActive.className = 'fas fa-microphone-slash';
+                    } else {
+                        if (muteIcon) muteIcon.className = 'fas fa-microphone';
+                        if (muteIconActive) muteIconActive.className = 'fas fa-microphone';
+                    }
+                }
+            }
+        }
+
+        // Start call timer
+        function startCallTimer() {
+            callStartTime = Date.now();
+            callTimer = setInterval(updateCallTimer, 1000);
+        }
+
+        // Update call timer
+        function updateCallTimer() {
+            if (callStartTime) {
+                const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                const timer = document.getElementById('call-timer');
+                const activeTimer = document.getElementById('active-call-timer');
+
+                if (timer) timer.textContent = timeString;
+                if (activeTimer) activeTimer.textContent = timeString;
+            }
+        }
+
+        // Poll call status
+        function pollCallStatus() {
+            const statusInterval = setInterval(async () => {
+                if (!currentCall) {
+                    clearInterval(statusInterval);
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/social/call/${currentCall}/status/`);
+                    const data = await response.json();
+
+                    if (data.status === 'active') {
+                        bootstrap.Modal.getInstance(document.getElementById('outgoingCallModal')).hide();
+
+                        const modal = new bootstrap.Modal(document.getElementById('activeCallModal'));
+                        modal.show();
+
+                        startCallTimer();
+                        clearInterval(statusInterval);
+
+                    } else if (data.status === 'rejected' || data.status === 'ended') {
+                        bootstrap.Modal.getInstance(document.getElementById('outgoingCallModal')).hide();
+                        cleanupCall();
+                        clearInterval(statusInterval);
+
+                        if (data.status === 'rejected') {
+                            alert('Cuộc gọi bị từ chối');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error polling call status:', error);
+                }
+            }, 1000);
+        }
+
+        // Check for incoming calls
+        async function checkIncomingCalls() {
+            try {
+                const response = await fetch('/social/call/check-incoming/');
+                const data = await response.json();
+
+                if (data.incoming_calls && data.incoming_calls.length > 0) {
+                    const incomingCall = data.incoming_calls[0];
+
+                    if (!currentCall) {
+                        currentCall = incomingCall.call_id;
+                        document.getElementById('incoming-caller-name').textContent = incomingCall.caller_name;
+
+                        const modal = new bootstrap.Modal(document.getElementById('incomingCallModal'));
+                        modal.show();
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking incoming calls:', error);
+            }
+        }
+    </script>
+
+</body>
+</html>
+            >
+              <i class="fas fa-phone"></i>
+            </button>
+            <button
+              class="btn btn-outline-primary btn-sm"
+              disabled
+              title="Video call (Chưa hỗ trợ)"
+            >
+              <i class="fas fa-video"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-messages" id="chatMessages">
+          {% for message in messages %}
+          <div
+            class="message {% if message.sender == user %}sent{% else %}received{% endif %}"
+            data-message-id="{{ message.id }}"
+          >
+            <div class="message-bubble">
+              {% if message.type == 'image' and message.image %}
+              <img
+                src="{{ message.image.url }}"
+                alt="Image"
+                style="max-width: 200px; max-height: 200px; border-radius: 10px"
+              />
+              {% if message.content %}
+              <div class="mt-2">{{ message.content }}</div>
+              {% endif %} {% else %}
+              <div>{{ message.content }}</div>
+              {% endif %}
+              <div class="message-time">
+                {{ message.created_at|date:"H:i" }}
+              </div>
+            </div>
+          </div>
+          {% empty %}
+          <div class="text-center text-muted py-5">
+            <i class="fas fa-comments fa-3x mb-3"></i>
+            <h6>Chưa có tin nhắn nào</h6>
+            <p>Hãy bắt đầu cuộc trò chuyện!</p>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Chat Input -->
+        <div class="chat-input">
+          <form
+            method="POST"
+            class="d-flex align-items-center"
+            enctype="multipart/form-data"
+            id="chatForm"
+          >
+            {% csrf_token %}
+            <div class="position-relative flex-grow-1">
+              <input
+                type="text"
+                name="content"
+                class="form-control"
+                placeholder="Nhập tin nhắn..."
+                id="messageInput"
+                style="padding-right: 80px"
+              />
+              <!-- Emoji button -->
+              <button
+                type="button"
+                class="btn btn-link position-absolute"
+                style="
+                  right: 45px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  padding: 0;
+                  color: #6c757d;
+                "
+                id="emojiBtn"
+                title="Chọn emoji"
+              >
+                😊
+              </button>
+              <!-- Image upload button -->
+              <button
+                type="button"
+                class="btn btn-link position-absolute"
+                style="
+                  right: 15px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                  padding: 0;
+                  color: #6c757d;
+                "
+                onclick="document.getElementById('imageInput').click()"
+                title="Gửi ảnh"
+              >
+                📷
+              </button>
+            </div>
+            <input
+              type="file"
+              name="image"
+              id="imageInput"
+              accept="image/*"
+              style="display: none"
+            />
+            <button type="submit" class="btn btn-primary ms-2">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </form>
+
+          <!-- Image preview -->
+          <div id="imagePreview" class="mt-2" style="display: none">
+            <div class="position-relative d-inline-block">
+              <img
+                id="previewImg"
+                src=""
+                alt="Preview"
+                style="max-width: 200px; max-height: 200px; border-radius: 10px"
+              />
+              <button
+                type="button"
+                class="btn btn-sm btn-danger position-absolute top-0 end-0"
+                onclick="clearImagePreview()"
+                style="transform: translate(50%, -50%)"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+
+          <!-- Emoji picker -->
+          <div id="emojiPicker" class="emoji-picker" style="display: none">
+            <div class="emoji-grid">
+              <span class="emoji-item">😀</span
+              ><span class="emoji-item">😃</span
+              ><span class="emoji-item">😄</span
+              ><span class="emoji-item">😁</span>
+              <span class="emoji-item">😆</span
+              ><span class="emoji-item">😅</span
+              ><span class="emoji-item">🤣</span
+              ><span class="emoji-item">😂</span>
+              <span class="emoji-item">🙂</span
+              ><span class="emoji-item">🙃</span
+              ><span class="emoji-item">😉</span
+              ><span class="emoji-item">😊</span>
+              <span class="emoji-item">😇</span
+              ><span class="emoji-item">🥰</span
+              ><span class="emoji-item">😍</span
+              ><span class="emoji-item">🤩</span>
+              <span class="emoji-item">😘</span
+              ><span class="emoji-item">😗</span
+              ><span class="emoji-item">😚</span
+              ><span class="emoji-item">😙</span>
+              <span class="emoji-item">😋</span
+              ><span class="emoji-item">😛</span
+              ><span class="emoji-item">😜</span
+              ><span class="emoji-item">🤪</span>
+              <span class="emoji-item">😝</span
+              ><span class="emoji-item">🤑</span
+              ><span class="emoji-item">🤗</span
+              ><span class="emoji-item">🤭</span>
+              <span class="emoji-item">🤫</span
+              ><span class="emoji-item">🤔</span
+              ><span class="emoji-item">🤐</span
+              ><span class="emoji-item">🤨</span>
+              <span class="emoji-item">😐</span
+              ><span class="emoji-item">😑</span
+              ><span class="emoji-item">😶</span
+              ><span class="emoji-item">😏</span>
+              <span class="emoji-item">😒</span
+              ><span class="emoji-item">🙄</span
+              ><span class="emoji-item">😬</span
+              ><span class="emoji-item">🤥</span>
+              <span class="emoji-item">😔</span
+              ><span class="emoji-item">😕</span
+              ><span class="emoji-item">🙁</span
+              ><span class="emoji-item">☹️</span>
+              <span class="emoji-item">😣</span
+              ><span class="emoji-item">😖</span
+              ><span class="emoji-item">😫</span
+              ><span class="emoji-item">😩</span>
+              <span class="emoji-item">🥺</span
+              ><span class="emoji-item">😢</span
+              ><span class="emoji-item">😭</span
+              ><span class="emoji-item">😤</span>
+              <span class="emoji-item">😠</span
+              ><span class="emoji-item">😡</span
+              ><span class="emoji-item">🤬</span
+              ><span class="emoji-item">🤯</span>
+              <span class="emoji-item">😳</span
+              ><span class="emoji-item">🥵</span
+              ><span class="emoji-item">🥶</span
+              ><span class="emoji-item">😱</span>
+              <span class="emoji-item">😨</span
+              ><span class="emoji-item">😰</span
+              ><span class="emoji-item">😥</span
+              ><span class="emoji-item">😓</span>
+              <span class="emoji-item">🤗</span
+              ><span class="emoji-item">🤔</span
+              ><span class="emoji-item">🤭</span
+              ><span class="emoji-item">🤫</span>
+              <span class="emoji-item">👋</span
+              ><span class="emoji-item">🤚</span
+              ><span class="emoji-item">🖐️</span
+              ><span class="emoji-item">✋</span>
+              <span class="emoji-item">🖖</span
+              ><span class="emoji-item">👌</span
+              ><span class="emoji-item">🤏</span
+              ><span class="emoji-item">✌️</span>
+              <span class="emoji-item">🤞</span
+              ><span class="emoji-item">🤟</span
+              ><span class="emoji-item">🤘</span
+              ><span class="emoji-item">🤙</span>
+              <span class="emoji-item">👈</span
+              ><span class="emoji-item">👉</span
+              ><span class="emoji-item">👆</span
+              ><span class="emoji-item">🖕</span>
+              <span class="emoji-item">👇</span
+              ><span class="emoji-item">☝️</span
+              ><span class="emoji-item">👍</span
+              ><span class="emoji-item">👎</span>
+              <span class="emoji-item">✊</span
+              ><span class="emoji-item">👊</span
+              ><span class="emoji-item">🤛</span
+              ><span class="emoji-item">🤜</span>
+              <span class="emoji-item">👏</span
+              ><span class="emoji-item">🙌</span
+              ><span class="emoji-item">👐</span
+              ><span class="emoji-item">🤲</span>
+              <span class="emoji-item">❤️</span
+              ><span class="emoji-item">🧡</span
+              ><span class="emoji-item">💛</span
+              ><span class="emoji-item">💚</span>
+              <span class="emoji-item">💙</span
+              ><span class="emoji-item">💜</span
+              ><span class="emoji-item">🤎</span
+              ><span class="emoji-item">🖤</span>
+              <span class="emoji-item">🤍</span
+              ><span class="emoji-item">💯</span
+              ><span class="emoji-item">💢</span
+              ><span class="emoji-item">💥</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Include Call Modals -->
+{% include 'call_modal.html' %} {% endblock %} {% block extra_js %}
+<script>
+  let lastMessageId = 0;
+  let isPolling = false;
+
+  // Auto scroll to bottom of messages
+  function scrollToBottom() {
+    const chatMessages = document.getElementById("chatMessages");
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  // Format message HTML
+  function formatMessage(message) {
+    const messageClass = message.is_sent ? 'sent' : 'received';
+    let messageContent = '';
+
+    if (message.type === 'image' && message.image_url) {
+      messageContent = `<img src="${message.image_url}" alt="Image" style="max-width: 200px; max-height: 200px; border-radius: 10px;">`;
+      if (message.content) {
+        messageContent += `<div class="mt-2">${message.content}</div>`;
+      }
+    } else {
+      messageContent = message.content;
+    }
+
+    return `
+      <div class="message ${messageClass}" data-message-id="${message.id}">
+        <div class="message-bubble">
+          <div>${messageContent}</div>
+          <div class="message-time">${message.created_at}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Get new messages via AJAX
+  function fetchNewMessages() {
+    if (isPolling) return; // Prevent multiple simultaneous requests
+
+    isPolling = true;
+    const friendId = {{ friend.id|escapejs }};
+    const url = `/social/api/chat/${friendId}/messages/`;
+
+    fetch(url + (lastMessageId ? `?last_message_id=${lastMessageId}` : ''))
+      .then(response => {
+        console.log('API Response status:', response.status);
+        return response.json();
+      })
+      .then(data => {
+        console.log('Fetched messages:', data);
+        if (data.messages && data.messages.length > 0) {
+          const chatMessages = document.getElementById("chatMessages");
+
+          // Add new messages
+          data.messages.forEach(message => {
+            if (message.id > lastMessageId) {
+              chatMessages.insertAdjacentHTML('beforeend', formatMessage(message));
+              lastMessageId = Math.max(lastMessageId, message.id);
+              console.log('Added new message:', message.id);
+            }
+          });
+
+          scrollToBottom();
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching messages:', error);
+      })
+      .finally(() => {
+        isPolling = false;
+      });
+  }
+
+  // Initialize last message ID from existing messages
+  function initializeLastMessageId() {
+    const messages = document.querySelectorAll('.message[data-message-id]');
+    if (messages.length > 0) {
+      // Get the highest message ID from existing messages
+      let maxId = 0;
+      messages.forEach(msg => {
+        const msgId = parseInt(msg.getAttribute('data-message-id'));
+        if (msgId > maxId) {
+          maxId = msgId;
+        }
+      });
+      lastMessageId = maxId;
+      console.log('Initialized lastMessageId:', lastMessageId);
+    }
+  }
+
+  // Handle form submission with AJAX
+  function handleFormSubmit(event) {
+    event.preventDefault();
+
+    const form = event.target;
+    const formData = new FormData(form);
+    const content = formData.get('content').trim();
+    const image = formData.get('image');
+
+    if (!content && !image) {
+      alert('Vui lòng nhập tin nhắn hoặc chọn ảnh!');
+      return;
+    }
+
+    // Send message via AJAX
+    fetch(form.action || window.location.href, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Clear the input
+        form.querySelector('input[name="content"]').value = '';
+        form.querySelector('input[name="image"]').value = '';
+        clearImagePreview();
+        // Fetch new messages immediately
+        setTimeout(fetchNewMessages, 100);
+      } else {
+        alert(data.error || 'Có lỗi xảy ra khi gửi tin nhắn');
+      }
+    })
+    .catch(error => {
+      console.error('Error sending message:', error);
+      alert('Có lỗi xảy ra khi gửi tin nhắn');
+    });
+  }
+
+  // Image preview functions
+  function clearImagePreview() {
+    document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('imageInput').value = '';
+  }
+
+  // Emoji picker functions
+  function toggleEmojiPicker() {
+    const picker = document.getElementById('emojiPicker');
+    picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function insertEmoji(emoji) {
+    const input = document.getElementById('messageInput');
+    const cursorPos = input.selectionStart;
+    const textBefore = input.value.substring(0, cursorPos);
+    const textAfter = input.value.substring(cursorPos);
+    input.value = textBefore + emoji + textAfter;
+    input.focus();
+    input.setSelectionRange(cursorPos + emoji.length, cursorPos + emoji.length);
+    toggleEmojiPicker();
+  }
+
+  // Initialize on page load
+  document.addEventListener("DOMContentLoaded", function() {
+    console.log('Chat page loaded, initializing...');
+    scrollToBottom();
+    initializeLastMessageId();
+
+    // Set up form handler
+    const chatForm = document.querySelector('.chat-input form');
+    if (chatForm) {
+      chatForm.addEventListener('submit', handleFormSubmit);
+      console.log('Form handler attached');
+    }
+
+    // Set up image preview
+    const imageInput = document.getElementById('imageInput');
+    if (imageInput) {
+      imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            document.getElementById('previewImg').src = e.target.result;
+            document.getElementById('imagePreview').style.display = 'block';
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    // Set up emoji picker
+    const emojiBtn = document.getElementById('emojiBtn');
+    if (emojiBtn) {
+      emojiBtn.addEventListener('click', toggleEmojiPicker);
+    }
+
+    // Set up emoji selection
+    const emojiItems = document.querySelectorAll('.emoji-item');
+    emojiItems.forEach(item => {
+      item.addEventListener('click', function() {
+        insertEmoji(this.textContent);
+      });
+    });
+
+    // Close emoji picker when clicking outside
+    document.addEventListener('click', function(e) {
+      const picker = document.getElementById('emojiPicker');
+      const btn = document.getElementById('emojiBtn');
+      if (!picker.contains(e.target) && e.target !== btn) {
+        picker.style.display = 'none';
+      }
+    });
+
+    // Start polling for new messages every 3 seconds
+    console.log('Starting message polling...');
+    fetchNewMessages(); // Initial fetch
+    setInterval(fetchNewMessages, 3000);
+
+    // Start polling for incoming calls
+    setInterval(checkIncomingCalls, 2000);
+  });
+
+  // =================== CALL FUNCTIONS ===================
+
+  let currentCall = null;
+  let localStream = null;
+  let peerConnection = null;
+  let isMuted = false;
+  let callTimer = null;
+  let callStartTime = null;
+
+  // ICE servers configuration
+  const iceServers = {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' }
+    ]
+  };
+
+  // Initiate a call
+  async function initiateCall(friendId) {
+    try {
+      // Request microphone permission
+      localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+
+      // Make API call to initiate
+      const response = await fetch('/social/call/initiate/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+        body: `friend_id=${friendId}`
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        currentCall = data.call_id;
+        document.getElementById('outgoing-caller-name').textContent = data.friend_name;
+
+        // Show outgoing call modal
+        const modal = new bootstrap.Modal(document.getElementById('outgoingCallModal'));
+        modal.show();
+
+        // Start polling call status
+        pollCallStatus();
+
+        // Setup WebRTC
+        await setupPeerConnection();
+
+      } else {
+        alert(data.error);
+        if (localStream) {
+          localStream.getTracks().forEach(track => track.stop());
+        }
+      }
+    } catch (error) {
+      console.error('Error initiating call:', error);
+      alert('Không thể truy cập microphone. Vui lòng kiểm tra quyền truy cập.');
+    }
+  }
+
+  // Setup WebRTC peer connection
+  async function setupPeerConnection() {
+    peerConnection = new RTCPeerConnection(iceServers);
+
+    // Add local stream
+    localStream.getTracks().forEach(track => {
+      peerConnection.addTrack(track, localStream);
+    });
+
+    // Handle remote stream
+    peerConnection.ontrack = (event) => {
+      console.log('Received remote stream');
+      // Remote audio will be played automatically
+    };
+
+    // Handle ICE candidates
+    peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        // In a real implementation, you would send this to the other peer
+        console.log('ICE candidate:', event.candidate);
+      }
+    };
+  }
+
+  // Answer incoming call
+  async function answerCall() {
+    try {
+      // Request microphone permission
+      localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+
+      const response = await fetch('/social/call/answer/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+        body: `call_id=${currentCall}`
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Hide incoming call modal
+        bootstrap.Modal.getInstance(document.getElementById('incomingCallModal')).hide();
+
+        // Show active call modal
+        const modal = new bootstrap.Modal(document.getElementById('activeCallModal'));
+        modal.show();
+
+        // Setup WebRTC
+        await setupPeerConnection();
+
+        // Start call timer
+        startCallTimer();
+
+      } else {
+        alert(data.error);
+      }
+    } catch (error) {
+      console.error('Error answering call:', error);
+      alert('Không thể truy cập microphone.');
+    }
+  }
+
+  // Reject incoming call
+  async function rejectCall() {
+    const response = await fetch('/social/call/reject/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+      },
+      body: `call_id=${currentCall}`
+    });
+
+    // Hide incoming call modal
+    bootstrap.Modal.getInstance(document.getElementById('incomingCallModal')).hide();
+
+    // Clean up
+    cleanupCall();
+  }
+
+  // End outgoing call
+  async function endOutgoingCall() {
+    await endCall();
+    bootstrap.Modal.getInstance(document.getElementById('outgoingCallModal')).hide();
+  }
+
+  // End active call
+  async function endActiveCall() {
+    await endCall();
+    bootstrap.Modal.getInstance(document.getElementById('activeCallModal')).hide();
+  }
+
+  // End call
+  async function endCall() {
+    if (currentCall) {
+      const response = await fetch('/social/call/end/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+        body: `call_id=${currentCall}`
+      });
+    }
+
+    cleanupCall();
+  }
+
+  // Clean up call resources
+  function cleanupCall() {
+    if (localStream) {
+      localStream.getTracks().forEach(track => track.stop());
+      localStream = null;
+    }
+
+    if (peerConnection) {
+      peerConnection.close();
+      peerConnection = null;
+    }
+
+    if (callTimer) {
+      clearInterval(callTimer);
+      callTimer = null;
+    }
+
+    currentCall = null;
+    callStartTime = null;
+    isMuted = false;
+  }
+
+  // Toggle mute
+  function toggleMute() {
+    if (localStream) {
+      const audioTrack = localStream.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = !audioTrack.enabled;
+        isMuted = !audioTrack.enabled;
+
+        // Update mute icons
+        const muteIcon = document.getElementById('muteIcon');
+        const muteIconActive = document.getElementById('muteIconActive');
+
+        if (isMuted) {
+          if (muteIcon) muteIcon.className = 'fas fa-microphone-slash';
+          if (muteIconActive) muteIconActive.className = 'fas fa-microphone-slash';
+        } else {
+          if (muteIcon) muteIcon.className = 'fas fa-microphone';
+          if (muteIconActive) muteIconActive.className = 'fas fa-microphone';
+        }
+      }
+    }
+  }
+
+  // Start call timer
+  function startCallTimer() {
+    callStartTime = Date.now();
+    callTimer = setInterval(updateCallTimer, 1000);
+  }
+
+  // Update call timer
+  function updateCallTimer() {
+    if (callStartTime) {
+      const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
+      const minutes = Math.floor(elapsed / 60);
+      const seconds = elapsed % 60;
+      const timeString = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+      const timer = document.getElementById('call-timer');
+      const activeTimer = document.getElementById('active-call-timer');
+
+      if (timer) timer.textContent = timeString;
+      if (activeTimer) activeTimer.textContent = timeString;
+    }
+  }
+
+  // Poll call status
+  function pollCallStatus() {
+    const statusInterval = setInterval(async () => {
+      if (!currentCall) {
+        clearInterval(statusInterval);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/social/call/${currentCall}/status/`);
+        const data = await response.json();
+
+        if (data.status === 'active') {
+          // Call was answered
+          bootstrap.Modal.getInstance(document.getElementById('outgoingCallModal')).hide();
+
+          const modal = new bootstrap.Modal(document.getElementById('activeCallModal'));
+          modal.show();
+
+          startCallTimer();
+          clearInterval(statusInterval);
+
+        } else if (data.status === 'rejected' || data.status === 'ended') {
+          // Call was rejected or ended
+          bootstrap.Modal.getInstance(document.getElementById('outgoingCallModal')).hide();
+          cleanupCall();
+          clearInterval(statusInterval);
+
+          if (data.status === 'rejected') {
+            alert('Cuộc gọi bị từ chối');
+          }
+        }
+      } catch (error) {
+        console.error('Error polling call status:', error);
+      }
+    }, 1000);
+  }
+
+  // Check for incoming calls
+  async function checkIncomingCalls() {
+    try {
+      const response = await fetch('/social/call/check-incoming/');
+      const data = await response.json();
+
+      if (data.incoming_calls && data.incoming_calls.length > 0) {
+        const incomingCall = data.incoming_calls[0];
+
+        // Only show if not already showing a call modal
+        if (!currentCall) {
+          currentCall = incomingCall.call_id;
+          document.getElementById('incoming-caller-name').textContent = incomingCall.caller_name;
+
+          const modal = new bootstrap.Modal(document.getElementById('incomingCallModal'));
+          modal.show();
+        }
+      }
+    } catch (error) {
+      console.error('Error checking incoming calls:', error);
+    }
+  }
+</script>
+{% endblock %}

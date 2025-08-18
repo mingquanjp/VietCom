@@ -1,472 +1,1234 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Find Nearby Friends 🌍{% endblock %}
-
 {% block extra_css %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <style>
-      body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      }
+/* Level Control Panel */
+.level-control-panel {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 20px;
+  padding: 15px 25px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  border: 2px solid #e3f2fd;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  min-width: 600px;
+  backdrop-filter: blur(10px);
+}
 
-      #map {
-            height: 400px;
-            width: 100%;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-      .main-container {
-        padding: 20px;
-        max-width: 1200px;
-        margin: 0 auto;
-      }
+.level-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
 
-      .header-card {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 20px;
-        padding: 30px;
-        text-align: center;
-        margin-bottom: 30px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      }
+.level-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 16px;
+  color: #BC0126;
+}
 
-      .radar-container {
-        position: relative;
-        width: 200px;
-        height: 200px;
-        margin: 20px auto;
-        border-radius: 50%;
-        background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-        animation: pulse 2s infinite;
-      }
+.level-icon {
+  font-size: 18px;
+}
 
-      @keyframes pulse {
-        0% {
-          transform: scale(1);
-          box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7);
-        }
-        70% {
-          transform: scale(1.1);
-          box-shadow: 0 0 0 20px rgba(255, 107, 107, 0);
-        }
-        100% {
-          transform: scale(1);
-          box-shadow: 0 0 0 0 rgba(255, 107, 107, 0);
-        }
-      }
+.search-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #BC0126;
+}
 
-      .radar-inner {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 150px;
-        height: 150px;
-        background: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 3rem;
-      }
+.search-icon {
+  font-size: 14px;
+}
 
-      .controls-card {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 15px;
-        padding: 25px;
-        margin-bottom: 20px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-      }
+.level-progress {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
-      .user-card {
-        background: white;
-        border-radius: 15px;
-        padding: 20px;
-        margin-bottom: 15px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-      }
+.progress-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 
-      .user-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-      }
+.range-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #BC0126;
+}
 
-      .user-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #45b7d1);
-      }
+.next-level {
+  font-size: 12px;
+  color: #BC0126;
+}
 
-      .user-avatar {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        border: 3px solid #fff;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-      }
+.level-up-hint {
+  font-size: 11px;
+  color: #BC0126;
+  font-weight: 500;
+}
 
-      .distance-badge {
-        background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
-        color: white;
-        padding: 5px 15px;
-        border-radius: 25px;
-        font-size: 0.85rem;
-        font-weight: bold;
-      }
+.progress-bar {
+  height: 20px;
+  background: #e0f2f1;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid #b2dfdb;
+}
 
-      .status-online {
-        width: 15px;
-        height: 15px;
-        background: #4ecdc4;
-        border-radius: 50%;
-        position: absolute;
-        bottom: 5px;
-        right: 5px;
-        border: 2px solid white;
-        animation: blink 2s infinite;
-      }
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4fc3f7 0%, #29b6f6 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: width 0.3s ease;
+}
 
-      @keyframes blink {
-        0%,
-        50% {
-          opacity: 1;
-        }
-        51%,
-        100% {
-          opacity: 0.3;
-        }
-      }
+.progress-text {
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
 
-      .action-btn {
-        border: none;
-        border-radius: 25px;
-        padding: 8px 20px;
-        font-weight: bold;
-        transition: all 0.3s ease;
-        margin: 5px;
-      }
+.refresh-btn {
+  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+  color: white;
+  border: none;
+  border-radius: 15px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+}
 
-      .btn-friend {
-        background: linear-gradient(45deg, #4ecdc4, #44b3aa);
-        color: white;
-      }
+.refresh-btn:hover {
+  background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(25, 118, 210, 0.4);
+}
 
-      .btn-message {
-        background: linear-gradient(45deg, #45b7d1, #3a9bc1);
-        color: white;
-      }
+.refresh-btn:active {
+  transform: translateY(0);
+}
 
-      .btn-friend:hover,
-      .btn-message:hover {
-        transform: scale(1.05);
-        color: white;
-      }
+.refresh-icon {
+  font-size: 16px;
+  animation: rotate 0.5s ease-in-out;
+}
 
-      .btn-warning {
-        background: linear-gradient(45deg, #ffc107, #e0a800);
-        color: white;
-      }
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 
-      .btn-success {
-        background: linear-gradient(45deg, #28a745, #1e7e34);
-        color: white;
-      }
+.refresh-btn:hover .refresh-icon {
+  animation: rotate 0.5s ease-in-out;
+}
 
-      .btn-info {
-        background: linear-gradient(45deg, #17a2b8, #138496);
-        color: white;
-      }
+/* Additional styles for new interface */
+.loading-spinner {
+  display: none;
+  text-align: center;
+  color: #c62828;
+}
 
-      .notification-popup {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        border-radius: 8px;
-      }
+/* Notification Badge */
+.notification-badge { 
+  position: fixed;
+  bottom: 60px;
+  right: 20px;
+  background: #c62828;
+  color: white;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 4px 12px rgba(198, 40, 40, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  z-index: 1000;
+}
 
-      @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-      }
+.notification-badge:hover {
+  background: #a21820;
+  transform: scale(1.05);
+}
 
-      @keyframes slideOut {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
-      }
+/* Panel Toggle */
+.panel-toggle {
+  display: none;
+}
 
-      .range-slider {
-        background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
-        height: 8px;
-        border-radius: 4px;
-        outline: none;
-      }
+/* Notification Panel - Always use the manual control via JavaScript */
+.notification-panel {
+  position: fixed;
+  right: 20px;
+  top: 20px;
+  width: 350px;
+  max-height: 80vh;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  transform: translateX(100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: 1001;
+  overflow: hidden;
+}
 
-      .loading-spinner {
-        display: none;
-        text-align: center;
-        padding: 20px;
-      }
+.notification-header {
+  background: #c62828;
+  color: white;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-      .no-users {
-        text-align: center;
-        padding: 40px;
-        color: #666;
-      }
+.notification-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
 
-      .cute-icon {
-        font-size: 3rem;
-        margin-bottom: 15px;
-        opacity: 0.7;
-      }
+.close-notification {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s ease;
+}
 
-      .level-info {
-        background: rgba(255, 255, 255, 0.1);
-        padding: 15px;
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-      }
+.close-notification:hover {
+  background: rgba(255,255,255,0.2);
+}
 
-      .radius-display {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        padding: 10px;
-        margin-top: 8px;
-      }
+.notification-content {
+  max-height: calc(80vh - 80px);
+  overflow-y: auto;
+  padding: 10px;
+}
 
-      .radius-bar {
-        background: linear-gradient(90deg, #4ecdc4 0%, #44a08d 100%);
-        height: 25px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 2px 8px rgba(78, 205, 196, 0.3);
-        position: relative;
-        overflow: hidden;
-      }
+/* Nearby User Cards */
+.nearby-user {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+  margin-bottom: 8px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  transition: background 0.2s ease;
+}
 
-      .radius-text {
-        color: white;
-        font-weight: bold;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-        font-size: 0.9rem;
-      }
+.nearby-user:hover {
+  background: #e9ecef;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+
+.user-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-add {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-add:hover {
+  background: #218838;
+  transform: translateY(-2px);
+}
+
+.btn-pending {
+  background: #ffc107;
+  color: #212529;
+  border: none;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-pending:hover {
+  background: #e0a800;
+  transform: translateY(-2px);
+}
+
+.btn-friend {
+  background: #0a984a;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 20px;
+  cursor: not-allowed;
+  transition: all 0.3s ease;
+}
+
+.btn-connect-disabled {
+  background: #6c757d;
+  color: #adb5bd;
+  border: none;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 20px;
+  cursor: not-allowed;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.user-pic {
+  width: 45px;
+  height: 45px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin-right: 12px;
+  border: 2px solid #e9ecef;
+}
+
+.user-details h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.user-details p {
+  margin: 4px 0;
+  font-size: 12px;
+  color: #666;
+}
+
+.user-interests {
+  font-size: 11px;
+  color: #888;
+  display: block;
+  margin-top: 2px;
+}
+
+.btn-connect {
+  background: #043A54;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.btn-connect:hover {
+  background: #75A8C5;
+  transform: translateY(-2px);
+}
+
+/* Custom Scrollbar for notification */
+.notification-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.notification-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.notification-content::-webkit-scrollbar-thumb {
+  background: #c62828;
+  border-radius: 2px;
+}
+
+/* Custom Leaflet Popup Styling */
+.leaflet-popup-content-wrapper {
+  border-radius: 15px !important;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+  border: 2px solid #BC0126 !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 15px !important;
+}
+
+.leaflet-popup-tip {
+  background: #BC0126 !important;
+}
+
+/* Map Popup Button Styles - Match sidebar styles */
+.map-btn-add {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 5px;
+}
+
+.map-btn-add:hover {
+  background: #218838;
+  transform: translateY(-2px);
+}
+
+.map-btn-pending {
+  background: #ffc107;
+  color: #212529;
+  border: none;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 5px;
+}
+
+.map-btn-pending:hover {
+  background: #e0a800;
+  transform: translateY(-2px);
+}
+
+.map-btn-friend {
+  background: #0a984a;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 15px;
+  cursor: not-allowed;
+  margin-right: 5px;
+}
+
+.map-btn-connect {
+  background: #043A54;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.map-btn-connect:hover {
+  background: #75A8C5;
+  transform: translateY(-2px);
+}
+
+.map-btn-connect-disabled {
+  background: #6c757d;
+  color: #adb5bd;
+  border: none;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 15px;
+  cursor: not-allowed;
+}
+
+/* Notification animations */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="main-container">
-      <!-- Header -->
-      <div class="header-card">
-        <h1 class="mb-3">🌍 Find Nearby Friends</h1>
-        <p class="text-muted">Discover amazing people around you!</p>
 
-        <div class="radar-container">
-          <div class="radar-inner">🎯</div>
+
+<!-- Hidden checkboxes for panel toggle -->
+<input type="checkbox" id="notification-toggle" class="panel-toggle">
+
+<!-- Notification Badge for Nearby Users -->
+<label for="notification-toggle" class="notification-badge" title="Nearby Users" onclick="toggleNotificationPanel()">📢</label>
+
+<!-- Notification Panel for Nearby Users -->
+<div class="notification-panel" id="notification-panel">
+  <div class="notification-header">
+    <h3>People Nearby</h3>
+    <button class="close-notification" onclick="closeNotificationPanel()">×</button>
+  </div>
+  <div class="notification-content">
+    {% if nearby_users %}
+      {% for user_data in nearby_users %}
+      <div class="nearby-user">
+        <div class="user-info">
+          <div class="user-pic">
+            {% if user_data.user.avatar %}
+            <img src="{{ user_data.user.avatar.url }}" alt="{{ user_data.user.full_name }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" />
+            {% else %}
+              {% if user_data.user.gender == 'male' %}👦{% elif user_data.user.gender == 'female' %}👧{% else %}👤{% endif %}
+            {% endif %}
+          </div>
+          <div class="user-details">
+            <h4>{{ user_data.user.full_name|default:user_data.user.username }}</h4>
+            <p>📍 {{ user_data.distance|floatformat:1 }}km away • {% if user_data.user.status == 'online' %}Online{% else %}Active {{ user_data.user.last_seen|timesince }} ago{% endif %}</p>
+            <span class="user-interests">
+              {% if user_data.user.bio %}💭 {{ user_data.user.bio|truncatechars:30 }}{% else %}🎵 Music • 🍜 Food{% endif %}
+            </span>
+          </div>
         </div>
-
-        <p class="mb-0">
-          <span class="badge bg-primary"
-            >{{ nearby_users|length }} people found</span
-          >
-          <span class="badge bg-info"
-            >{{ current_user.search_radius }}km radius</span
-          >
-        </p>
-      </div>
-
-      <!-- Controls -->
-      <div class="controls-card">
-        <div class="row align-items-center">
-          <div class="col-md-6">
-            <div class="level-info mb-3">
-              <h5 class="text-primary mb-2">
-                <i class="fas fa-trophy text-warning"></i> Level {{ user_level }}
-              </h5>
-              <p class="text-muted mb-1">
-                <i class="fas fa-crosshairs text-primary"></i>
-                Search Radius: <strong>{{ search_radius }}km</strong>
-              </p>
-              <p class="text-muted mb-0" style="font-size: 0.85rem;">
-                <i class="fas fa-arrow-up text-success"></i>
-                Next Level {{ next_level }}: {{ next_level_radius }}km radius
-              </p>
-              <small class="text-warning">
-                <i class="fas fa-star"></i> Level up to expand your search area!
-              </small>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <label for="radiusRange" class="form-label">
-              <i class="fas fa-search text-primary"></i>
-              Current Range: <span id="radiusValue">{{ search_radius }}</span>km
-              <small class="text-muted">(Based on Level {{ user_level }})</small>
-            </label>
-            <div class="radius-display">
-              <div class="radius-bar">
-                <span class="radius-text">{{ search_radius }}km</span>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-6 text-end">
-            <button
-              class="btn btn-primary btn-lg"
-              onclick="refreshLocation()"
-              id="refreshBtn"
-            >
-              <i class="fas fa-sync-alt"></i> Refresh
+       <div class="user-actions">
+          {% if user_data.friend_status == 'friends' %}
+            <button class="btn-friend" disabled>
+              Friends
             </button>
+          {% elif user_data.friend_status == 'sent' %}
+            <button 
+              class="btn-pending" 
+              onclick="cancelFriendRequest('{{ user_data.request_id }}')"
+              id="friend-btn-{{ user_data.user.id }}"
+            >
+              Sent
+            </button>
+          {% elif user_data.friend_status == 'received' %}
+            <button 
+              class="btn-add" 
+              onclick="showRequestActions('{{ user_data.request_id }}')"
+              id="friend-btn-{{ user_data.user.id }}"
+            >
+              Respond
+            </button>
+          {% else %}
+            <button
+              class="btn-add"
+              onclick="addFriend('{{ user_data.user.id }}')"
+              id="friend-btn-{{ user_data.user.id }}"
+            >
+              Add
+            </button>
+          {% endif %}
+          
+          {% if user_data.friend_status == 'friends' %}
+            <button
+              class="btn-connect"
+              onclick="startChat('{{ user_data.user.id }}')"
+            >
+              Chats
+            </button>
+          {% else %}
+            <button class="btn-connect-disabled" disabled>
+              Chats
+            </button>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="nearby-user">
+        <div class="user-info">
+          <div class="user-pic">🔍</div>
+          <div class="user-details">
+            <h4>No users nearby</h4>
+            <p>Try expanding your search radius</p>
           </div>
         </div>
       </div>
+    {% endif %}
+  </div>
+</div>
 
-      <div id="map"></div>
-
-      <!-- Loading Spinner -->
-      <div class="loading-spinner" id="loadingSpinner">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-        <p class="mt-2">Scanning for nearby friends...</p>
-      </div>
-
-      <!-- Users List -->
-      <div id="usersList">
-        {% if nearby_users %}
-{% for user_data in nearby_users %}
-        <div class="user-card">
-          <div class="row align-items-center">
-            <div class="col-md-2 text-center">
-              <div class="position-relative d-inline-block">
-                <img
-                  src="#"
-                  alt="{{ user_data.user.full_name }}"
-                  class="user-avatar"
-                />
-                {% if user_data.user.status == 'online' %}
-                <div class="status-online"></div>
-                {% endif %}
-              </div>
-            </div>
-
-            <div class="col-md-6">
-              <h5 class="mb-1">
-                {{ user_data.user.full_name|default:user_data.user.username }}
-                {% if user_data.user.gender == 'male' %}👨{% elif
-                user_data.user.gender == 'female' %}👩{% else %}👤{% endif %}
-              </h5>
-              <p class="text-muted mb-2">
-                📍 {{ user_data.user.hometown|default:"Unknown location" }}
-              </p>
-              {% if user_data.user.bio %}
-              <p class="small text-secondary mb-0">
-                💭 {{ user_data.user.bio|truncatechars:100 }}
-              </p>
-              {% endif %}
-            </div>
-
-            <div class="col-md-2 text-center">
-              <span class="distance-badge">
-                📏 {{ user_data.distance|floatformat:1 }}km
-              </span>
-              <div class="mt-2">
-                <small class="text-muted"
-                  >Level {{ user_data.user.level }}</small
-                >
-              </div>
-            </div>
-
-            <div class="col-md-2 text-center">
-              {% if user_data.friend_status == 'friends' %}
-                <button class="action-btn btn-success" disabled>
-                  <i class="fas fa-check"></i> Friends
-                </button>
-              {% elif user_data.friend_status == 'sent' %}
-                <button 
-                  class="action-btn btn-warning" 
-                  onclick="cancelFriendRequest('{{ user_data.request_id }}')"
-                  id="friend-btn-{{ user_data.user.id }}"
-                >
-                  <i class="fas fa-clock"></i> Sent
-                </button>
-              {% elif user_data.friend_status == 'received' %}
-                <button 
-                  class="action-btn btn-info" 
-                  onclick="showRequestActions('{{ user_data.request_id }}')"
-                >
-                  <i class="fas fa-user-clock"></i> Respond
-                </button>
-              {% else %}
-                <button
-                  class="action-btn btn-friend"
-                  onclick="addFriend('{{ user_data.user.id }}')"
-                  id="friend-btn-{{ user_data.user.id }}"
-                >
-                  <i class="fas fa-user-plus"></i> Add
-                </button>
-              {% endif %}
-              <br />
-              {% if user_data.friend_status == 'friends' %}
-                <button
-                  class="action-btn btn-message"
-                  onclick="sendMessage('{{ user_data.user.id }}')"
-                >
-                  <i class="fas fa-comment"></i> Chat
-                </button>
-              {% else %}
-                <button class="action-btn btn-message" disabled>
-                  <i class="fas fa-comment"></i> Chat
-                </button>
-              {% endif %}
-                <i class="fas fa-comment"></i> Chat
-              </button>
-            </div>
-          </div>
-        </div>
-        {% endfor %}
-{% else %}
-        <div class="no-users">
-          <div class="cute-icon">🔍</div>
-          <h4>No friends found nearby</h4>
-          <p class="text-muted">
-            Try increasing your search radius or check your location settings!
-          </p>
-          <button class="btn btn-primary" onclick="updateLocationAndRefresh()">
-            <i class="fas fa-location-arrow"></i> Update My Location
-          </button>
-        </div>
-        {% endif %}
+<!-- Level Control Panel -->
+<div class="level-control-panel">
+  <div class="level-info">
+    <div class="level-badge">
+      <span class="level-icon">🏆</span>
+      <span class="level-text">Level {{ user_level|default:1 }}</span>
+    </div>
+    <div class="search-info">
+      <span class="search-icon">🎯</span>
+      <span class="search-text">Search Radius: {{ search_radius|default:5 }}km</span>
+    </div>
+  </div>
+  <div class="level-progress">
+    <div class="progress-info">
+      <span class="range-text">Current Range: {{ search_radius|default:5 }}km (Based on Level {{ user_level|default:1 }})</span>
+      <span class="next-level">⬆️ Next Level {{ next_level|default:2 }}: {{ next_level_radius|default:7 }}km radius</span>
+      <span class="level-up-hint">⭐ Level up to expand your search area!</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" style="width: 85%;">
+        <span class="progress-text">{{ search_radius|default:5 }}km</span>
       </div>
     </div>
+  </div>
+  <button class="refresh-btn" onclick="window.location.reload()">
+    <span class="refresh-icon">🔄</span>
+    <span>Refresh</span>
+  </button>
+</div>
+
+
+  
+
+<!-- Hidden map container for the original map functionality -->
+<div id="map" style="position: absolute; top: 0; left: 80px; right: 0; bottom: 0; z-index: 1;"></div>
+
+<!-- Loading Spinner -->
+<div class="loading-spinner" id="loadingSpinner" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; display: none;">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+  <p class="mt-2">Scanning for nearby friends...</p>
+</div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
       let isUpdating = false;
 
+    // Global variables
+    let map, userMarkers = [];
+    const currentUserId = {{ user.id }};
+
+    // MAP POPUP FUNCTIONS - EARLY DECLARATION FOR HOISTING
+    // Debug: Add friend from map popup
+    function addFriendFromMap(userId, buttonElement) {
+        console.log('=== ADD FRIEND FROM MAP DEBUG ===');
+        console.log('Function called with userId:', userId, 'buttonElement:', buttonElement);
+        console.log('Current user ID:', currentUserId);
+        console.log('Button element:', buttonElement);
+        
+        if (!buttonElement) {
+            console.error('Button element is null!');
+            return;
+        }
+        
+        console.log('Button classes before:', buttonElement.className);
+        console.log('Button onclick before:', buttonElement.onclick);
+        
+        fetch('/social/send-friend-request/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'user_id': userId
+            })
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data);
+            if (data.success) {
+                console.log('Friend request sent successfully');
+                
+                // Update button to "Sent" state
+                buttonElement.textContent = 'Sent';
+                buttonElement.className = 'map-btn-pending';
+                buttonElement.onclick = function() { 
+                    console.log('Pending button clicked - cancelling request');
+                    cancelFriendRequestByUserId(userId, buttonElement); 
+                };
+                
+                // Update both map and sidebar
+                updateBothMapAndSidebar(userId, 'sent', data.request_id || 'unknown');
+                
+                console.log('Button updated - classes after:', buttonElement.className);
+                console.log('Button text after:', buttonElement.textContent);
+                
+                showNotification('Friend request sent!', 'success');
+            } else {
+                console.log('Friend request failed, checking reason:', data.message);
+                
+                // Handle specific cases
+                if (data.message && data.message.toLowerCase().includes('already sent')) {
+                    console.log('Handling already sent case');
+                    // If already sent, update button to Sent state
+                    buttonElement.textContent = 'Sent';
+                    buttonElement.className = 'map-btn-pending';
+                    buttonElement.onclick = function() { 
+                        console.log('Pending button clicked - cancelling request');
+                        cancelFriendRequestByUserId(userId, buttonElement); 
+                    };
+                    updateBothMapAndSidebar(userId, 'sent');
+                    showNotification('Friend request already sent', 'info');
+                } else if (data.message && data.message.toLowerCase().includes('already friends')) {
+                    console.log('Handling already friends case');
+                    // If already friends, update button to Friends state
+                    buttonElement.textContent = 'Friends';
+                    buttonElement.className = 'map-btn-friend';
+                    buttonElement.onclick = null;
+                    buttonElement.disabled = true;
+                    updateBothMapAndSidebar(userId, 'friends');
+                    showNotification('You are already friends', 'info');
+                } else {
+                    // Other errors - keep Add button
+                    console.log('Other error:', data.message);
+                    showNotification(data.message || 'Failed to send friend request', 'error');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            showNotification('Error sending friend request', 'error');
+        });
+    }
+    
+    // Debug: Cancel friend request from map popup  
+    function cancelFriendRequestFromMap(requestId, buttonElement) {
+        console.log('=== CANCEL FRIEND REQUEST FROM MAP DEBUG ===');
+        console.log('Function called with requestId:', requestId, 'buttonElement:', buttonElement);
+        
+        if (!buttonElement) {
+            console.error('Button element is null!');
+            return;
+        }
+        
+        if (!requestId || requestId === 'undefined' || requestId === '') {
+            console.error('Invalid request ID:', requestId);
+            showNotification('Cannot cancel - invalid request ID', 'error');
+            return;
+        }
+        
+        console.log('Button classes before:', buttonElement.className);
+        
+        fetch('/social/cancel-friend-request/', {
+            method: 'POST', 
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'request_id': requestId
+            })
+        })
+        .then(response => {
+            console.log('Cancel response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Cancel response data:', data);
+            if (data.success) {
+                console.log('Friend request cancelled successfully');
+                
+                // Update button back to "Add" state
+                buttonElement.textContent = 'Add';
+                buttonElement.className = 'map-btn-add';
+                buttonElement.onclick = function() { 
+                    console.log('Add button clicked again');
+                    addFriendFromMap(userId, buttonElement); 
+                };
+                
+                console.log('Button reverted - classes after:', buttonElement.className);
+                console.log('Button text after:', buttonElement.textContent);
+                
+                showNotification('Friend request cancelled', 'info');
+            } else {
+                console.error('Failed to cancel friend request:', data.message);
+                showNotification(data.message || 'Failed to cancel friend request', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Cancel fetch error:', error);
+            showNotification('Error cancelling friend request', 'error');
+        });
+    }
+
+    // Helper function to get request ID for cancelling
+    function cancelFriendRequestByUserId(userId, buttonElement) {
+        console.log('=== CANCEL BY USER ID DEBUG ===');
+        console.log('Finding request to cancel for user:', userId);
+        
+        // Ask for confirmation first
+        if (!confirm('Are you sure you want to cancel this friend request?')) {
+            console.log('User cancelled the cancellation');
+            return;
+        }
+        
+        // Try to cancel by finding the request based on sender/receiver
+        fetch('/social/cancel-friend-request-by-user/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'receiver_id': userId
+            })
+        })
+        .then(response => {
+            console.log('Cancel by user response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Cancel by user response data:', data);
+            if (data.success) {
+                console.log('Friend request cancelled successfully');
+                
+                // Update button back to "Add" state
+                buttonElement.textContent = 'Add';
+                buttonElement.className = 'map-btn-add';
+                buttonElement.onclick = function() { 
+                    console.log('Add button clicked again');
+                    addFriendFromMap(userId, buttonElement); 
+                };
+                
+                // Update both map and sidebar
+                updateBothMapAndSidebar(userId, 'none');
+                
+                console.log('Button reverted - classes after:', buttonElement.className);
+                console.log('Button text after:', buttonElement.textContent);
+                
+                showNotification('Friend request cancelled', 'info');
+            } else {
+                console.error('Failed to cancel by user:', data.message);
+                showNotification(data.message || 'Failed to cancel friend request', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Cancel by user fetch error:', error);
+            showNotification('Error cancelling friend request', 'error');
+        });
+    }
+    
+    // Function to cancel with actual request ID
+    function cancelFriendRequestWithId(requestId, userId, buttonElement) {
+        console.log('=== CANCEL WITH REQUEST ID DEBUG ===');
+        console.log('Cancelling request ID:', requestId);
+        
+        fetch('/social/cancel-friend-request/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'request_id': requestId
+            })
+        })
+        .then(response => {
+            console.log('Cancel with ID response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Cancel with ID response data:', data);
+            if (data.success) {
+                console.log('Friend request cancelled successfully with ID');
+                
+                // Update button back to "Add" state
+                buttonElement.textContent = 'Add';
+                buttonElement.className = 'map-btn-add';
+                buttonElement.onclick = function() { 
+                    console.log('Add button clicked again');
+                    addFriendFromMap(userId, buttonElement); 
+                };
+                
+                // Update both map and sidebar
+                updateBothMapAndSidebar(userId, 'none');
+                
+                console.log('Button reverted - classes after:', buttonElement.className);
+                console.log('Button text after:', buttonElement.textContent);
+                
+                showNotification('Friend request cancelled', 'info');
+            } else {
+                console.error('Failed to cancel with ID:', data.message);
+                showNotification(data.message || 'Failed to cancel friend request', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Cancel with ID fetch error:', error);
+            showNotification('Error cancelling friend request', 'error');
+        });
+    }
+    
+    // Fallback function for direct cancellation by user_id
+    function cancelFriendRequestDirectly(userId, buttonElement) {
+        console.log('=== DIRECT CANCEL DEBUG ===');
+        console.log('Cancelling request for user ID:', userId);
+        
+        // Try with sender_id first (you are the sender)
+        fetch('/social/cancel-friend-request/', {
+            method: 'POST', 
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                'sender_id': currentUserId,
+                'receiver_id': userId
+            })
+        })
+        .then(response => {
+            console.log('Direct cancel response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Direct cancel response data:', data);
+            if (data.success) {
+                console.log('Friend request cancelled successfully');
+                
+                // Update button back to "Add" state
+                buttonElement.textContent = 'Add';
+                buttonElement.className = 'map-btn-add';
+                buttonElement.onclick = function() { 
+                    console.log('Add button clicked again');
+                    addFriendFromMap(userId, buttonElement); 
+                };
+                
+                // Update both map and sidebar
+                updateBothMapAndSidebar(userId, 'none');
+                
+                console.log('Button reverted - classes after:', buttonElement.className);
+                console.log('Button text after:', buttonElement.textContent);
+                
+                showNotification('Friend request cancelled', 'info');
+            } else {
+                console.error('Failed to cancel friend request:', data.message);
+                console.log('Trying alternative cancel method...');
+                
+                // Try alternative method - just with receiver_id
+                fetch('/social/cancel-friend-request/', {
+                    method: 'POST', 
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        'user_id': userId
+                    })
+                })
+                .then(response => response.json())
+                .then(altData => {
+                    console.log('Alternative cancel response:', altData);
+                    if (altData.success) {
+                        // Update button back to "Add" state
+                        buttonElement.textContent = 'Add';
+                        buttonElement.className = 'map-btn-add';
+                        buttonElement.onclick = function() { 
+                            console.log('Add button clicked again');
+                            addFriendFromMap(userId, buttonElement); 
+                        };
+                        updateBothMapAndSidebar(userId, 'none');
+                        showNotification('Friend request cancelled', 'info');
+                    } else {
+                        showNotification(altData.message || 'Failed to cancel friend request', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Alternative cancel error:', error);
+                    showNotification('Error cancelling friend request', 'error');
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Direct cancel fetch error:', error);
+            showNotification('Error cancelling friend request', 'error');
+        });
+    }
+
+    // Function to get current friend status from updated nearbyUsers array
+    function getCurrentFriendStatus(userId) {
+        console.log('=== GET CURRENT FRIEND STATUS DEBUG ===');
+        console.log('Looking for user ID:', userId, '(type:', typeof userId, ')');
+        console.log('nearbyUsers array length:', nearbyUsers.length);
+        console.log('nearbyUsers IDs with types:', nearbyUsers.map(u => ({id: u.id, type: typeof u.id, status: u.friend_status})));
+        
+        // Try multiple comparison methods
+        let user = nearbyUsers.find(u => u.id == userId);
+        if (!user) {
+            user = nearbyUsers.find(u => u.id === userId);
+        }
+        if (!user) {
+            user = nearbyUsers.find(u => String(u.id) === String(userId));
+        }
+        
+        if (user) {
+            console.log('Found user:', user);
+            console.log('User friend_status:', user.friend_status);
+            console.log('User request_id:', user.request_id);
+            
+            // Return the status even if it's 'none' or null
+            const friendStatus = user.friend_status || 'none';
+            console.log('Returning friend status:', friendStatus);
+            return {
+                friendStatus: friendStatus,
+                requestId: user.request_id || ''
+            };
+        }
+        console.log('User not found in nearbyUsers array, returning none');
+        return {
+            friendStatus: 'none',
+            requestId: ''
+        };
+    }
+
+    // Function to update both map and sidebar friend status
+    function updateBothMapAndSidebar(userId, newFriendStatus, requestId = null) {
+        console.log('=== SYNC MAP AND SIDEBAR ===');
+        console.log('Updating user', userId, 'to status:', newFriendStatus);
+        
+        // Update map data
+        updateUserInMapData(userId, newFriendStatus, requestId);
+        
+        // Update sidebar button
+        updateSidebarFriendButton(userId, newFriendStatus, requestId);
+        
+        // Force refresh popup content by closing any open popup
+        if (map && map.closePopup) {
+            map.closePopup();
+            console.log('Closed any open popup to force refresh');
+        }
+    }
+    
+    // Function to update sidebar friend button
+    function updateSidebarFriendButton(userId, friendStatus, requestId = null) {
+        console.log('=== UPDATE SIDEBAR BUTTON ===');
+        const sidebarButton = document.getElementById(`friend-btn-${userId}`);
+        
+        if (!sidebarButton) {
+            console.log('Sidebar button not found for user', userId);
+            return;
+        }
+        
+        console.log('Found sidebar button:', sidebarButton);
+        console.log('Updating to status:', friendStatus);
+        
+        if (friendStatus === 'friends') {
+            sidebarButton.textContent = 'Friends';
+            sidebarButton.className = 'btn-friend';
+            sidebarButton.disabled = true;
+            sidebarButton.onclick = null;
+        } else if (friendStatus === 'sent') {
+            sidebarButton.textContent = 'Sent';
+            sidebarButton.className = 'btn-pending';
+            sidebarButton.disabled = false;
+            sidebarButton.onclick = function() { 
+                cancelFriendRequestByUserId(userId, sidebarButton); 
+            };
+        } else if (friendStatus === 'received') {
+            sidebarButton.textContent = 'Respond';
+            sidebarButton.className = 'btn-add';
+            sidebarButton.disabled = false;
+            sidebarButton.onclick = function() { 
+                showRequestActions(requestId); 
+            };
+        } else { // none
+            sidebarButton.textContent = 'Add';
+            sidebarButton.className = 'btn-add';
+            sidebarButton.disabled = false;
+            sidebarButton.onclick = function() { 
+                addFriendFromMap(userId, sidebarButton); 
+            };
+        }
+        
+        console.log('Sidebar button updated:', sidebarButton.textContent, sidebarButton.className);
+    }
+    function updateUserInMapData(userId, newFriendStatus, requestId = null) {
+        console.log('=== UPDATE USER IN MAP DATA DEBUG ===');
+        console.log('Updating user', userId, '(type:', typeof userId, ') to status:', newFriendStatus);
+        console.log('Request ID:', requestId);
+        console.log('nearbyUsers before update:', nearbyUsers.map(u => ({id: u.id, type: typeof u.id, status: u.friend_status})));
+        
+        // Find and update user in nearbyUsers array - try both == and === comparison
+        let userIndex = nearbyUsers.findIndex(user => user.id == userId);
+        if (userIndex === -1) {
+            userIndex = nearbyUsers.findIndex(user => user.id === userId);
+        }
+        if (userIndex === -1) {
+            userIndex = nearbyUsers.findIndex(user => String(user.id) === String(userId));
+        }
+        
+        console.log('User index found:', userIndex);
+        
+        if (userIndex !== -1) {
+            console.log('User before update:', nearbyUsers[userIndex]);
+            nearbyUsers[userIndex].friend_status = newFriendStatus;
+            if (requestId) {
+                nearbyUsers[userIndex].request_id = requestId;
+            }
+            console.log('User after update:', nearbyUsers[userIndex]);
+            console.log('Updated user data in nearbyUsers array');
+        } else {
+            console.warn('User not found in nearbyUsers array');
+            console.log('Looking for userId:', userId, '(type:', typeof userId, ')');
+            console.log('Available user IDs:', nearbyUsers.map(u => ({id: u.id, type: typeof u.id})));
+        }
+        
+        console.log('nearbyUsers after update:', nearbyUsers.map(u => ({id: u.id, status: u.friend_status})));
+    }
+
+    // Assign functions to window object for global access
+    window.addFriendFromMap = addFriendFromMap;
+    window.cancelFriendRequestFromMap = cancelFriendRequestFromMap;
+    window.cancelFriendRequestByUserId = cancelFriendRequestByUserId;
+    window.cancelFriendRequestDirectly = cancelFriendRequestDirectly;
+    window.updateUserInMapData = updateUserInMapData;
+    window.getCurrentFriendStatus = getCurrentFriendStatus;
+    window.updateBothMapAndSidebar = updateBothMapAndSidebar;
+    window.updateSidebarFriendButton = updateSidebarFriendButton;
+
+    // Notification function
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+        `;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
+    }
+
 
     const nearbyUsers = JSON.parse('{{ map_users_json|escapejs }}');
     const currentUser = JSON.parse('{{ current_user_json|escapejs }}');
-    let map = null; // Biến để lưu đối tượng bản đồ
-    let searchRadiusCircle = null; // Biến để lưu vòng tròn bán kính tìm kiếm
+    let searchRadiusCircle = null; // Variable to store search radius circle
+    
+    
+    document.addEventListener('DOMContentLoaded', function() {
+  const toggles = document.querySelectorAll('.panel-toggle');
+  const buttons = document.querySelectorAll('label.sidebar-btn');
+
+  // Handle panel toggles for other buttons
+  toggles.forEach((toggle, index) => {
+    toggle.addEventListener('change', function() {
+      if (this.checked) {
+        toggles.forEach((otherToggle, otherIndex) => {
+          if (otherIndex !== index) {
+            otherToggle.checked = false;
+            if (buttons[otherIndex]) {
+              buttons[otherIndex].classList.remove('active');
+            }
+          }
+        });
+        if (buttons[index]) {
+          buttons[index].classList.add('active');
+        }
+      } else {
+        if (buttons[index]) {
+          buttons[index].classList.remove('active');
+        }
+      }
+    });
+  });
+
+
+// Close dropdown when clicking outside - COMMENTED OUT TO FIX ERROR
+// document.addEventListener('click', function(e) {
+//   if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+//     profileDropdown.classList.remove('show');
+//   }
+// });
+});
+
+
+
 
     function initializeMap() {
-        // Kiểm tra nếu người dùng hiện tại có tọa độ
+        // Check if current user has coordinates
         if (!currentUser.latitude || !currentUser.longitude) {
-            document.getElementById('map').innerHTML = '<div class="p-4 text-center text-muted">Vui lòng cập nhật vị trí của bạn để xem bản đồ.</div>';
+            document.getElementById('map').innerHTML = '<div class="p-4 text-center text-muted">Please update your location to view the map.</div>';
             return;
         }
 
-        // Khởi tạo map và đặt view vào vị trí của người dùng hiện tại
+        // Initialize map and set view to current user position
         map = L.map('map').setView([currentUser.latitude, currentUser.longitude], 13);
 
         // Thêm lớp tile layer từ OpenStreetMap
@@ -505,22 +1267,71 @@
 
             const marker = L.marker([user.latitude, user.longitude]).addTo(map);
             
-            // Tạo popup hiển thị thông tin khi click
-            const popupContent = `
-                <div class="text-center">
-                    <img src="${user.avatar_url}" alt="${user.full_name}" width="50" class="rounded-circle mb-2">
-                    <h5>${user.full_name}</h5>
-                    <p class="mb-2">Cách bạn ~${user.distance} km</p>
-                    <button class="btn btn-sm btn-friend" onclick="addFriend('${user.id}')"><i class="fas fa-user-plus"></i> Add</button>
-                    <button class="btn btn-sm btn-message" onclick="sendMessage('${user.id}')"><i class="fas fa-comment"></i> Chat</button>
-                </div>
-            `;
-            marker.bindPopup(popupContent);
+            // DEBUG: Log user data to see friend_status
+            console.log('=== CREATING MARKER DEBUG ===');
+            console.log('User ID:', user.id, 'Full name:', user.full_name);
+            console.log('Creating marker with dynamic popup for user:', user.id);
+            
+            // Tạo bio display với fallback
+            const bioText = user.bio ? user.bio : (user.interests ? user.interests : '');
+            const bioDisplay = bioText ? `<p style="margin: 5px 0; font-size: 11px; color: #888; font-style: italic;">"${bioText.length > 30 ? bioText.substring(0, 30) + '...' : bioText}"</p>` : '';
+
+            // Bind popup with dynamic content generation ONLY
+            marker.bindPopup(() => {
+                console.log('=== DYNAMIC POPUP GENERATION ===');
+                console.log('Creating popup for user:', user.id, 'on-demand');
+                
+                // Get current status every time popup opens
+                const currentStatus = getCurrentFriendStatus(user.id);
+                const currentFriendStatus = currentStatus.friendStatus;
+                const currentRequestId = currentStatus.requestId;
+                
+                console.log('Dynamic friend status for user', user.id, ':', currentFriendStatus);
+                
+                let dynamicFriendButton = '';
+                let dynamicChatButton = '';
+                
+                // Generate buttons based on current status
+                if (currentFriendStatus === 'friends') {
+                    dynamicFriendButton = `<button class="map-btn-friend" disabled>Friends</button>`;
+                    console.log('Dynamic: User', user.id, 'is a friend - showing Friends button');
+                } else if (currentFriendStatus === 'sent' || currentFriendStatus === 'pending') {
+                    dynamicFriendButton = `<button class="map-btn-pending" onclick="cancelFriendRequestByUserId('${user.id}', this)">Sent</button>`;
+                    console.log('Dynamic: User', user.id, 'has pending request - showing Sent button');
+                } else if (currentFriendStatus === 'received') {
+                    dynamicFriendButton = `<button class="map-btn-add" onclick="showRequestActions('${currentRequestId}')">Respond</button>`;
+                    console.log('Dynamic: User', user.id, 'sent you a request - showing Respond button');
+                } else {
+                    dynamicFriendButton = `<button class="map-btn-add" onclick="addFriendFromMap('${user.id}', this)" id="popup-friend-btn-${user.id}">Add</button>`;
+                    console.log('Dynamic: User', user.id, 'no relationship - showing Add button');
+                }
+                
+                // Chat button logic
+                if (currentFriendStatus === 'friends') {
+                    dynamicChatButton = `<button class="map-btn-connect" onclick="startChat('${user.id}')">Chat</button>`;
+                } else {
+                    dynamicChatButton = `<button class="map-btn-connect-disabled" disabled>Chat</button>`;
+                }
+                
+                return `
+                    <div class="text-center" style="min-width: 200px; padding: 10px;">
+                        <img src="${user.avatar_url}" alt="${user.full_name}" width="60" class="rounded-circle mb-2" style="border: 2px solid #BC0126;">
+                        <h6 style="margin: 8px 0; font-weight: 600; color: #333;">${user.full_name}</h6>
+                        <p style="margin: 5px 0; font-size: 12px; color: #666;">📍 ${user.distance}km away</p>
+                        ${bioDisplay}
+                        <div style="margin-top: 10px; display: flex; justify-content: center; gap: 5px; flex-wrap: wrap;">
+                            ${dynamicFriendButton}
+                            ${dynamicChatButton}
+                        </div>
+                    </div>
+                `;
+            });
         });
     }
 
     // Gọi hàm khởi tạo map khi trang tải xong
     document.addEventListener('DOMContentLoaded', initializeMap);
+
 
       // Level-based radius - no manual update needed
       function updateRadius(value) {
@@ -564,9 +1375,13 @@
         const btn = document.getElementById("refreshBtn");
         const spinner = document.getElementById("loadingSpinner");
 
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
-        spinner.style.display = "block";
+        if (btn) {
+          btn.disabled = true;
+          btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+        }
+        if (spinner) {
+          spinner.style.display = "block";
+        }
 
         if ("geolocation" in navigator) {
           // Options for high accuracy location
@@ -612,6 +1427,9 @@
           refreshNearbyUsers();
         }
       }
+
+
+    
 
       function updateUserLocation(lat, lng) {
         console.log("📤 Sending location update to server:", lat, lng);
@@ -662,14 +1480,22 @@
             updateMapWithNewData();
           })
           .finally(() => {
-            document.getElementById("refreshBtn").disabled = false;
-            document.getElementById("refreshBtn").innerHTML =
-              '<i class="fas fa-sync-alt"></i> Refresh';
+            const refreshBtn = document.getElementById("refreshBtn");
+            if (refreshBtn) {
+              refreshBtn.disabled = false;
+              refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+            }
             document.getElementById("loadingSpinner").style.display = "none";
           });
       }
 
       function addFriend(userId) {
+        const btn = document.getElementById(`friend-btn-${userId}`);
+        const originalContent = btn.innerHTML;
+        
+        btn.disabled = true;
+        btn.innerHTML = 'Sending...';
+
         fetch("/social/send-friend-request/", {
           method: "POST",
           headers: {
@@ -681,16 +1507,75 @@
           .then((response) => response.json())
           .then((data) => {
             if (data.success) {
-              alert("🎉 Friend request sent!");
+              // Update both map and sidebar
+              updateBothMapAndSidebar(userId, 'sent', data.request_id || 'unknown');
+              showNotification("🎉 Friend request sent!", 'success');
             } else {
-              alert("❌ " + data.message);
+              btn.disabled = false;
+              btn.innerHTML = originalContent;
+              showNotification("❌ " + data.message, 'error');
             }
+          })
+          .catch(error => {
+            console.error('Add friend error:', error);
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+            showNotification("❌ Error sending friend request", 'error');
           });
       }
 
-      function sendMessage(userId) {
+      // Function to start chat with a user
+      function startChat(userId) {
         window.location.href = `/social/chat/${userId}/`;
       }
+
+      // Notification Panel Functions
+      function toggleNotificationPanel() {
+        const panel = document.getElementById('notification-panel');
+        const toggle = document.getElementById('notification-toggle');
+        
+        if (panel && toggle) {
+          toggle.checked = !toggle.checked;
+          
+          if (toggle.checked) {
+            panel.style.transform = 'translateX(0)';
+            panel.style.opacity = '1';
+            panel.style.pointerEvents = 'auto';
+            console.log('Panel opened');
+          } else {
+            panel.style.transform = 'translateX(100%)';
+            panel.style.opacity = '0';
+            panel.style.pointerEvents = 'none';
+            console.log('Panel closed');
+          }
+        }
+      }
+
+      function closeNotificationPanel() {
+        const panel = document.getElementById('notification-panel');
+        const toggle = document.getElementById('notification-toggle');
+        
+        if (panel && toggle) {
+          toggle.checked = false;
+          panel.style.transform = 'translateX(100%)';
+          panel.style.opacity = '0';
+          panel.style.pointerEvents = 'none';
+          console.log('Panel closed via button');
+        }
+      }
+
+      // Close panel when clicking outside
+      document.addEventListener('click', function(e) {
+        const panel = document.getElementById('notification-panel');
+        const badge = document.querySelector('.notification-badge');
+        const toggle = document.getElementById('notification-toggle');
+        
+        if (panel && badge && toggle) {
+          if (!panel.contains(e.target) && !badge.contains(e.target) && toggle.checked) {
+            closeNotificationPanel();
+          }
+        }
+      });
 
       function updateLocationAndRefresh() {
         refreshLocation();
@@ -779,9 +1664,8 @@
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            btn.className = 'action-btn btn-warning';
-            btn.innerHTML = '<i class="fas fa-clock"></i> Sent';
-            btn.onclick = () => cancelFriendRequest(data.request_id);
+            // Update both map and sidebar
+            updateBothMapAndSidebar(userId, 'sent', data.request_id || 'unknown');
             showNotification(data.message, 'success');
           } else {
             btn.disabled = false;
@@ -790,6 +1674,7 @@
           }
         })
         .catch(error => {
+          console.error('Add friend error:', error);
           btn.disabled = false;
           btn.innerHTML = originalContent;
           showNotification('Error sending friend request', 'error');
@@ -810,10 +1695,21 @@
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            location.reload(); // Refresh to update UI
+            // Find the user by request_id to get userId for sync
+            const user = nearbyUsers.find(u => u.request_id == requestId);
+            if (user) {
+              updateBothMapAndSidebar(user.id, 'none');
+              showNotification('Friend request cancelled', 'info');
+            } else {
+              location.reload(); // Fallback if user not found
+            }
           } else {
             showNotification(data.message, 'error');
           }
+        })
+        .catch(error => {
+          console.error('Cancel request error:', error);
+          showNotification('Error cancelling friend request', 'error');
         });
       }
       
@@ -840,11 +1736,22 @@
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            showNotification(data.message, 'success');
-            location.reload(); // Refresh to update UI
+            // Find the user by request_id to get userId for sync
+            const user = nearbyUsers.find(u => u.request_id == requestId);
+            if (user) {
+              const newStatus = action === 'accept' ? 'friends' : 'none';
+              updateBothMapAndSidebar(user.id, newStatus);
+              showNotification(data.message, 'success');
+            } else {
+              location.reload(); // Fallback if user not found
+            }
           } else {
             showNotification(data.message, 'error');
           }
+        })
+        .catch(error => {
+          console.error('Respond to request error:', error);
+          showNotification('Error responding to friend request', 'error');
         });
       }
       
@@ -885,3 +1792,5 @@
 {% block extra_js %}
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 {% endblock %}
+
+

@@ -1,9 +1,10 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}VietCom - Kết nối người Việt{% endblock %}</title>
+    <title>{% block title %}VietCom - Connect Vietnamese{% endblock %}</title>
 
     <!-- Bootstrap CSS -->
     <link
@@ -17,334 +18,821 @@
     />
     <!-- Custom CSS -->
     <style>
-      :root {
-        --primary-color: #e74c3c;
-        --secondary-color: #3498db;
-        --success-color: #27ae60;
-        --warning-color: #f39c12;
-        --danger-color: #e74c3c;
-        --dark-color: #2c3e50;
-        --light-color: #ecf0f1;
-        --gradient-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      @import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&display=swap");
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Baloo 2", Arial, sans-serif !important;
       }
 
       body {
-        background: var(--gradient-bg);
-        min-height: 100vh;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #f5f5f5;
+        overflow: hidden;
       }
 
-      /* Navbar Styles */
-      .navbar-custom {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-        padding: 0.5rem 0;
+      /* Map Background */
+      .map-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        overflow: hidden;
       }
 
-      .navbar-brand {
-        font-weight: bold;
-        font-size: 1.5rem;
-        color: var(--primary-color) !important;
+      .map-lines {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0.3;
       }
 
-      .nav-icon {
-        width: 40px;
-        height: 40px;
+      .line {
+        position: absolute;
+        background: #64b5f6;
+        height: 2px;
+        border-radius: 1px;
+      }
+
+      .line1 {
+        top: 20%;
+        left: 10%;
+        width: 60%;
+        transform: rotate(15deg);
+      }
+      .line2 {
+        top: 40%;
+        left: 20%;
+        width: 70%;
+        transform: rotate(-10deg);
+      }
+      .line3 {
+        top: 60%;
+        left: 5%;
+        width: 80%;
+        transform: rotate(25deg);
+      }
+      .line4 {
+        top: 80%;
+        right: 10%;
+        width: 50%;
+        transform: rotate(-20deg);
+      }
+
+      /* User Avatars on Map */
+      .notification-badge {
+        position: absolute;
+        bottom: 60px;
+        right: 20px;
+        background: #c62828;
+        color: white;
         border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        box-shadow: 0 4px 12px rgba(198, 40, 40, 0.3);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+      }
+
+      .notification-badge:hover {
+        background: #a21820;
+        transform: scale(1.05);
+      }
+
+      /* Sidebar */
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 80px;
+        height: 100vh;
+        background: #c62828;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 1000;
+        box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Profile Section */
+      .profile-section {
+        padding: 20px 0 15px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        margin-bottom: 30px;
+      }
+
+      .profile-avatar {
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .profile-avatar:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.05);
+      }
+
+      /* Navigation Buttons Container */
+      .nav-buttons {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 25px;
+      }
+
+      .sidebar-btn {
+        width: 50px;
+        height: 50px;
+        background: transparent;
+        border: none;
+        border-radius: 12px;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         transition: all 0.3s ease;
-        margin: 0 5px;
         position: relative;
       }
 
-      .nav-icon:hover {
-        background: var(--light-color);
-        transform: scale(1.1);
+      .sidebar-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateX(5px);
       }
 
-      .nav-icon.active {
-        background: var(--primary-color);
-        color: white !important;
+      .sidebar-btn.active {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateX(5px);
       }
 
-      .avatar {
-        width: 35px;
-        height: 35px;
-        border-radius: 50%;
-        border: 2px solid var(--primary-color);
+      /* Content Panel */
+      .content-panel {
+        position: fixed;
+        left: 80px;
+        top: 0;
+        width: 400px;
+        height: 100vh;
+        background: white;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 999;
+        overflow: hidden;
       }
 
-      .notification-badge {
-        position: absolute;
-        top: -5px;
-        right: -5px;
-        background: var(--danger-color);
+      .content-panel.active {
+        transform: translateX(0);
+      }
+
+      .panel-header {
+        background: #c62828;
         color: white;
-        border-radius: 50%;
-        width: 18px;
-        height: 18px;
-        font-size: 10px;
+        padding: 20px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 18px;
+      }
+
+      .panel-content {
+        height: calc(100vh - 70px);
+        overflow-y: auto;
+        padding: 20px;
+      }
+
+      /* Event Cards */
+      .event-card {
+        background: #fce4ec;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 16px;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease;
+      }
+
+      .event-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      }
+
+      .event-card h3 {
+        color: #1565c0;
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .event-card p {
+        color: #424242;
+        font-size: 14px;
+        line-height: 1.5;
+        margin-bottom: 12px;
+      }
+
+      .see-more-btn {
+        background: #1565c0;
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 8px 20px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s ease;
+      }
+
+      .see-more-btn:hover {
+        background: #0d47a1;
+      }
+
+      /* Custom Scrollbar */
+      .panel-content::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      .panel-content::-webkit-scrollbar-track {
+        background: #f5f5f5;
+      }
+
+      .panel-content::-webkit-scrollbar-thumb {
+        background: #c62828;
+        border-radius: 3px;
+      }
+
+      /* Hidden checkboxes for state management */
+      .panel-toggle {
+        display: none;
+      }
+      /* Panels */
+      #mission-toggle:checked ~ .panels .mission-panel,
+      #event-toggle:checked ~ .panels .event-panel,
+      #achievement-toggle:checked ~ .panels .achievement-panel {
+        transform: translateX(0);
+      }
+
+      /* Event Panel */
+      .event-panel {
+        position: fixed;
+        left: 80px;
+        top: 0;
+        width: 400px;
+        height: 100vh;
+        background: white;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 999;
+        overflow: hidden;
+      }
+
+      /* Achievement Panel */
+      .achievement-panel {
+        position: fixed;
+        left: 80px;
+        top: 0;
+        width: 400px;
+        height: 100vh;
+        background: white;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        z-index: 999;
+        overflow: hidden;
+      }
+
+      #notification-toggle:checked ~ .notification-panel {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      /* Notification Panel */
+      .notification-panel {
+        position: fixed;
+        right: 20px;
+        top: 20px;
+        width: 350px;
+        max-height: 80vh;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        transform: translateX(100%);
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s ease;
+        z-index: 1001;
+        overflow: hidden;
+      }
+
+      .notification-header {
+        background: #c62828;
+        color: white;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .notification-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .close-notification {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        width: 30px;
+        height: 30px;
         display: flex;
         align-items: center;
         justify-content: center;
+        border-radius: 50%;
+        transition: background 0.2s ease;
       }
 
-      /* Main Content */
-      .main-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
+      .close-notification:hover {
+        background: rgba(255, 255, 255, 0.2);
       }
 
-      .content-wrapper {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 15px;
-        padding: 20px;
-        margin-top: 20px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      .notification-content {
+        max-height: calc(80vh - 80px);
+        overflow-y: auto;
+        padding: 10px;
       }
 
-      /* Dropdown Menu */
-      .dropdown-menu {
+      /* Nearby User Cards */
+      .nearby-user {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 15px;
+        margin-bottom: 8px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        transition: background 0.2s ease;
+      }
+
+      .nearby-user:hover {
+        background: #e9ecef;
+      }
+
+      .user-info {
+        display: flex;
+        align-items: center;
+        flex: 1;
+      }
+
+      .user-pic {
+        width: 45px;
+        height: 45px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        margin-right: 12px;
+        border: 2px solid #e9ecef;
+      }
+
+      .user-details h4 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+      }
+
+      .user-details p {
+        margin: 4px 0;
+        font-size: 12px;
+        color: #666;
+      }
+
+      .user-interests {
+        font-size: 11px;
+        color: #888;
+        display: block;
+        margin-top: 2px;
+      }
+
+      .connect-btn {
+        background: #1565c0;
+        color: white;
         border: none;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        border-radius: 10px;
+        border-radius: 20px;
+        padding: 8px 16px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        flex-shrink: 0;
+      }
+
+      .connect-btn:hover {
+        background: #0d47a1;
+      }
+
+      /* Custom Scrollbar for notification */
+      .notification-content::-webkit-scrollbar {
+        width: 4px;
+      }
+
+      .notification-content::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+
+      .notification-content::-webkit-scrollbar-thumb {
+        background: #c62828;
+        border-radius: 2px;
+      }
+
+      /* Icon styles */
+
+      .icon-home {
+        display: block;
+        width: 64px;
+        height: 64px;
+        background-image: url("/static/images/Home.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+      }
+      .icon-message {
+        display: block;
+        width: 64px;
+        height: 64px;
+        background-image: url("/static/images/Message.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+      }
+
+      .icon-social {
+        display: block;
+        width: 64px;
+        height: 64px;
+        background-image: url("/static/images/Social.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+      }
+
+      .icon-mission {
+        display: block;
+        width: 64px;
+        height: 64px;
+        background-image: url("/static/images/MissionButton.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+      }
+
+      .icon-event {
+        display: block;
+        width: 64px;
+        height: 64px;
+        background-image: url("/static/images/EventButton.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+      }
+
+      .icon-achievement {
+        display: block;
+        width: 64px;
+        height: 64px;
+        background-image: url("/static/images/AchievementButton.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+      }
+      /* Profile Dropdown */
+      .profile-dropdown {
+        position: absolute;
+        top: 70px;
+        left: 90px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        min-width: 160px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+        z-index: 1002;
+      }
+
+      .profile-dropdown.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+
+      .dropdown-item {
+        display: block;
+        padding: 12px 16px;
+        color: #333;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: background 0.2s ease;
+        border-radius: 8px;
+        margin: 4px;
       }
 
       .dropdown-item:hover {
-        background: var(--light-color);
+        background: #f5f5f5;
+        color: #c62828;
       }
 
-      /* Search Bar */
-      .search-bar {
-        max-width: 400px;
-        position: relative;
+      .dropdown-item:first-child {
+        margin-top: 8px;
       }
 
-      .search-input {
-        border-radius: 25px;
-        border: 1px solid #ddd;
-        padding: 8px 40px 8px 15px;
+      .dropdown-item:last-child {
+        margin-bottom: 8px;
       }
-
-      .search-btn {
-        position: absolute;
-        right: 5px;
-        top: 50%;
-        transform: translateY(-50%);
-        border: none;
-        background: var(--primary-color);
+      .btn-connect {
+        background-color: #043a54;
         color: white;
-        border-radius: 50%;
-        width: 30px;
-        height: 30px;
+        border: none;
+        padding: 8px 20px; /* nhỏ hơn */
+        font-size: 16px; /* nhỏ hơn */
+        font-weight: bold;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
       }
 
-      /* Mobile Responsive */
-      @media (max-width: 768px) {
-        .navbar-nav {
-          text-align: center;
-        }
+      .btn-connect:hover {
+        background-color: #75a8c5;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
+      }
 
-        .nav-icon {
-          margin: 5px;
-        }
+      .btn-connect:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
       }
     </style>
 
     {% block extra_css %}{% endblock %}
   </head>
   <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-custom fixed-top">
-      <div class="container-fluid">
-        <!-- Logo -->
-        <a class="navbar-brand" href="{% url 'nearby_users' %}"> 🇻🇳 VietCom </a>
+    <!-- Hidden checkboxes for panel toggle -->
+    <input type="checkbox" id="mission-toggle" class="panel-toggle" />
+    <input type="checkbox" id="event-toggle" class="panel-toggle" />
+    <input type="checkbox" id="achievement-toggle" class="panel-toggle" />
+    <input type="checkbox" id="notification-toggle" class="panel-toggle" />
 
-        <!-- Mobile toggle -->
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
-          <span class="navbar-toggler-icon"></span>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <!-- Profile section at top -->
+      <div class="profile-section">
+        <div class="profile-avatar" id="profile-btn">
+          {% if user.avatar %}
+          <img
+            src="{{ user.avatar.url }}"
+            alt="Avatar"
+            style="
+              width: 100%;
+              height: 100%;
+              border-radius: 50%;
+              object-fit: cover;
+            "
+          />
+          {% else %}
+          <i class="fas fa-user"></i>
+          {% endif %}
+        </div>
+        <div class="profile-dropdown" id="profile-dropdown">
+          <a
+            href="{% url 'profile_update' %}"
+            class="dropdown-item"
+            id="view-profile"
+            >View Profile</a
+          >
+          <a href="/users/logout/" class="dropdown-item" id="logout">Log Out</a>
+        </div>
+      </div>
+
+      <!-- Navigation buttons -->
+      <div class="nav-buttons">
+        <button class="sidebar-btn" id="home-btn" title="Home">
+          <span class="icon-home"></span>
         </button>
+        <button class="sidebar-btn" id="social-btn" title="Social Network">
+          <span class="icon-social"></span>
+        </button>
+        <button class="sidebar-btn" id="chat-btn" title="Message">
+          <span class="icon-message"></span>
+          {% if unread_messages_count > 0 %}
+          <span
+            style="
+              position: absolute;
+              top: 5px;
+              right: 5px;
+              background: #fff;
+              color: #c62828;
+              font-size: 10px;
+              border-radius: 50%;
+              width: 16px;
+              height: 16px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            "
+            >{{ unread_messages_count }}</span
+          >
+          {% endif %}
+        </button>
+        <label for="mission-toggle" class="sidebar-btn" title="Mission">
+          <span class="icon-mission"></span>
+        </label>
+        <label for="event-toggle" class="sidebar-btn" title="Event">
+          <span class="icon-event"></span>
+        </label>
+        <label for="achievement-toggle" class="sidebar-btn" title="Achievement">
+          <span class="icon-achievement"></span>
+        </label>
+      </div>
+    </div>
 
-        <!-- Search Bar (Desktop) -->
-        <div class="search-bar d-none d-lg-block">
-          <form method="GET" action="{% url 'search' %}">
-            <input
-              type="text"
-              name="q"
-              class="form-control search-input"
-              placeholder="Tìm kiếm bạn bè, sự kiện..."
-            />
-            <button type="submit" class="search-btn">
-              <i class="fas fa-search"></i>
+    <!-- Content Panels -->
+    <div class="panels">
+      <!-- Mission Panel -->
+      <div class="content-panel mission-panel">
+        <div class="panel-header">Mission</div>
+        <div class="panel-content">
+          <div class="event-card">
+            <h3>Daily Check-in</h3>
+            <p>
+              Start your day by checking in and earning points for consistent
+              engagement.
+            </p>
+            <button
+              class="btn-connect"
+              onclick="window.location.href='{% url 'gamification:mission_list' %}'"
+            >
+              See more
             </button>
-          </form>
-        </div>
-
-        <!-- Navigation Links -->
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav ms-auto align-items-center">
-            <!-- Home/Find Friends -->
-            <li class="nav-item">
-              <a
-                class="nav-link nav-icon {% if request.resolver_match.url_name == 'nearby_users' %}active{% endif %}"
-                href="{% url 'nearby_users' %}"
-                title="Trang chủ - Tìm bạn bè"
-              >
-                <i class="fas fa-home"></i>
-              </a>
-            </li>
-
-            <!-- Wall/Timeline -->
-            <li class="nav-item">
-              <a
-                class="nav-link nav-icon {% if request.resolver_match.url_name == 'wall' %}active{% endif %}"
-                href="{% url 'wall' %}"
-                title="Bảng tin"
-              >
-                <i class="fas fa-newspaper"></i>
-              </a>
-            </li>
-
-            <!-- Chat -->
-            <li class="nav-item">
-              <a
-                class="nav-link nav-icon {% if 'chat' in request.resolver_match.url_name %}active{% endif %}"
-                href="{% url 'chat_list' %}"
-                title="Tin nhắn"
-              >
-                <i class="fas fa-comments"></i>
-                {% if unread_messages_count > 0 %}
-                <span class="notification-badge"
-                  >{{ unread_messages_count }}</span
-                >
-                {% endif %}
-              </a>
-            </li>
-
-            <!-- Events -->
-            <li class="nav-item">
-              <a class="nav-link nav-icon" href="#" title="Sự kiện">
-                <i class="fas fa-calendar-alt"></i>
-              </a>
-            </li>
-
-            <!-- Create Event -->
-            <li class="nav-item">
-              <a class="nav-link nav-icon" href="#" title="Tạo sự kiện">
-                <i class="fas fa-plus-circle"></i>
-              </a>
-            </li>
-
-            <!-- Notifications -->
-            <li class="nav-item dropdown">
-              <a
-                class="nav-link nav-icon"
-                href="#"
-                role="button"
-                data-bs-toggle="dropdown"
-                title="Thông báo"
-              >
-                <i class="fas fa-bell"></i>
-                {% if notifications_count > 0 %}
-                <span class="notification-badge"
-                  >{{ notifications_count }}</span
-                >
-                {% endif %}
-              </a>
-              <ul class="dropdown-menu dropdown-menu-end">
-                <li><h6 class="dropdown-header">Thông báo</h6></li>
-                {% if notifications %} {% for notification in notifications %}
-                <li>
-                  <a class="dropdown-item" href="#"
-                    >{{ notification.message }}</a
-                  >
-                </li>
-                {% endfor %} {% else %}
-                <li>
-                  <span class="dropdown-item-text">Không có thông báo mới</span>
-                </li>
-                {% endif %}
-                <li><hr class="dropdown-divider" /></li>
-                <li><a class="dropdown-item" href="#">Xem tất cả</a></li>
-              </ul>
-            </li>
-
-            <!-- User Profile -->
-            <li class="nav-item dropdown">
-              <a
-                class="nav-link"
-                href="#"
-                role="button"
-                data-bs-toggle="dropdown"
-              >
-                {% if user.avatar %}
-                <img src="{{ user.avatar.url }}" alt="Avatar" class="avatar" />
-                {% else %}
-                <div class="nav-icon">
-                  <i class="fas fa-user"></i>
-                </div>
-                {% endif %}
-              </a>
-              <ul class="dropdown-menu dropdown-menu-end">
-                <li>
-                  <h6 class="dropdown-header">{{ user.get_display_name }}</h6>
-                </li>
-                <li>
-                  <a class="dropdown-item" href="#">
-                    <i class="fas fa-user me-2"></i>Hồ sơ cá nhân
-                  </a>
-                </li>
-                <li>
-                  <a class="dropdown-item" href="#">
-                    <i class="fas fa-cog me-2"></i>Cài đặt
-                  </a>
-                </li>
-                <li>
-                  <a class="dropdown-item" href="#">
-                    <i class="fas fa-user-friends me-2"></i>Lời mời kết bạn
-                  </a>
-                </li>
-                <li><hr class="dropdown-divider" /></li>
-                <li>
-                  <a class="dropdown-item" href="/users/logout/">
-                    <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
-                  </a>
-                </li>
-              </ul>
-            </li>
-          </ul>
+          </div>
+          <div class="event-card">
+            <h3>Help a Newcomer</h3>
+            <p>Guide someone new to the community and earn mentor badges.</p>
+            <button
+              class="btn-connect"
+              onclick="window.location.href='{% url 'gamification:mission_list' %}'"
+            >
+              See more
+            </button>
+          </div>
+          <div class="event-card">
+            <h3>Share Your Story</h3>
+            <p>Tell your journey and inspire others in the community.</p>
+            <button
+              class="btn-connect"
+              onclick="window.location.href='{% url 'gamification:mission_list' %}'"
+            >
+              See more
+            </button>
+          </div>
+          <div class="event-card">
+            <h3>Local Explorer</h3>
+            <p>Discover and review local Vietnamese businesses and services.</p>
+            <button
+              class="btn-connect"
+              onclick="window.location.href='{% url 'gamification:mission_list' %}'"
+            >
+              See more
+            </button>
+          </div>
         </div>
       </div>
-    </nav>
 
-    <!-- Main Content -->
-    <div class="main-container" style="margin-top: 80px">
-      {% if messages %} {% for message in messages %}
-      <div
-        class="alert alert-{{ message.tags }} alert-dismissible fade show"
-        role="alert"
-      >
-        {{ message }}
-        <button
-          type="button"
-          class="btn-close"
-          data-bs-dismiss="alert"
-        ></button>
+      <!-- Event Panel -->
+      <div class="content-panel event-panel">
+        <div class="panel-header">Event</div>
+        <div class="panel-content">
+          <div class="event-card">
+            <h3>🎉 Discover events</h3>
+            <p>
+              Join exciting events in the Vietnamese community: food festivals,
+              language exchanges, networking, and many other beneficial activities.
+            </p>
+            <button
+              class="btn-connect"
+              onclick="window.location.href='{% url 'events:event_list' %}'"
+            >
+              See more
+            </button>
+          </div>
+        </div>
       </div>
-      {% endfor %} {% endif %} {% block content %}{% endblock %}
+
+      <!-- Achievement Panel -->
+
+    <!-- Main Content Area -->
+    <div
+      class="main-container"
+      style="margin-left: 80px; padding: 20px; min-height: 100vh"
+    >
+      {% block content %}{% endblock %}
     </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const toggles = document.querySelectorAll(".panel-toggle");
+        const buttons = document.querySelectorAll("label.sidebar-btn");
+        const homeBtn = document.getElementById("home-btn");
+        const socialBtn = document.getElementById("social-btn");
+        const chatBtn = document.getElementById("chat-btn");
+
+        // Home button - navigate to nearby users page
+        homeBtn.addEventListener("click", function () {
+          window.location.href = '{% url "nearby_users" %}';
+        });
+
+        // Social button - navigate to wall page
+        socialBtn.addEventListener("click", function () {
+          window.location.href = '{% url "wall" %}';
+        });
+
+        // Chat button - navigate to chat list
+        chatBtn.addEventListener("click", function () {
+          window.location.href = '{% url "chat_list" %}';
+        });
+
+        // Handle panel toggles for other buttons
+        toggles.forEach((toggle, index) => {
+          toggle.addEventListener("change", function () {
+            if (this.checked) {
+              toggles.forEach((otherToggle, otherIndex) => {
+                if (otherIndex !== index) {
+                  otherToggle.checked = false;
+                  if (buttons[otherIndex]) {
+                    buttons[otherIndex].classList.remove("active");
+                  }
+                }
+              });
+              if (buttons[index]) {
+                buttons[index].classList.add("active");
+              }
+            } else {
+              if (buttons[index]) {
+                buttons[index].classList.remove("active");
+              }
+            }
+          });
+        });
+
+        // Profile dropdown functionality
+        const profileBtn = document.getElementById("profile-btn");
+        const profileDropdown = document.getElementById("profile-dropdown");
+
+        profileBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          profileDropdown.classList.toggle("show");
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", function (e) {
+          if (
+            !profileBtn.contains(e.target) &&
+            !profileDropdown.contains(e.target)
+          ) {
+            profileDropdown.classList.remove("show");
+          }
+        });
+      });
+    </script>
 
     {% block extra_js %}{% endblock %}
   </body>
