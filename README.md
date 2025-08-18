@@ -1,40 +1,38 @@
-# 🌏 VietCom - Kết nối cộng đồng người Việt tại Nhật Bản
+# 🌏 VietCom - Connect Vietnamese Communities Abroad
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Python: 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
 [![Django: 4.2](https://img.shields.io/badge/Django-4.2-brightgreen.svg)](https://www.djangoproject.com/)
 
-**VietCom** là nền tảng kết nối người Việt sống tại Nhật Bản thông qua tính năng định vị địa lý, giúp tạo lập cộng đồng offline trong phạm vi gần (5-9km). Ứng dụng tích hợp SNS, chat real-time và hệ thống gamification để tăng tương tác.
+**VietCom** is a location-based social platform designed to help Vietnamese people living abroad (initially in Japan) discover and build offline communities within their local areas (5-9km radius). It combines SNS features, real-time chat, and gamification to enhance engagement.
 
-**Demo trực tiếp**: [https://vietcom.onrender.com](https://vietcom.onrender.com)  
-**Video demo**: [Youtube](#) (link tùy chỉnh)
-
----
-
-## 📌 Mục lục
-- [Tính năng nổi bật](#-tính-năng-nổi-bật)
-- [Công nghệ sử dụng](#-công-nghệ-sử-dụng)
-- [Cài đặt & Triển khai](#-cài-đặt--triển-khai)
-- [Kiến trúc hệ thống](#-kiến-trúc-hệ-thống)
-- [API Endpoints](#-api-endpoints)
-- [Tác giả](#-tác-giả)
-- [Giấy phép](#-giấy-phép)
+**Live Demo**: [https://vietcom.onrender.com](https://vietcom.onrender.com)  
+**Video Demo**: [Youtube](#) (*add your link*)
 
 ---
 
-## ✨ Tính năng nổi bật
-
-| Chức năng               | Mô tả                                                                                     |
-|--------------------------|------------------------------------------------------------------------------------------|
-| **📍 Kết nối địa phương** | Tìm kiếm người Việt trong bán kính 5-9km (tùy level) bằng bản đồ tương tác.              |
-| **💬 Chat real-time**     | Nhắn tin 1-1 với WebSocket, hỗ trợ thông báo push.                                       |
-| **📱 SNS tích hợp**       | Đăng bài, like, comment, chia sẻ với giao diện 2 cột.                                    |
-| **🎮 Gamification**       | Hệ thống level/point (ví dụ: Level 2 mở khóa bán kính 7km).                              |
-| **🎯 Quản lý sự kiện**    | Tạo và tham gia event offline (tiệc BBQ, giao lưu văn hóa).                              |
+## 📌 Table of Contents
+- [Key Features](#-key-features)
+- [Tech Stack](#-tech-stack)
+- [Installation](#-installation)
+- [Contributors](#-contributors)
+- [License](#-license)
 
 ---
 
-## 🛠 Công nghệ sử dụng
+## ✨ Key Features
+
+| Feature                | Description                                                                               |
+|------------------------|------------------------------------------------------------------------------------------|
+| **📍 Local Discovery**  | Interactive map showing Vietnamese users within a configurable radius (5km/7km/9km by level). |
+| **💬 Real-time Chat**  | 1-on-1 messaging with WebSocket support and push notifications.                          |
+| **📱 Social Feed**     | Post updates, photos, and interact via likes/comments with a 2-column layout.            |
+| **🎮 Gamification**    | Level/point system (e.g., Level 2 unlocks 7km search radius).                            |
+| **🎯 Event Management**| Create and join offline events (meetups, cultural exchanges).                            |
+
+---
+
+## 🛠 Tech Stack
 
 ### **Backend**
 - ![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
@@ -48,39 +46,41 @@
 - ![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?logo=javascript&logoColor=black)
 - ![Geolocation API](https://img.shields.io/badge/Geolocation_API-4285F4?logo=google-maps&logoColor=white)
 
-### **Triển khai**
+### **Infrastructure**
 - ![Render](https://img.shields.io/badge/Render-46E3B7?logo=render&logoColor=white)
 - ![Redis](https://img.shields.io/badge/Redis-DC382D?logo=redis&logoColor=white)
 
 ---
 
-## 🚀 Cài đặt & Triển khai
+## 🚀 Installation
 
-### **Yêu cầu hệ thống**
+### **Prerequisites**
 - Python 3.10+
 - PostgreSQL 14+
-- Redis (cho WebSocket)
+- Redis (for WebSocket)
 
-### **Cài đặt local**
+### **Local Setup**
 ```bash
 # Clone repository
 git clone https://github.com/your_username/vietcom.git
 cd vietcom
 
-# Tạo virtual environment
+# Create virtual environment
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
 venv\Scripts\activate     # Windows
 
-# Cài đặt dependencies
+# Install dependencies
 pip install -r requirements.txt
 
-# Cấu hình biến môi trường (tạo file .env)
+# Configure environment variables
 cp .env.example .env
-# Sửa thông tin database trong .env
+# Edit database settings in .env
 
-# Chạy migrations
+# Run migrations
 python manage.py migrate
 
-# Khởi động server
+# Start development server
 python manage.py runserver
+```
+## Contributors
