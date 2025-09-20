@@ -273,3 +273,5 @@ def profile_update(request):
         form = CustomUserChangeForm(instance=request.user)
     
     return render(request, 'users/profile_update.html', {'form': form})
+
+
